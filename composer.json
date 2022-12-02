@@ -1,0 +1,38 @@
+{
+    "name": "stellarwp/pup",
+    "description": "StellarWP's Project Utilities & Packager",
+    "authors": [
+        {
+            "name": "StellarWP",
+            "email": "dev@stellarwp.com"
+        }
+    ],
+    "bin": ["bin/pup"],
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "license": "MIT",
+    "require": {
+        "composer/composer": "*",
+        "php": "^7.0|^8.0",
+        "symfony/process": "^5.4",
+        "symfony/console": "^5.4",
+        "symfony/finder": "^5.4",
+        "symfony/filesystem": "^5.4"
+    },
+    "require-dev": {
+        "szepeviktor/phpstan-wordpress": "^1.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "StellarWP\\Pup\\": "src/"
+        }
+    },
+    "scripts": {
+        "test:analysis": [
+            "phpstan analyse -c phpstan.neon.dist --memory-limit=512M"
+        ]
+    },
+    "scripts-descriptions": {
+        "test:analysis": "Run PHPStan static code analysis"
+    }
+}
