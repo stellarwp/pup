@@ -7,7 +7,7 @@
             "email": "dev@stellarwp.com"
         }
     ],
-    "bin": ["bin/pup"],
+    "bin": ["pup"],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "MIT",
