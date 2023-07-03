@@ -11,7 +11,6 @@ At a bare minimum, add the following to your `composer.json` file:
 ```json
 "extra": {
     "pup": {
-        "repo"    : "git@github.com:myorg/myplugin.git",
         "zip_name": "myplugin"
     }
 }
@@ -28,12 +27,10 @@ Here are all the possible settings with their defaults:
         "changelog"      : "readme.txt",
         "css"            : [],
         "js"             : [],
-        "submodule_build": [],
-        "repo"           : null,
+        "repo"           : null, // Defaults to composer.json "name".
         "version_files"  : [],
-        "views"          : "src/views",
-        "zip_command"    : "npm run zip",
-        "zip_name"       : null,
+        "views"          : [],
+        "zip_name"       : null, // Defaults to composer.json "name" after the slash.
         "checks"         : [
             "tbd",
             "version-conflict",
@@ -68,10 +65,10 @@ Here's a typical usecase of specifying version files:
 ```
 
 ```bash
-pup zip [branch] [--dist] [--fresh]
+pup zip [branch] [--dist] [--no-clone]
   pup build [--dist]
   pup check [name]
   pup get-version [--dist]
   pup package [--dist]
   pup clean
-```
+``` 

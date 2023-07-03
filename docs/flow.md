@@ -4,8 +4,6 @@
 flowchart TD
     clone[Clone repository recursively]
     build[Run build command]
-    hasSubmodules{Are there submodules?}
-    submoduleBuild[Run submodule build commands]
     captureVersion[Capture version from version files]
     isDev{Is this a dev build?}
     generateDevVersion[Generate dev version number]
@@ -16,10 +14,7 @@ flowchart TD
     packageZip[Package zip]
     
     clone --> build
-    build --> hasSubmodules
-    hasSubmodules --> |Yes| submoduleBuild
-    hasSubmodules --> |No| runChecks
-    submoduleBuild --> runChecks
+    build --> runChecks
     runChecks --> captureVersion
     captureVersion --> isDev
     isDev --> |Yes| generateDevVersion
