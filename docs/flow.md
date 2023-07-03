@@ -13,14 +13,23 @@ flowchart TD
     runChecks[Run sanity checks]
     packageZip[Package zip]
     
+    subgraph pup build
     clone --> build
+    end
+    subgraph pup check
     build --> runChecks
+    end
+    subgraph pup get-version
     runChecks --> captureVersion
     captureVersion --> isDev
     isDev --> |Yes| generateDevVersion
-    isDev --> |No| generateZipName
+    end
+    subgraph pup package
     generateDevVersion --> updateVersionNumbers
+    isDev --> |No| generateZipName
     updateVersionNumbers --> generateZipName
     generateZipName --> buildZipDir
     buildZipDir --> packageZip
+    end
+    packageZip --> cleanup
 ```
