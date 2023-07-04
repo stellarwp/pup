@@ -65,10 +65,10 @@ Here's a typical usecase of specifying version files:
 ```
 
 ```bash
-pup zip [branch] [--dist] [--no-clone]
-  pup build [--dist]
+pup zip [branch] [--dev] [--no-clone]
+  pup build [--dev]
   pup check [name]
-  pup get-version [--dist]
-  pup package [--dist]
+  pup get-version [--dev]
+  pup package {version}
   pup clean
 ``` 

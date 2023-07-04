@@ -30,6 +30,6 @@ flowchart TD
     updateVersionNumbers --> generateZipName
     generateZipName --> buildZipDir
     buildZipDir --> packageZip
-    end
     packageZip --> cleanup
+    end
 ```

@@ -2,6 +2,9 @@
 
 namespace StellarWP\Pup;
 
+use Composer\Composer;
+use Composer\Factory;
+use Composer\IO\NullIO;
 use Exception;
 use stdClass;
 
@@ -9,12 +12,12 @@ class Config {
 	/**
 	 * @var string
 	 */
-	protected $dir;
+	protected $working_dir;
 
 	/**
-	 * @var stdClass
+	 * @var Composer
 	 */
-	protected $composer_json;
+	protected $composer;
 
 	/**
 	 * @var stdClass
@@ -28,17 +31,25 @@ class Config {
 	 *
 	 * @return void
 	 */
-	public function __construct( $dir ) {
-		$this->dir     = $dir;
-		$composer_json = file_get_contents( $this->dir . DIRECTORY_SEPARATOR . 'composer.json' );
-		$composer_json = json_decode( $composer_json );
+	public function __construct() {
+		$this->working_dir = getcwd() . DIRECTORY_SEPARATOR;
+		$this->composer    = Factory::create(
+			new NullIO(),
+			rtrim( $this->working_dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR . 'composer.json',
+			true
+		);
 
-		if ( ! isset( $composer_json->extra->pup ) ) {
+		if ( ! isset( $this->composer->getPackage()->getExtra()['pup'] ) ) {
 			throw new Exception( 'No pup configuration found in composer.json' );
 		}
 
-		$this->composer_json = $composer_json;
-		$this->config        = array_merge( $this->get_default_config(), $composer_json->extra->pup );
+		$this->config = (object) $this->getDefaultConfig();
+
+		$extra_config = (array) $this->composer->getPackage()->getExtra()['pup'];
+
+		foreach ( $extra_config as $key => $value ) {
+			$this->config->$key = $value;
+		}
 	}
 
 	/**
@@ -46,26 +57,18 @@ class Config {
 	 *
 	 * @return array
 	 */
-	protected function get_default_config() : array {
+	protected function getDefaultConfig() : array {
 		return [
-			'bootstrap' => null,
-			'build_command' => 'npm run build',
-			'changelog' => 'readme.txt',
-			'css' => [
-				'src/resources/css',
+			'build_command' => [
+				'npm run build',
 			],
-			'js' => [
-				'src/resources/js',
-			],
-			'submodule_build' => [],
-			'submodule_sync'  => false,
-			'version_file'    => null,
-			'version_search'  => 'VERSION',
-			'views'           => [
-				'src/views',
-			],
-			'zip_command' => 'npm run zip',
-			'checks' => [
+			'changelog'     => null,
+			'css'           => [],
+			'js'            => [],
+			'version_files' => [],
+			'views'         => [],
+			'zip_name'      => null,
+			'checks'        => [
 				'tbd',
 				'version-conflict',
 				'view-version',
@@ -76,14 +79,14 @@ class Config {
 	/**
 	 * @return stdClass
 	 */
-	public function get_composer() : stdClass {
-		return $this->composer_json;
+	public function get() : stdClass {
+		return $this->config;
 	}
 
 	/**
-	 * @return stdClass
+	 * @return string
 	 */
-	public function get() : stdClass {
-		return $this->config;
+	public function getWorkingDir() : string {
+		return $this->working_dir;
 	}
 }
