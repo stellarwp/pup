@@ -18,6 +18,7 @@ class App extends Symfony_Application {
 
 		static::$config = new Config();
 
+		$this->add( new Commands\Build() );
 		$this->add( new Commands\GetVersion() );
 		$this->add( new Commands\Package() );
 	}

@@ -59,9 +59,8 @@ class Config {
 	 */
 	protected function getDefaultConfig() : array {
 		return [
-			'build_command' => [
-				'npm run build',
-			],
+			'build'         => [],
+			'build_dev'     => [],
 			'changelog'     => null,
 			'css'           => [],
 			'js'            => [],
@@ -81,6 +80,13 @@ class Config {
 	 */
 	public function get() : stdClass {
 		return $this->config;
+	}
+
+	/**
+	 * @return Composer
+	 */
+	public function getComposer() : Composer {
+		return $this->composer;
 	}
 
 	/**

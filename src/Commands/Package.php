@@ -3,6 +3,7 @@
 namespace StellarWP\Pup\Commands;
 
 use Exception;
+use StellarWP\Pup\App;
 use StellarWP\Pup\Config;
 use stdClass;
 use Symfony\Component\Console\Command\Command;
@@ -26,9 +27,7 @@ class Package extends Command {
 	 */
 	protected function configure() {
 		$this->setName( 'package' )
-			->addOption( 'path', null, InputOption::VALUE_REQUIRED, 'Path to plugin' )
-			->addOption( 'branch', null, InputOption::VALUE_REQUIRED, 'Branch to be packaged' )
-			->addOption( 'final', null, InputOption::VALUE_NONE, 'Package the zip without a hash in the filename' )
+			->addArgument( 'version', null, InputArgument::REQUIRED, 'Version being packaged.' )
 			->setDescription( 'Packages the project for distribution.' )
 			->setHelp( 'This command allows you to package the project for distribution.' );
 	}
@@ -37,16 +36,35 @@ class Package extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$this->dir = $input->getOption( 'path' ) ?: getcwd();
+		$version      = $input->getArgument( 'version' );
+		$config       = App::$config;
+		$extra_config = $config->get();
 
-		try {
-			$this->config = new Config( $this->dir );
-		} catch ( Exception $e ) {
-			$output->writeln( "<error>{$e->getMessage()}</error>" );
-
-			return 1;
+		if ( empty( $extra_config->zip_name ) ) {
+			$zip_name = $extra_config->zip_name;
+		} else {
+			$zip_name = preg_replace( '![^/]+/!', '', $config->getComposer()->getPackage()->getName() );
 		}
 
-		return 0;
+		$version_files = $extra_config->version_files;
+		foreach ( $version_files as $file_data ) {
+			$file  = $file_data->file;
+			$regex = $file_data->regex;
+			$file = str_replace( '/', DIRECTORY_SEPARATOR, $file );
+			$file = str_replace( '\\', DIRECTORY_SEPARATOR, $file );
+
+			$contents = file_get_contents( $file );
+			$contents = preg_replace( '/' . $regex . '/', '$1' . $version, $contents );
+			file_put_contents( $file, $contents );
+		}
+
+		$zip_filename = "{$zip_name}.{$version}.zip";
+		$pup_build_dir = $config->getWorkingDir() . DIRECTORY_SEPARATOR . '.pup-build';
+
+		if ( file_exists( $pup_build_dir ) ) {
+			rmdir( $pup_build_dir );
+		}
+
+		mkdir( $pup_build_dir );
 	}
 }
