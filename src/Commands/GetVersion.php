@@ -28,8 +28,10 @@ class GetVersion extends Command {
 		$version_files = $extra_config->version_files;
 
 		$version_file_data = current( $version_files );
-		$version_file      = $version_file_data['file'];
 		$version_regex     = $version_file_data['regex'];
+		$version_file      = $version_file_data['file'];
+		$version_file      = str_replace( '/', DIRECTORY_SEPARATOR, $version_file );
+		$version_file      = str_replace( '\\', DIRECTORY_SEPARATOR, $version_file );
 
 		$contents = file_get_contents( $config->getWorkingDir() . DIRECTORY_SEPARATOR . $version_file );
 		preg_match( '/' . $version_regex . '/', $contents, $matches );
