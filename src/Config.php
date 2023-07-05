@@ -150,7 +150,7 @@ class Config {
 			return [];
 		}
 
-		return DirectoryUtils::normalizeDirs( $this->config->paths[ $key ] );
+		return $this->config->paths[ $key ];
 	}
 
 	/**
@@ -212,7 +212,16 @@ class Config {
 	 * @return array
 	 */
 	public function getVersionFiles() : array {
-		return $this->getPaths( 'versions' );
+		$version_files = $this->getPaths( 'versions' );
+
+		foreach ( $version_files as &$version_file ) {
+			$version_file['file'] = $this->getAbsolutePathForRelativePath( $version_file['file'] );
+			if ( ! file_exists( $version_file['file'] ) ) {
+				throw new Exceptions\ConfigException( 'Version file does not exist: ' . $version_file['file'] );
+			}
+		}
+
+		return $version_files;
 	}
 
 	/**
@@ -295,7 +304,12 @@ class Config {
 	protected function validateVersionPaths() {
 		$files = $this->getVersionFiles();
 
-		$this->errorIfPathsDoNotExist( $files, 'The following version files (.paths.versions) in .puprc could not be found:' );
+		$file_paths = [];
+		foreach ( $files as $file ) {
+			$file_paths[] = $file['file'];
+		}
+
+		$this->errorIfPathsDoNotExist( $file_paths, 'The following version files (.paths.versions) in .puprc could not be found:' );
 	}
 
 	/**

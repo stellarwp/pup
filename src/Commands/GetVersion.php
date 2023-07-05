@@ -25,15 +25,18 @@ class GetVersion extends Command {
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$config        = App::getConfig();
-		$extra_config  = $config->get();
-		$version_files = $extra_config->version_files;
+		$version_files = $config->getVersionFiles();
+
+		if ( empty( $version_files ) ) {
+			$output->writeln( 'No version files found.' );
+			return 1;
+		}
 
 		$version_file_data = current( $version_files );
 		$version_regex     = $version_file_data['regex'];
-		$version_file      = DirectoryUtils::normalizeDir( $version_file_data['file'] );
-		$working_dir       = DirectoryUtils::trailingSlashIt( $config->getWorkingDir() );
+		$version_file      = $version_file_data['file'];
 
-		$contents = file_get_contents( $working_dir . $version_file );
+		$contents = file_get_contents( $version_file );
 		preg_match( '/' . $version_regex . '/', $contents, $matches );
 
 		if ( empty( $matches[2] ) ) {
