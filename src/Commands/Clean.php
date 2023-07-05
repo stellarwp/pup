@@ -23,7 +23,7 @@ class Clean extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$config    = App::$config;
+		$config    = App::getConfig();
 		$clone_dir = $config->getCloneDir();
 		$build_dir = $config->getBuildDir();
 

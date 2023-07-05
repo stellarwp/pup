@@ -2,9 +2,6 @@
 
 namespace StellarWP\Pup;
 
-use Composer\Composer;
-use Composer\Factory;
-use Composer\IO\NullIO;
 use Exception;
 use stdClass;
 
@@ -15,14 +12,14 @@ class Config {
 	protected $working_dir;
 
 	/**
-	 * @var Composer
-	 */
-	protected $composer;
-
-	/**
 	 * @var stdClass
 	 */
 	protected $config;
+
+	/**
+	 * @var string
+	 */
+	protected $puprc_file_path;
 
 	/**
 	 * Loads the composer.json file and pup config.
@@ -32,24 +29,52 @@ class Config {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->working_dir = DirectoryUtils::trailingSlashIt( DirectoryUtils::normalizeDir( getcwd() ) );
-		$this->composer    = Factory::create(
-			new NullIO(),
-			DirectoryUtils::trailingSlashIt( $this->working_dir ) . 'composer.json',
-			true
-		);
-
-		if ( ! isset( $this->composer->getPackage()->getExtra()['pup'] ) ) {
-			throw new Exception( 'No pup configuration found in composer.json' );
-		}
+		$this->working_dir     = DirectoryUtils::trailingSlashIt( DirectoryUtils::normalizeDir( getcwd() ) );
+		$this->puprc_file_path = $this->working_dir . '.puprc';
 
 		$this->config = (object) $this->getDefaultConfig();
 
-		$extra_config = (array) $this->composer->getPackage()->getExtra()['pup'];
+		if ( file_exists( $this->puprc_file_path ) ) {
+			$this->puprc = json_decode( file_get_contents( $this->puprc_file_path ), true );
 
-		foreach ( $extra_config as $key => $value ) {
+			if ( ! $this->puprc ) {
+				throw new Exceptions\ConfigException( 'Could not parse the .puprc file! Check the json syntax and try again.' );
+			}
+		}
+
+		foreach ( $this->puprc as $key => $value ) {
 			$this->config->$key = $value;
 		}
+
+		$this->validateConfig();
+	}
+
+	/**
+	 * Throws an error if the paths do not exist.
+	 *
+	 * @param array  $paths Paths to validate.
+	 * @param string $message Error message to throw if paths do not exist.
+	 *
+	 * @throws Exceptions\ConfigException
+	 *
+	 * @return bool
+	 */
+	protected function errorIfPathsDoNotExist( array $paths, string $message ): bool {
+		$invalid_paths = [];
+
+		foreach ( $paths as $path ) {
+			if ( file_exists( $path ) ) {
+				continue;
+			}
+
+			$invalid_paths[] = $path;
+		}
+
+		if ( $invalid_paths ) {
+			throw new Exceptions\ConfigException( $message . "\n* " . implode( "\n* ", $invalid_paths ) );
+		}
+
+		return true;
 	}
 
 	/**
@@ -75,32 +100,18 @@ class Config {
 	}
 
 	/**
-	 * @return Composer
-	 */
-	public function getComposer() : Composer {
-		return $this->composer;
-	}
-
-	/**
 	 * Returns the build directory.
 	 *
 	 * @return string
 	 */
 	public function getBuildDir() : string {
-		$prefix = DirectoryUtils::trailingSlashIt( $this->getWorkingDir() );
+		$build_dir = '.pup-build';
 
-		if ( empty( $this->config->build_dir ) ) {
-			return $prefix . '.pup-build';
+		if ( ! empty( $this->config->paths['build_dir'] ) ) {
+			$build_dir = DirectoryUtils::normalizeDir( $this->config->paths['build_dir'] );
 		}
 
-		$build_dir = DirectoryUtils::normalizeDir( $this->config->build_dir );
-
-		// Don't allow absolute paths.
-		if ( str_starts_with( $build_dir, DIRECTORY_SEPARATOR ) ) {
-			return $prefix . '.pup-build';
-		}
-
-		return $prefix . $this->config->build_dir;
+		return $this->getAbsolutePathForRelativePath( $build_dir, '.pup-build' );
 	}
 
 	/**
@@ -109,7 +120,13 @@ class Config {
 	 * @return string
 	 */
 	public function getCloneDir() : string {
-		return $this->config->clone_dir ?: '.pup-clone';
+		$dir = '.pup-clone';
+
+		if ( ! empty( $this->config->paths['clone_dir'] ) ) {
+			$dir = DirectoryUtils::normalizeDir( $this->config->paths['clone_dir'] );
+		}
+
+		return $this->getAbsolutePathForRelativePath( $dir, '.pup-clone' );
 	}
 
 	/**
@@ -118,25 +135,47 @@ class Config {
 	 * @return array
 	 */
 	protected function getDefaultConfig() : array {
-		return [
-			'build_dir'     => '.pup-build',
-			'build'         => [],
-			'build_dev'     => [],
-			'changelog'     => null,
-			'clone_dir'     => '.pup-clone',
-			'css'           => [],
-			'js'            => [],
-			'repo'          => null,
-			'version_files' => [],
-			'views'         => [],
-			'zip_ignore'    => '.distignore',
-			'zip_name'      => null,
-			'checks'        => [
-				'tbd',
-				'version-conflict',
-				'view-version',
-			],
-		];
+		return json_decode( file_get_contents( __PUP_DIR__ . '/.puprc-defaults' ), true );
+	}
+
+	/**
+	 * Get paths from the config.
+	 *
+	 * @param string $key
+	 *
+	 * @return array|string|null
+	 */
+	public function getPaths( string $key ) {
+		if ( empty( $this->config->paths[ $key ] ) ) {
+			return [];
+		}
+
+		return DirectoryUtils::normalizeDirs( $this->config->paths[ $key ] );
+	}
+
+	/**
+	 * Get absolute paths for relative path.
+	 *
+	 * @param string $path
+	 * @param string|null $default
+	 *
+	 * @return string
+	 */
+	protected function getAbsolutePathForRelativePath( string $path, $default = null ) {
+		$prefix = DirectoryUtils::trailingSlashIt( $this->getWorkingDir() );
+		$path   = DirectoryUtils::normalizeDir( $path );
+		$path   = str_replace( $prefix, '', $path );
+
+		$starts_with_separator = str_starts_with( $path, DIRECTORY_SEPARATOR );
+
+		// Don't allow absolute paths.
+		if ( $starts_with_separator && $default ) {
+			return $prefix . $default;
+		} elseif ( $starts_with_separator ) {
+			throw new Exceptions\ConfigException( 'Absolute paths are not allowed in the .puprc file.' );
+		}
+
+		return $prefix . $path;
 	}
 
 	/**
@@ -146,8 +185,14 @@ class Config {
 	 */
 	public function getRepo() : string {
 		if ( empty( $this->config->repo ) ) {
-			$repo = $this->composer->getPackage()->getName();
-			return 'git@github.com:' . $repo . '.git';
+			if ( file_exists( $this->working_dir . 'composer.json' ) ) {
+				$composer = json_decode( file_get_contents( $this->working_dir . 'composer.json' ) );
+				if ( ! empty( $composer->name ) ) {
+					return 'git@github.com:' . $composer->name . '.git';
+				}
+			}
+
+			throw new Exceptions\ConfigException( 'Could not find a repo in the .puprc file or the "name" property in composer.json.' );
 		}
 
 		if (
@@ -159,6 +204,15 @@ class Config {
 		}
 
 		return $this->config->repo;
+	}
+
+	/**
+	 * Get version files.
+	 *
+	 * @return array
+	 */
+	public function getVersionFiles() : array {
+		return $this->getPaths( 'versions' );
 	}
 
 	/**
@@ -182,11 +236,76 @@ class Config {
 	 */
 	public function getZipName() : string {
 		if ( empty( $this->config->zip_name ) ) {
-			$project_name = $this->getComposer()->getPackage()->getName();
-			$project_name = preg_replace( '![^/]+/!', '', $project_name );
-			return $project_name;
+			if ( file_exists( $this->working_dir . 'composer.json' ) ) {
+				$composer = json_decode( file_get_contents( $this->working_dir . 'composer.json' ) );
+				if ( empty( $composer->name ) ) {
+					throw new Exceptions\ConfigException( 'Could not find the "name" property in composer.json.' );
+				}
+
+				$project_name = $composer->name;
+				$project_name = preg_replace( '![^/]+/!', '', $project_name );
+				return $project_name;
+			}
+
+			throw new Exceptions\ConfigException( 'Could not find a "zip_name" in .puprc' );
 		}
 
 		return $this->config->zip_name;
+	}
+
+	/**
+	 * Validates the config file.
+	 *
+	 * @throws Exceptions\ConfigException
+	 */
+	protected function validateConfig() {
+		$this->validateVersionPaths();
+		$this->validateCssPaths();
+		$this->validateJsPaths();
+		$this->validateViewPaths();
+	}
+
+	/**
+	 * Validates the css paths.
+	 *
+	 * @throws Exceptions\ConfigException
+	 */
+	protected function validateCssPaths() {
+		$files = $this->getPaths( 'css' );
+
+		$this->errorIfPathsDoNotExist( $files, 'The following css paths (.paths.css) in .puprc could not be found:' );
+	}
+
+	/**
+	 * Validates the js paths.
+	 *
+	 * @throws Exceptions\ConfigException
+	 */
+	protected function validateJsPaths() {
+		$files = $this->getPaths( 'js' );
+
+		$this->errorIfPathsDoNotExist( $files, 'The following js paths (.paths.js) in .puprc could not be found:' );
+	}
+
+	/**
+	 * Validates the version files.
+	 *
+	 * @throws Exceptions\ConfigException
+	 */
+	protected function validateVersionPaths() {
+		$files = $this->getVersionFiles();
+
+		$this->errorIfPathsDoNotExist( $files, 'The following version files (.paths.versions) in .puprc could not be found:' );
+	}
+
+	/**
+	 * Validates the views paths.
+	 *
+	 * @throws Exceptions\ConfigException
+	 */
+	protected function validateViewPaths() {
+		$files = $this->getPaths( 'views' );
+
+		$this->errorIfPathsDoNotExist( $files, 'The following views paths (.paths.views) in .puprc could not be found:' );
 	}
 }

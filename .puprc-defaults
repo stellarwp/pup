@@ -1,0 +1,21 @@
+{
+    "build": [],
+    "build_dev": [],
+    "checks": [
+        "tbd",
+        "version-conflict",
+        "view-version"
+    ],
+    "paths": {
+        "build_dir": ".pup-build",
+        "changelog": null,
+        "clone_dir": ".pup-clone",
+        "css": [],
+        "js": [],
+        "versions": [],
+        "views": []
+    },
+    "repo": null,
+    "zip_ignore": ".distignore",
+    "zip_name": null
+}

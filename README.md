@@ -6,37 +6,31 @@ StellarWP's **P**roject **U**tilities &amp; **P**ackager (`pup`)
 
 ## Configuration
 
-At a bare minimum, add the following to your `composer.json` file:
+At a bare minimum, add the following to your `.puprc` file:
 
 ```json
-"extra": {
-    "pup": {
-        "zip_name": "myplugin"
-    }
+{
+    "zip_name": "myplugin"
 }
 ```
 
 Here are all the possible settings with their defaults:
 
 ```json
-"extra": {
-    "pup": {
-        "build_command"  : [
-            "npm run build"
-        ],
-        "changelog"      : "readme.txt",
-        "css"            : [],
-        "js"             : [],
-        "repo"           : null, // Defaults to composer.json "name".
-        "version_files"  : [],
-        "views"          : [],
-        "zip_name"       : null, // Defaults to composer.json "name" after the slash.
-        "checks"         : [
-            "tbd",
-            "version-conflict",
-            "view-version"
-        ]
-    }
+{
+    "build"          : [],
+    "changelog"      : "readme.txt",
+    "css"            : [],
+    "js"             : [],
+    "repo"           : null, // Defaults to composer.json "name".
+    "version_files"  : [],
+    "views"          : [],
+    "zip_name"       : null, // Defaults to composer.json "name" after the slash.
+    "checks"         : [
+        "tbd",
+        "version-conflict",
+        "view-version"
+    ]
 }
 ```
 

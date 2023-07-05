@@ -38,26 +38,12 @@ class Package extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$version      = $input->getArgument( 'version' );
-		$config       = App::$config;
-		$extra_config = $config->get();
+		$version     = $input->getArgument( 'version' );
+		$config      = App::getConfig();
+		$zip_name    = $config->getZipName();
+		$working_dir = DirectoryUtils::trailingSlashIt( $config->getWorkingDir() );
 
-		if ( empty( $extra_config->zip_name ) ) {
-			$zip_name = $extra_config->zip_name;
-		} else {
-			$zip_name = preg_replace( '![^/]+/!', '', $config->getComposer()->getPackage()->getName() );
-		}
-
-		$working_dir   = DirectoryUtils::trailingSlashIt( $config->getWorkingDir() );
-		$version_files = $extra_config->version_files;
-		foreach ( $version_files as $file_data ) {
-			$file  = DirectoryUtils::normalizeDir( $file_data->file );
-			$regex = $file_data->regex;
-
-			$contents = file_get_contents( $file );
-			$contents = preg_replace( '/' . $regex . '/', '$1' . $version, $contents );
-			file_put_contents( $file, $contents );
-		}
+		$this->updateVersionsInFiles( $version );
 
 		$zip_filename  = "{$zip_name}.{$version}.zip";
 		$pup_build_dir = $working_dir . $config->getBuildDir();
@@ -70,7 +56,31 @@ class Package extends Command {
 		$this->syncFiles( $pup_clone_dir, $pup_build_dir );
 
 		$zip = new \ZipArchive();
-		$zip->
+	}
+
+	/**
+	 * @param string $version
+	 *
+	 * @return bool
+	 */
+	protected function updateVersionsInFiles( string $version ): bool {
+		$config        = App::getConfig();
+		$version_files = $config->getVersionFiles();
+
+		foreach ( $version_files as $file_data ) {
+			$file  = DirectoryUtils::normalizeDir( $file_data->file );
+			$regex = $file_data->regex;
+
+			$contents = file_get_contents( $file );
+			$contents = preg_replace( '/' . $regex . '/', '$1' . $version, $contents );
+			$results  = file_put_contents( $file, $contents );
+
+			if ( false === $results ) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -121,11 +131,11 @@ class Package extends Command {
 	 */
 	protected function loadExcludedPatterns( string $source ) {
 		$excluded_patterns = [
-			App::$config->getCloneDir(),
-			App::$config->getBuildDir(),
+			App::getConfig()->getCloneDir(),
+			App::getConfig()->getBuildDir(),
 		];
 
-		$exclude_file = DirectoryUtils::trailingSlashIt( $source ) . App::$config->getZipIgnore();
+		$exclude_file = DirectoryUtils::trailingSlashIt( $source ) . App::getConfig()->getZipIgnore();
 
 		if ( file_exists( $exclude_file ) ) {
 			$excluded_patterns = file( $exclude_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );

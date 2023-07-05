@@ -3,6 +3,7 @@
 namespace StellarWP\Pup;
 
 use Symfony\Component\Console\Application as Symfony_Application;
+use Symfony\Component\Console\Output\OutputInterface;
 
 class App extends Symfony_Application {
 	/**
@@ -16,10 +17,24 @@ class App extends Symfony_Application {
 	public function __construct( string $version ) {
 		parent::__construct( 'pup', $version );
 
-		static::$config = new Config();
-
 		$this->add( new Commands\Build() );
+		$this->add( new Commands\Clean() );
 		$this->add( new Commands\GetVersion() );
 		$this->add( new Commands\Package() );
+		$this->add( new Commands\Help() );
+
+		$this->setDefaultCommand( 'help' );
+	}
+
+	public function renderThrowable( \Throwable $e, OutputInterface $output ): void {
+		$output->writeln( $e->getMessage() );
+	}
+
+	public static function getConfig(): Config {
+		if ( empty( static::$config ) ) {
+			static::$config = new Config();
+		}
+
+		return static::$config;
 	}
 }

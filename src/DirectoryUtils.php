@@ -27,6 +27,25 @@ class DirectoryUtils {
 	}
 
 	/**
+	 * Normalizes an array of directories for the system that the script is running on.
+	 *
+	 * @param array|string $dirs
+	 *
+	 * @return array|string
+	 */
+	public static function normalizeDirs( $dirs ) {
+		if ( ! is_array( $dirs ) ) {
+			return self::normalizeDir( $dirs );
+		}
+
+		foreach ( $dirs as &$dir ) {
+			$dir = self::normalizeDir( $dir );
+		}
+
+		return $dirs;
+	}
+
+	/**
 	 * Recursively removes a directory and all of its contents.
 	 *
 	 * This will only allow removal of directories within the working directory.
@@ -38,7 +57,7 @@ class DirectoryUtils {
 	 * @return bool
 	 */
 	public static function rmdir( string $dir ): bool {
-		$config      = App::$config;
+		$config      = App::getConfig();
 		$dir         = self::normalizeDir( $dir );
 		$dir         = rtrim( $dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
 		$working_dir = rtrim( $config->getWorkingDir(), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;

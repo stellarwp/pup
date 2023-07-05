@@ -1,11 +1,16 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 const PUP_VERSION = '1.0.0';
 const __PUP_DIR__ = __DIR__;
 
 call_user_func( function( $version ) {
 	if ( ! Phar::running() ) {
-		if ( is_file( $autoload = getcwd() . '/vendor/autoload.php' ) ) {
+	  $local_dir_autoload = __PUP_DIR__ . '/vendor/autoload.php';
+	  $autoload = getcwd() . '/vendor/autoload.php';
+
+		if ( is_file( $local_dir_autoload ) ) {
+			require $local_dir_autoload;
+		} elseif ( is_file( $autoload ) ) {
 			require $autoload;
 		} else {
 			fwrite( STDERR,
@@ -22,3 +27,4 @@ call_user_func( function( $version ) {
 	$app = new StellarWP\Pup\App( $version );
 	$app->run();
 }, PUP_VERSION );
+

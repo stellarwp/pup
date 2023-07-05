@@ -23,11 +23,12 @@ class Build extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$config      = App::$config;
+		$config      = App::getConfig();
 		$build_steps = $config->getBuildCommands( $input->getOption( 'dev' ) );
 		$result      = 0;
 
 		foreach ( $build_steps as $step ) {
+			$output->writeln( "<info>Running: {$step}</info>" );
 			system( $step, $result );
 
 			if ( $result ) {

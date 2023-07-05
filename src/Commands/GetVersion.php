@@ -24,7 +24,7 @@ class GetVersion extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$config        = App::$config;
+		$config        = App::getConfig();
 		$extra_config  = $config->get();
 		$version_files = $extra_config->version_files;
 
