@@ -9,13 +9,14 @@
     "paths": {
         "build_dir": ".pup-build",
         "changelog": null,
-        "clone_dir": ".pup-clone",
         "css": [],
         "js": [],
         "versions": [],
-        "views": []
+        "views": [],
+        "zip_dir": ".pup-clone"
     },
     "repo": null,
+    "rsync_executable": "rsync",
     "zip_ignore": ".distignore",
     "zip_name": null
 }

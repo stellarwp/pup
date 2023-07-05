@@ -24,12 +24,12 @@ class Clean extends Command {
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$config    = App::getConfig();
-		$clone_dir = $config->getCloneDir();
+		$zip_dir   = $config->getZipDir();
 		$build_dir = $config->getBuildDir();
 
-		$output->writeln( "Removing clone dir: {$clone_dir}" );
-		if ( file_exists( $clone_dir ) && ! DirectoryUtils::rmdir( $clone_dir ) ) {
-			throw new \Exception( "Could not remove {$clone_dir}." );
+		$output->writeln( "Removing zip dir: {$zip_dir}" );
+		if ( file_exists( $zip_dir ) && ! DirectoryUtils::rmdir( $zip_dir ) ) {
+			throw new \Exception( "Could not remove {$zip_dir}." );
 		}
 
 		$output->writeln( "Removing build dir: {$build_dir}" );

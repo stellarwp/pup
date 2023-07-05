@@ -2,16 +2,15 @@
 
 namespace StellarWP\Pup\Commands;
 
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
 use StellarWP\Pup\App;
+use StellarWP\Pup\Exceptions;
 use StellarWP\Pup\DirectoryUtils;
 use stdClass;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use ZipArchive;
 
 class Package extends Command {
 	/**
@@ -38,24 +37,39 @@ class Package extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$version     = $input->getArgument( 'version' );
-		$config      = App::getConfig();
-		$zip_name    = $config->getZipName();
-		$working_dir = DirectoryUtils::trailingSlashIt( $config->getWorkingDir() );
+		$version  = $input->getArgument( 'version' );
+		$config   = App::getConfig();
+		$zip_name = $config->getZipName();
 
 		$this->updateVersionsInFiles( $version );
 
 		$zip_filename  = "{$zip_name}.{$version}.zip";
-		$pup_build_dir = $working_dir . $config->getBuildDir();
-		$pup_clone_dir = $working_dir . $config->getCloneDir();
+		$pup_build_dir = $config->getBuildDir();
+		$pup_zip_dir   = $config->getZipDir();
 
 		DirectoryUtils::rmdir( $pup_build_dir );
 
 		mkdir( $pup_build_dir );
 
-		$this->syncFiles( $pup_clone_dir, $pup_build_dir );
+		$this->syncFiles( '.', $pup_zip_dir );
 
-		$zip = new \ZipArchive();
+		$zip = new ZipArchive();
+		if ( $zip->open( $zip_filename, ZipArchive::CREATE | ZipArchive::OVERWRITE ) === true ) {
+			$zip->addEmptyDir( $zip_name );
+
+			// Call the recursive function to add files to the zip archive
+			$this->addFilesToZip( $zip_name, $pup_zip_dir, $zip );
+
+			// Close the zip archive
+			$zip->close();
+
+			$output->writeln( "<info>Zip {$zip_filename} created!</info>" );
+		} else {
+			$output->writeln( '<error>Failed to create the zip archive!</error>' );
+			return 1;
+		}
+
+		return 0;
 	}
 
 	/**
@@ -68,8 +82,8 @@ class Package extends Command {
 		$version_files = $config->getVersionFiles();
 
 		foreach ( $version_files as $file_data ) {
-			$file  = DirectoryUtils::normalizeDir( $file_data->file );
-			$regex = $file_data->regex;
+			$file  = DirectoryUtils::normalizeDir( $file_data['file'] );
+			$regex = $file_data['regex'];
 
 			$contents = file_get_contents( $file );
 			$contents = preg_replace( '/' . $regex . '/', '$1' . $version, $contents );
@@ -91,74 +105,70 @@ class Package extends Command {
 	 * @param string $source      Directory to sync.
 	 * @param string $destination Where to sync to.
 	 *
-	 * @return array
+	 * @return bool
 	 */
 	protected function syncFiles( string $source, string $destination ) {
-		$iterator = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::SELF_FIRST
-		);
+		$working_dir      = App::getConfig()->getWorkingDir();
+		$build_dir        = str_replace( $working_dir, '', App::getConfig()->getBuildDir() );
+		$zip_dir          = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
+		$rsync_executable = App::getConfig()->getRsyncExecutable();
+		$rsync_executable = DirectoryUtils::normalizeDir( $rsync_executable );
+		$rsync_split      = explode( DIRECTORY_SEPARATOR, $rsync_executable );
+		$executable       = array_pop( $rsync_split );
 
-		$excluded_patterns = $this->loadExcludedPatterns( $source );
+		if ( preg_match( '/[^a-zA-Z0-9.\-_]/', $executable ) ) {
+			throw new Exceptions\BaseException( 'The rsync executable cannot contain spaces or special characters.' );
+		}
 
-		foreach ( $iterator as $item ) {
-			$source_path      = $item->getPathname();
-			$relative_path    = substr( $source_path, strlen( $source ) + 1 );
-			$destination_path = DirectoryUtils::trailingSlashIt( $destination ) . $iterator->getSubPathname();
+		$command = [
+			$rsync_executable,
+			'-rc',
+			'--exclude-from=' . escapeshellarg( $working_dir . '/.distignore' ),
+			'--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' ),
+			'--exclude=' . escapeshellarg( $build_dir ),
+			'--exclude=' . escapeshellarg( $zip_dir ),
+			'--exclude=.puprc',
+			escapeshellarg( $source . '/' ),
+			escapeshellarg( $destination . '/' ),
+			'--delete',
+			'--delete-excluded',
+		];
 
-			if ( $this->shouldExclude( $relative_path, $excluded_patterns ) ) {
+		$command = implode( ' ', $command );
+		$result_code = 0;
+		system( $command, $result_code );
+		return $result_code === 0;
+	}
+
+	protected function addFilesToZip( string $root_dir, string $dir, \ZipArchive $zip, string $base_path = '' ) {
+		// Open the directory
+		$handle = opendir( $dir );
+
+		// Iterate through each file and directory
+		while ( ( $file = readdir( $handle ) ) !== false ) {
+			// Skip ".", "..", and hidden files/directories
+			if ( $file == '.' || $file == '..' || strpos( $file, '.' ) === 0 ) {
 				continue;
 			}
 
-			if ( $item->isDir() ) {
-				if ( ! is_dir( $destination_path ) ) {
-					mkdir( $destination_path );
-				}
-			} else {
-				if ( ! file_exists( $destination_path ) || filemtime( $source_path ) > filemtime( $destination_path ) ) {
-					copy( $source_path, $destination_path );
-				}
-			}
-		}
-	}
+			$file_path = $dir . '/' . $file;
 
-	/**
-	 * Loads excluded patterns from the zip ignore file.
-	 *
-	 * @param string $source
-	 *
-	 * @return array
-	 */
-	protected function loadExcludedPatterns( string $source ) {
-		$excluded_patterns = [
-			App::getConfig()->getCloneDir(),
-			App::getConfig()->getBuildDir(),
-		];
+			// Calculate the relative path inside the zip archive
+			$zip_path = ltrim( $base_path . '/' . $file, '/' );
 
-		$exclude_file = DirectoryUtils::trailingSlashIt( $source ) . App::getConfig()->getZipIgnore();
+			if ( is_file( $file_path ) ) {
+				// Add the file to the zip archive
+				$zip->addFile( $file_path, $root_dir . '/' . $zip_path );
+			} elseif ( is_dir( $file_path ) ) {
+				// Create a new directory inside the zip archive
+				$zip->addEmptyDir( $root_dir . '/' . $zip_path );
 
-		if ( file_exists( $exclude_file ) ) {
-			$excluded_patterns = file( $exclude_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-		}
-
-		return $excluded_patterns;
-	}
-
-	/**
-	 * Determine if a file should be excluded from the zip.
-	 *
-	 * @param string $path              Path to file to determine if exclusion is necessary.
-	 * @param array  $excluded_patterns File glob patterns to exclude.
-	 *
-	 * @return bool
-	 */
-	protected function shouldExclude( $path, $excluded_patterns ): bool {
-		foreach ( $excluded_patterns as $pattern ) {
-			if ( fnmatch( $pattern, $path ) ) {
-				return true;
+				// Recursively add files from the subdirectory
+				$this->addFilesToZip( $root_dir, $file_path, $zip, $zip_path );
 			}
 		}
 
-		return false;
+		// Close the directory handle
+		closedir( $handle );
 	}
 }

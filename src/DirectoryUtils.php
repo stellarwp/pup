@@ -62,7 +62,7 @@ class DirectoryUtils {
 		$dir         = rtrim( $dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
 		$working_dir = rtrim( $config->getWorkingDir(), DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
 
-		if ( ! str_contains( $working_dir, $dir ) ) {
+		if ( strpos( $dir, $working_dir ) !== 0 ) {
 			throw new Exception( 'You can only delete sub directories in the current working directory.' );
 		}
 

@@ -119,14 +119,14 @@ class Config {
 	 *
 	 * @return string
 	 */
-	public function getCloneDir() : string {
-		$dir = '.pup-clone';
+	public function getZipDir() : string {
+		$dir = '.pup-zip';
 
-		if ( ! empty( $this->config->paths['clone_dir'] ) ) {
-			$dir = DirectoryUtils::normalizeDir( $this->config->paths['clone_dir'] );
+		if ( ! empty( $this->config->paths['zip_dir'] ) ) {
+			$dir = DirectoryUtils::normalizeDir( $this->config->paths['zip_dir'] );
 		}
 
-		return $this->getAbsolutePathForRelativePath( $dir, '.pup-clone' );
+		return $this->getAbsolutePathForRelativePath( $dir, '.pup-zip' );
 	}
 
 	/**
@@ -204,6 +204,15 @@ class Config {
 		}
 
 		return $this->config->repo;
+	}
+
+	/**
+	 * Gets the rsync executable to run.
+	 *
+	 * @return string
+	 */
+	public function getRsyncExecutable(): string {
+		return $this->config->rsync_executable;
 	}
 
 	/**
