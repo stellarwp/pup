@@ -49,6 +49,8 @@ class Package extends Command {
 		$config   = App::getConfig();
 		$zip_name = $config->getZipName();
 
+		system( 'git stash' );
+
 		$this->updateVersionsInFiles( $version );
 
 		$zip_filename  = "{$zip_name}.{$version}.zip";
@@ -62,16 +64,40 @@ class Package extends Command {
 		$results = $this->syncFiles( '.', $pup_zip_dir );
 
 		if ( $results !== 0 ) {
+			$this->undoChanges();
 			return $results;
 		}
 
 		$results = $this->createZip( $pup_zip_dir, $zip_filename, $zip_name );
 
 		if ( $results !== 0 ) {
+			$this->undoChanges();
 			return $results;
 		}
 
+		$this->undoChanges();
+
+		$this->output->writeln( "<info>Zip {$zip_filename} created!</info>" );
+
 		return 0;
+	}
+
+	/**
+	 * @param string $source
+	 * @param string $destination
+	 *
+	 * @return void
+	 */
+	protected function undoChanges() {
+		$version_files = App::getConfig()->getVersionFiles();
+		foreach ( $version_files as $file ) {
+			if ( ! isset( $file['file'] ) ) {
+				continue;
+			}
+
+			system( 'git checkout -- ' . escapeshellarg( $file['file'] ) );
+		}
+		system( 'git stash apply --quiet' );
 	}
 
 	/**
@@ -170,8 +196,6 @@ class Package extends Command {
 
 		// Close the zip archive
 		$zip->close();
-
-		$this->output->writeln( "<info>Zip {$zip_filename} created!</info>" );
 
 		return 0;
 	}
