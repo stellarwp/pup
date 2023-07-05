@@ -29,9 +29,9 @@ class DirectoryUtils {
 	/**
 	 * Normalizes an array of directories for the system that the script is running on.
 	 *
-	 * @param array|string $dirs
+	 * @param array<int, string>|string $dirs
 	 *
-	 * @return array|string
+	 * @return array<int, string>|string
 	 */
 	public static function normalizeDirs( $dirs ) {
 		if ( ! is_array( $dirs ) ) {

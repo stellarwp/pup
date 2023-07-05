@@ -30,10 +30,12 @@ class Package extends Command {
 
 	/**
 	 * @inheritDoc
+	 *
+	 * @return void
 	 */
 	protected function configure() {
 		$this->setName( 'package' )
-			->addArgument( 'version', null, InputArgument::REQUIRED, 'Version being packaged.' )
+			->addArgument( 'version', InputArgument::REQUIRED, 'Version being packaged.' )
 			->setDescription( 'Packages the project for distribution.' )
 			->setHelp( 'This command allows you to package the project for distribution.' );
 	}
@@ -86,6 +88,11 @@ class Package extends Command {
 			$regex = $file_data['regex'];
 
 			$contents = file_get_contents( $file );
+
+			if ( ! $contents ) {
+				throw new Exceptions\BaseException( "Could not read file: {$file}" );
+			}
+
 			$contents = preg_replace( '/' . $regex . '/', '$1' . $version, $contents );
 			$results  = file_put_contents( $file, $contents );
 
@@ -182,6 +189,10 @@ class Package extends Command {
 	protected function addFilesToZip( string $root_dir, string $dir, \ZipArchive $zip, string $base_path = '' ) {
 		// Open the directory
 		$handle = opendir( $dir );
+
+		if ( ! $handle ) {
+			throw new Exceptions\BaseException( "Could not open directory: {$dir}" );
+		}
 
 		// Iterate through each file and directory
 		while ( ( $file = readdir( $handle ) ) !== false ) {

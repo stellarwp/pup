@@ -22,6 +22,11 @@ class Config {
 	protected $puprc_file_path;
 
 	/**
+	 * @var array<string, mixed>
+	 */
+	protected $puprc;
+
+	/**
 	 * Loads the composer.json file and pup config.
 	 *
 	 * @throws Exception
@@ -29,13 +34,24 @@ class Config {
 	 * @return void
 	 */
 	public function __construct() {
-		$this->working_dir     = DirectoryUtils::trailingSlashIt( DirectoryUtils::normalizeDir( getcwd() ) );
+		$cwd = getcwd();
+
+		if ( ! $cwd ) {
+			throw new Exceptions\ConfigException( 'Could not get the current working directory!' );
+		}
+
+		$this->working_dir     = DirectoryUtils::trailingSlashIt( DirectoryUtils::normalizeDir( $cwd ) );
 		$this->puprc_file_path = $this->working_dir . '.puprc';
 
 		$this->config = (object) $this->getDefaultConfig();
 
 		if ( file_exists( $this->puprc_file_path ) ) {
-			$this->puprc = json_decode( file_get_contents( $this->puprc_file_path ), true );
+			$puprc_file_contents = file_get_contents( $this->puprc_file_path );
+			if ( ! $puprc_file_contents ) {
+				throw new Exceptions\ConfigException( 'Could not read the .puprc file!' );
+			}
+
+			$this->puprc = json_decode( $puprc_file_contents, true );
 
 			if ( ! $this->puprc ) {
 				throw new Exceptions\ConfigException( 'Could not parse the .puprc file! Check the json syntax and try again.' );
@@ -52,7 +68,7 @@ class Config {
 	/**
 	 * Throws an error if the paths do not exist.
 	 *
-	 * @param array  $paths Paths to validate.
+	 * @param array<int, string>  $paths Paths to validate.
 	 * @param string $message Error message to throw if paths do not exist.
 	 *
 	 * @throws Exceptions\ConfigException
@@ -89,7 +105,7 @@ class Config {
 	 *
 	 * @param bool $is_dev Is this a dev build?
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	public function getBuildCommands( $is_dev = false ) : array {
 		if ( $is_dev && ! empty( $this->config->build_dev ) ) {
@@ -132,10 +148,21 @@ class Config {
 	/**
 	 * Returns the default config.
 	 *
-	 * @return array
+	 * @return array<string, mixed>
 	 */
 	protected function getDefaultConfig() : array {
-		return json_decode( file_get_contents( __PUP_DIR__ . '/.puprc-defaults' ), true );
+		$defaults = file_get_contents( __PUP_DIR__ . '/.puprc-defaults' );
+		if ( ! $defaults ) {
+			throw new Exceptions\ConfigException( 'Could not read the ' . __PUP_DIR__ . DIRECTORY_SEPARATOR . '.puprc-defaults file!' );
+		}
+
+		$defaults_decoded = json_decode( $defaults, true );
+
+		if ( ! $defaults_decoded ) {
+			throw new Exceptions\ConfigException( 'Could not parse the ' . __PUP_DIR__ . DIRECTORY_SEPARATOR . '.puprc-defaults file!' );
+		}
+
+		return $defaults_decoded;
 	}
 
 	/**
@@ -143,10 +170,14 @@ class Config {
 	 *
 	 * @param string $key
 	 *
-	 * @return array|string|null
+	 * @return array<int, string>
 	 */
 	public function getPaths( string $key ) {
 		if ( empty( $this->config->paths[ $key ] ) ) {
+			return [];
+		}
+
+		if ( ! is_array( $this->config->paths[ $key ] ) ) {
 			return [];
 		}
 
@@ -179,16 +210,40 @@ class Config {
 	}
 
 	/**
+	 * Get composer.json name property.
+	 *
+	 * @return string
+	 */
+	protected function getComposerName(): string {
+		if ( ! file_exists( $this->working_dir . 'composer.json' ) ) {
+			return '';
+		}
+
+		$composer_contents = file_get_contents( $this->working_dir . 'composer.json' );
+		if ( ! $composer_contents ) {
+			throw new Exceptions\ConfigException( 'Could not read composer.json.' );
+		}
+
+		$composer = json_decode( $composer_contents );
+		if ( ! empty( $composer->name ) ) {
+			throw new Exceptions\ConfigException( 'Could not find the "name" property in composer.json.' );
+		}
+
+		return $composer->name;
+	}
+
+	/**
 	 * Returns the repo.
 	 *
 	 * @return string
 	 */
 	public function getRepo() : string {
 		if ( empty( $this->config->repo ) ) {
-			if ( file_exists( $this->working_dir . 'composer.json' ) ) {
-				$composer = json_decode( file_get_contents( $this->working_dir . 'composer.json' ) );
-				if ( ! empty( $composer->name ) ) {
-					return 'git@github.com:' . $composer->name . '.git';
+			if ( $this->hasComposer() ) {
+				$composer_name = $this->getComposerName();
+
+				if ( ! empty( $composer_name ) ) {
+					return 'git@github.com:' . $composer_name . '.git';
 				}
 			}
 
@@ -218,18 +273,28 @@ class Config {
 	/**
 	 * Get version files.
 	 *
-	 * @return array
+	 * @return array<int, array<string, string>>
 	 */
 	public function getVersionFiles() : array {
 		$version_files = $this->getPaths( 'versions' );
 
+		if ( ! is_array( $version_files ) ) {
+			return [];
+		}
+
 		foreach ( $version_files as &$version_file ) {
+			$version_file = (array) $version_file;
+
+			if ( ! isset( $version_file['file'] ) || ! isset( $version_files['regex' ] ) ) {
+				throw new Exceptions\ConfigException( 'Versions specified in .puprc .paths.versions "file" and "regex" property.' );
+			}
 			$version_file['file'] = $this->getAbsolutePathForRelativePath( $version_file['file'] );
 			if ( ! file_exists( $version_file['file'] ) ) {
 				throw new Exceptions\ConfigException( 'Version file does not exist: ' . $version_file['file'] );
 			}
 		}
 
+		/** @var array<int, array<string, string>> */
 		return $version_files;
 	}
 
@@ -254,14 +319,14 @@ class Config {
 	 */
 	public function getZipName() : string {
 		if ( empty( $this->config->zip_name ) ) {
-			if ( file_exists( $this->working_dir . 'composer.json' ) ) {
-				$composer = json_decode( file_get_contents( $this->working_dir . 'composer.json' ) );
-				if ( empty( $composer->name ) ) {
-					throw new Exceptions\ConfigException( 'Could not find the "name" property in composer.json.' );
+			if ( $this->hasComposer() ) {
+				$project_name = $this->getComposerName();
+				$project_name = preg_replace( '![^/]+/!', '', $project_name );
+
+				if ( empty( $project_name ) ) {
+					throw new Exceptions\ConfigException( 'Could convert composer.json\'s "name" property to a usable zip_name.' );
 				}
 
-				$project_name = $composer->name;
-				$project_name = preg_replace( '![^/]+/!', '', $project_name );
 				return $project_name;
 			}
 
@@ -272,9 +337,20 @@ class Config {
 	}
 
 	/**
+	 * Returns whether or not there is a composer.json file in the project.
+	 *
+	 * @return bool
+	 */
+	public function hasComposer(): bool {
+		return file_exists( $this->working_dir . 'composer.json' );
+	}
+
+	/**
 	 * Validates the config file.
 	 *
 	 * @throws Exceptions\ConfigException
+	 *
+	 * @return void
 	 */
 	protected function validateConfig() {
 		$this->validateVersionPaths();
@@ -287,6 +363,8 @@ class Config {
 	 * Validates the css paths.
 	 *
 	 * @throws Exceptions\ConfigException
+	 *
+	 * @return void
 	 */
 	protected function validateCssPaths() {
 		$files = $this->getPaths( 'css' );
@@ -298,6 +376,8 @@ class Config {
 	 * Validates the js paths.
 	 *
 	 * @throws Exceptions\ConfigException
+	 *
+	 * @return void
 	 */
 	protected function validateJsPaths() {
 		$files = $this->getPaths( 'js' );
@@ -309,6 +389,8 @@ class Config {
 	 * Validates the version files.
 	 *
 	 * @throws Exceptions\ConfigException
+	 *
+	 * @return void
 	 */
 	protected function validateVersionPaths() {
 		$files = $this->getVersionFiles();
@@ -325,6 +407,8 @@ class Config {
 	 * Validates the views paths.
 	 *
 	 * @throws Exceptions\ConfigException
+	 *
+	 * @return void
 	 */
 	protected function validateViewPaths() {
 		$files = $this->getPaths( 'views' );

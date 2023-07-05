@@ -20,7 +20,7 @@
         "symfony/filesystem": "^5.4"
     },
     "require-dev": {
-        "szepeviktor/phpstan-wordpress": "^1.1"
+        "phpstan/phpstan": "^1.10.0"
     },
     "autoload": {
         "psr-4": {

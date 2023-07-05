@@ -4,18 +4,17 @@
 includes:
 	# @see https://github.com/phpstan/phpstan-src/blob/master/conf/bleedingEdge.neon
 	- phar://phpstan.phar/conf/bleedingEdge.neon
-	# Include this extension
-	- vendor/szepeviktor/phpstan-wordpress/extension.neon
 
 parameters:
 	parallel:
 		jobSize: 10
 		maximumNumberOfProcesses: 32
 		minimumNumberOfJobsPerProcess: 2
-	level: 5
+	level: 8
 	inferPrivatePropertyTypeFromConstructor: true
 	reportUnmatchedIgnoredErrors: false
 	checkGenericClassInNonGenericObjectType: false
+	treatPhpDocTypesAsCertain: false
 
 	# Paths to be analyzed.
 	paths:
@@ -23,7 +22,4 @@ parameters:
 		- %currentWorkingDirectory%/src
 
 	ignoreErrors:
-		# Uses func_get_args()
-		- '#^Function add_query_arg invoked with [123] parameters?, 0 required\.$#'
-		# Uses func_get_args()
-		- '#^Function apply_filters(_ref_array)? invoked with [34567] parameters, 2 required\.$#'
+		- '#^Constant __PUP_DIR__ not found\.$#'

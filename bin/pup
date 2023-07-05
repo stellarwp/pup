@@ -1,7 +1,8 @@
 #!/usr/bin/env php
 <?php
+$project_root = dirname( __DIR__ );
 const PUP_VERSION = '1.0.0';
-const __PUP_DIR__ = __DIR__;
+define( '__PUP_DIR__', $project_root );
 
 call_user_func( function( $version ) {
 	if ( ! Phar::running() ) {

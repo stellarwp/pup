@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class App extends Symfony_Application {
 	/**
-	 * @var Config
+	 * @var ?Config
 	 */
 	public static $config;
 
@@ -31,7 +31,7 @@ class App extends Symfony_Application {
 	}
 
 	public static function getConfig(): Config {
-		if ( empty( static::$config ) ) {
+		if ( ! isset( static::$config ) ) {
 			static::$config = new Config();
 		}
 

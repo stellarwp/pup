@@ -4,6 +4,7 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\DirectoryUtils;
+use StellarWP\Pup\Exceptions\BaseException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,6 +13,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class GetVersion extends Command {
 	/**
 	 * @inheritDoc
+	 *
+	 * @return void
 	 */
 	protected function configure() {
 		$this->setName( 'get-version' )
@@ -37,6 +40,10 @@ class GetVersion extends Command {
 		$version_file      = $version_file_data['file'];
 
 		$contents = file_get_contents( $version_file );
+		if ( ! $contents ) {
+			throw new BaseException( "Could not read version file: {$version_file}" );
+		}
+
 		preg_match( '/' . $version_regex . '/', $contents, $matches );
 
 		if ( empty( $matches[2] ) ) {

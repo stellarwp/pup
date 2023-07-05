@@ -12,6 +12,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Clean extends Command {
 	/**
 	 * @inheritDoc
+	 *
+	 * @return void
 	 */
 	protected function configure() {
 		$this->setName( 'clean' )

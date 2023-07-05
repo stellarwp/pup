@@ -11,6 +11,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 class Build extends Command {
 	/**
 	 * @inheritDoc
+	 *
+	 * @return void
 	 */
 	protected function configure() {
 		$this->setName( 'build' )

@@ -18,5 +18,6 @@
     "repo": null,
     "rsync_executable": "rsync",
     "zip_ignore": ".distignore",
+    "zip_ignore_include_defaults": true,
     "zip_name": null
 }
