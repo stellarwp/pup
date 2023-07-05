@@ -24,6 +24,11 @@ class Package extends Command {
 	protected $config;
 
 	/**
+	 * @var OutputInterface
+	 */
+	protected $output;
+
+	/**
 	 * @inheritDoc
 	 */
 	protected function configure() {
@@ -37,6 +42,7 @@ class Package extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		$this->output = $output;
 		$version  = $input->getArgument( 'version' );
 		$config   = App::getConfig();
 		$zip_name = $config->getZipName();
@@ -51,22 +57,16 @@ class Package extends Command {
 
 		mkdir( $pup_build_dir );
 
-		$this->syncFiles( '.', $pup_zip_dir );
+		$results = $this->syncFiles( '.', $pup_zip_dir );
 
-		$zip = new ZipArchive();
-		if ( $zip->open( $zip_filename, ZipArchive::CREATE | ZipArchive::OVERWRITE ) === true ) {
-			$zip->addEmptyDir( $zip_name );
+		if ( $results !== 0 ) {
+			return $results;
+		}
 
-			// Call the recursive function to add files to the zip archive
-			$this->addFilesToZip( $zip_name, $pup_zip_dir, $zip );
+		$results = $this->createZip( $pup_zip_dir, $zip_filename, $zip_name );
 
-			// Close the zip archive
-			$zip->close();
-
-			$output->writeln( "<info>Zip {$zip_filename} created!</info>" );
-		} else {
-			$output->writeln( '<error>Failed to create the zip archive!</error>' );
-			return 1;
+		if ( $results !== 0 ) {
+			return $results;
 		}
 
 		return 0;
@@ -105,9 +105,9 @@ class Package extends Command {
 	 * @param string $source      Directory to sync.
 	 * @param string $destination Where to sync to.
 	 *
-	 * @return bool
+	 * @return int
 	 */
-	protected function syncFiles( string $source, string $destination ) {
+	protected function syncFiles( string $source, string $destination ): int {
 		$working_dir      = App::getConfig()->getWorkingDir();
 		$build_dir        = str_replace( $working_dir, '', App::getConfig()->getBuildDir() );
 		$zip_dir          = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
@@ -137,9 +137,48 @@ class Package extends Command {
 		$command = implode( ' ', $command );
 		$result_code = 0;
 		system( $command, $result_code );
-		return $result_code === 0;
+		return $result_code;
 	}
 
+	/**
+	 * Create a zip file.
+	 *
+	 * @param string $dir_to_zip The directory to zip up.
+	 * @param string $zip_filename The name of the zip file.
+	 * @param string $root_dir The root directory to use in the zip file to hold all files.
+	 *
+	 * @return int
+	 */
+	protected function createZip( string $dir_to_zip, string $zip_filename, string $root_dir ): int {
+		$zip = new ZipArchive();
+		if ( $zip->open( $zip_filename, ZipArchive::CREATE | ZipArchive::OVERWRITE ) !== true ) {
+			$this->output->writeln( '<error>Failed to create the zip archive!</error>' );
+			return 1;
+		}
+
+		$zip->addEmptyDir( $root_dir );
+
+		// Call the recursive function to add files to the zip archive
+		$this->addFilesToZip( $root_dir, $dir_to_zip, $zip );
+
+		// Close the zip archive
+		$zip->close();
+
+		$this->output->writeln( "<info>Zip {$zip_filename} created!</info>" );
+
+		return 0;
+	}
+
+	/**
+	 * Adds files recursively to a zip archive.
+	 *
+	 * @param string     $root_dir The root directory within the zip archive.
+	 * @param string     $dir The directory to add to the zip archive.
+	 * @param ZipArchive $zip The zip archive object.
+	 * @param string     $base_path The base path (relative path within $dir) to add files to.
+	 *
+	 * @return void
+	 */
 	protected function addFilesToZip( string $root_dir, string $dir, \ZipArchive $zip, string $base_path = '' ) {
 		// Open the directory
 		$handle = opendir( $dir );
