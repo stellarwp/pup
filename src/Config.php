@@ -197,7 +197,7 @@ class Config {
 		$path   = DirectoryUtils::normalizeDir( $path );
 		$path   = str_replace( $prefix, '', $path );
 
-		$starts_with_separator = str_starts_with( $path, DIRECTORY_SEPARATOR );
+		$starts_with_separator = strpos( $path, DIRECTORY_SEPARATOR ) === 0;
 
 		// Don't allow absolute paths.
 		if ( $starts_with_separator && $default ) {
