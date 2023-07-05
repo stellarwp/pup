@@ -3,6 +3,7 @@
 namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
+use StellarWP\Pup\DirectoryUtils;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -29,11 +30,10 @@ class GetVersion extends Command {
 
 		$version_file_data = current( $version_files );
 		$version_regex     = $version_file_data['regex'];
-		$version_file      = $version_file_data['file'];
-		$version_file      = str_replace( '/', DIRECTORY_SEPARATOR, $version_file );
-		$version_file      = str_replace( '\\', DIRECTORY_SEPARATOR, $version_file );
+		$version_file      = DirectoryUtils::normalizeDir( $version_file_data['file'] );
+		$working_dir       = DirectoryUtils::trailingSlashIt( $config->getWorkingDir() );
 
-		$contents = file_get_contents( $config->getWorkingDir() . DIRECTORY_SEPARATOR . $version_file );
+		$contents = file_get_contents( $working_dir . $version_file );
 		preg_match( '/' . $version_regex . '/', $contents, $matches );
 
 		if ( empty( $matches[2] ) ) {
@@ -47,6 +47,7 @@ class GetVersion extends Command {
 		}
 
 		$output->writeln( $version );
+		return 0;
 	}
 
 	/**

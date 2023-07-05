@@ -23,19 +23,20 @@ class Build extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
-		$config        = App::$config;
-		$extra_config  = $config->get();
-		$build         = (array) $extra_config->build;
-		$build_dev     = (array) $extra_config->build_dev;
-
-		if ( $input->getOption( 'dev' ) && ! empty( $build_dev ) ) {
-			$build_steps = $build_dev;
-		} else {
-			$build_steps = $build;
-		}
+		$config      = App::$config;
+		$build_steps = $config->getBuildCommands( $input->getOption( 'dev' ) );
+		$result      = 0;
 
 		foreach ( $build_steps as $step ) {
-			passthru( $step );
+			system( $step, $result );
+
+			if ( $result ) {
+				$output->writeln( "Build step failed: {$step}" );
+				return $result;
+			}
 		}
+
+		$output->writeln( 'Build complete.' );
+		return 0;
 	}
 }
