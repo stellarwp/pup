@@ -93,7 +93,7 @@ class Package extends Command {
 				throw new Exceptions\BaseException( "Could not read file: {$file}" );
 			}
 
-			$contents = preg_replace( '/' . $regex . '/', '$1' . $version, $contents );
+			$contents = preg_replace( '/' . $regex . '/', '${1}' . $version, $contents );
 			$results  = file_put_contents( $file, $contents );
 
 			if ( false === $results ) {

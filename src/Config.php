@@ -224,12 +224,12 @@ class Config {
 			throw new Exceptions\ConfigException( 'Could not read composer.json.' );
 		}
 
-		$composer = json_decode( $composer_contents );
-		if ( ! empty( $composer->name ) ) {
+		$composer = json_decode( $composer_contents, true );
+		if ( empty( $composer['name'] ) ) {
 			throw new Exceptions\ConfigException( 'Could not find the "name" property in composer.json.' );
 		}
 
-		return $composer->name;
+		return $composer['name'];
 	}
 
 	/**
