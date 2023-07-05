@@ -285,8 +285,8 @@ class Config {
 		foreach ( $version_files as &$version_file ) {
 			$version_file = (array) $version_file;
 
-			if ( ! isset( $version_file['file'] ) || ! isset( $version_files['regex' ] ) ) {
-				throw new Exceptions\ConfigException( 'Versions specified in .puprc .paths.versions "file" and "regex" property.' );
+			if ( ! isset( $version_file['file'] ) || ! isset( $version_file['regex' ] ) ) {
+				throw new Exceptions\ConfigException( 'Versions specified in .puprc .paths.versions must have the "file" and "regex" property.' );
 			}
 			$version_file['file'] = $this->getAbsolutePathForRelativePath( $version_file['file'] );
 			if ( ! file_exists( $version_file['file'] ) ) {
