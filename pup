@@ -8,7 +8,7 @@ call_user_func( function( $version ) {
 	  $local_dir_autoload = __PUP_DIR__ . '/vendor/autoload.php';
 	  $autoload = getcwd() . '/vendor/autoload.php';
 
-		if ( ! empty( $GLOBALS['_pup_composer_bin'] ) ) {
+		if ( ! empty( $GLOBALS['_composer_autoload_path'] ) ) {
 			require $GLOBALS['_composer_autoload_path'];
 		} elseif ( is_file( $local_dir_autoload ) ) {
 			require $local_dir_autoload;

@@ -8,7 +8,7 @@
         }
     ],
     "bin": [
-        "bin/pup"
+        "pup"
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,

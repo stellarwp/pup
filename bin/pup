@@ -1,7 +1,0 @@
-#!/usr/bin/env php
-<?php
-namespace StellarWP\Pup;
-
-$GLOBALS['_pup_composer_bin'] = true;
-
-require_once dirname( __DIR__ ) . '/pup';
