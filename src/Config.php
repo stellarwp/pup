@@ -4,6 +4,8 @@ namespace StellarWP\Pup;
 
 use Exception;
 use stdClass;
+use StellarWP\Pup\Commands\Checks\SimpleCheck;
+use StellarWP\Pup\Exceptions\ConfigException;
 
 class Config {
 	/**
@@ -115,6 +117,16 @@ class Config {
 			}
 
 			$original[ $key ] = $new[ $key ];
+		}
+
+		if ( is_array( $new ) ) {
+			foreach ( $new as $key => $item ) {
+				if ( isset( $original[ $key ] ) ) {
+					continue;
+				}
+
+				$original[ $key ] = $item;
+			}
 		}
 
 		return $original;

@@ -5,6 +5,7 @@ namespace StellarWP\Pup\Commands\Checks;
 use StellarWP\Pup\App;
 use StellarWP\Pup\CheckConfig;
 use StellarWP\Pup\Command;
+use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -20,7 +21,7 @@ abstract class AbstractCheck extends Command {
 	 * The slug for the command.
 	 * @var string
 	 */
-	public static $slug = '';
+	protected $slug = '';
 
 	/**
 	 * The arguments for the command.
@@ -29,28 +30,41 @@ abstract class AbstractCheck extends Command {
 	protected $args = [];
 
 	/**
+	 * @param string $slug The name of the command.
+	 *
+	 * @throws LogicException When the command name is empty
+	 */
+	public function __construct( string $slug = '' ) {
+		if ( $slug ) {
+			$this->slug = $slug;
+		}
+
+		parent::__construct( 'check:' . $this->slug );
+	}
+
+	/**
 	 * @inheritDoc
 	 *
 	 * @return void
 	 */
 	final protected function configure() {
-		if ( empty( static::$slug ) ) {
-			throw new \Exception( 'The "public static $slug" property must be set in ' . __CLASS__ . '.' );
+		if ( empty( $this->slug ) ) {
+			throw new \Exception( 'The "public $slug" property must be set in ' . __CLASS__ . '.' );
 		}
 
-		$this->setName( 'check:' . static::$slug );
 		$this->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' );
 		$this->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' );
-		$this->checkConfigure();
 
-		$config = App::getConfig();
+		$config        = App::getConfig();
 		$check_configs = $config->getChecks();
-		if ( ! empty( $check_configs[ static::$slug ] ) ) {
-			$this->check_config = $check_configs[ static::$slug ];
-			$this->args = $check_configs[ static::$slug ]->getArgs();
+		if ( ! empty( $check_configs[ $this->slug ] ) ) {
+			$this->check_config = $check_configs[ $this->slug ];
+			$this->args = $check_configs[ $this->slug ]->getArgs();
 		} else {
-			$this->check_config = new CheckConfig( static::$slug, [] );
+			$this->check_config = new CheckConfig( $this->slug, [] );
 		}
+
+		$this->checkConfigure();
 
 		App::getCheckCollection()->add( $this );
 	}
@@ -112,7 +126,7 @@ abstract class AbstractCheck extends Command {
 	 * @return string
 	 */
 	public function getSlug(): string {
-		return static::$slug;
+		return $this->slug;
 	}
 
 	/**

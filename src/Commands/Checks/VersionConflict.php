@@ -11,7 +11,7 @@ class VersionConflict extends AbstractCheck {
 	 * The slug for the command.
 	 * @var string
 	 */
-	public static $slug = 'version-conflict';
+	protected $slug = 'version-conflict';
 
 	/**
 	 * @inheritDoc

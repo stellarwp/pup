@@ -34,6 +34,12 @@ class CheckConfig {
 	protected $slug;
 
 	/**
+	 * The check type.
+	 * @var string
+	 */
+	protected $type = 'pup';
+
+	/**
 	 * CheckConfig constructor.
 	 *
 	 * @param string $slug  The check slug.
@@ -53,6 +59,10 @@ class CheckConfig {
 
 		if ( isset( $this->config['args'] ) ) {
 			$this->args = (array) $this->config['args'];
+		}
+
+		if ( isset( $this->config['type'] ) ) {
+			$this->type = (string) $this->config['type'];
 		}
 	}
 
@@ -75,12 +85,39 @@ class CheckConfig {
 	}
 
 	/**
+	 * Get the configure file.
+	 *
+	 * @return string
+	 */
+	public function getConfigureFile(): string {
+		return empty( $this->config['configure'] ) ? '' : $this->config['configure'];
+	}
+
+	/**
+	 * Get the file.
+	 *
+	 * @return string
+	 */
+	public function getFile(): string {
+		return empty( $this->config['file'] ) ? '' : $this->config['file'];
+	}
+
+	/**
 	 * Get the check slug.
 	 *
 	 * @return string
 	 */
 	public function getSlug(): string {
 		return $this->slug;
+	}
+
+	/**
+	 * Get the check type.
+	 *
+	 * @return string
+	 */
+	public function getType(): string {
+		return $this->type;
 	}
 
 	/**

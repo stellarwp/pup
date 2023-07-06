@@ -26,6 +26,7 @@ call_user_func( function( $version ) {
 		require __PUP_DIR__ . '/vendor/autoload.php';
 	}
 
-	$app = StellarWP\Pup\App::instance();
+	\StellarWP\Pup\App::getConfig();
+	$app = \StellarWP\Pup\App::instance();
 	$app->run();
 }, PUP_VERSION );

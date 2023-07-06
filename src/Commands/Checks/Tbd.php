@@ -11,7 +11,7 @@ class Tbd extends AbstractCheck {
 	 * The slug for the command.
 	 * @var string
 	 */
-	public static $slug = 'tbd';
+	protected $slug = 'tbd';
 
 	/**
 	 * @inheritDoc
