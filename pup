@@ -8,7 +8,9 @@ call_user_func( function( $version ) {
 	  $local_dir_autoload = __PUP_DIR__ . '/vendor/autoload.php';
 	  $autoload = getcwd() . '/vendor/autoload.php';
 
-		if ( is_file( $local_dir_autoload ) ) {
+		if ( ! empty( $GLOBALS['_pup_composer_bin'] ) ) {
+			require $GLOBALS['_composer_autoload_path'];
+		} elseif ( is_file( $local_dir_autoload ) ) {
 			require $local_dir_autoload;
 		} elseif ( is_file( $autoload ) ) {
 			require $autoload;
@@ -27,4 +29,3 @@ call_user_func( function( $version ) {
 	$app = new StellarWP\Pup\App( $version );
 	$app->run();
 }, PUP_VERSION );
-
