@@ -6,7 +6,7 @@ use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions;
 use StellarWP\Pup\DirectoryUtils;
 use stdClass;
-use Symfony\Component\Console\Command\Command;
+use StellarWP\Pup\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;

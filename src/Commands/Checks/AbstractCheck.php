@@ -3,7 +3,10 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
-use Symfony\Component\Console\Command\Command;
+use StellarWP\Pup\Command;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractCheck extends Command {
 	/**
@@ -35,9 +38,35 @@ abstract class AbstractCheck extends Command {
 		}
 
 		$this->setName( 'check:' . static::$slug );
+		$this->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' );
 		$this->checkConfigure();
 
 		App::getCheckCollection()->add( $this );
+	}
+
+	/**
+	 * Runs the wrapping execute command.
+	 *
+	 * @param InputInterface  $input
+	 * @param OutputInterface $output
+	 *
+	 * @return int
+	 */
+	final protected function execute( InputInterface $input, OutputInterface $output ) {
+		$config        = App::getConfig();
+		$root          = $input->getOption( 'root' );
+
+		if ( $root ) {
+			chdir( $root );
+		}
+
+		$results = $this->checkExecute( $input, $output );
+
+		if ( $root ) {
+			chdir( $config->getWorkingDir() );
+		}
+
+		return $results;
 	}
 
 	/**
@@ -46,6 +75,16 @@ abstract class AbstractCheck extends Command {
 	 * @return void
 	 */
 	abstract protected function checkConfigure(): void;
+
+	/**
+	 * Runs the check execute command.
+	 *
+	 * @param InputInterface  $input
+	 * @param OutputInterface $output
+	 *
+	 * @return int
+	 */
+	abstract protected function checkExecute( InputInterface $input, OutputInterface $output );
 
 	/**
 	 * Get the check's slug.

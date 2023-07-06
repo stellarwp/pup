@@ -3,8 +3,7 @@
 namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
-use StellarWP\Pup\DirectoryUtils;
-use Symfony\Component\Console\Command\Command;
+use StellarWP\Pup\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputArgument;
@@ -84,6 +83,34 @@ class Zip extends Command {
 	 * @return int
 	 */
 	protected function runBuild(): int {
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 1;
+		}
+
+		$command = $application->find( 'build' );
+		$arguments = [];
+
+		if ( $this->input->getOption( 'dev' ) ) {
+			$arguments['--dev'] = true;
+		}
+
+		if ( ! $this->input->getOption( 'no-clone' ) ) {
+			$arguments['--root'] = App::getConfig()->getBuildDir();
+		}
+
+		$command_input = new ArrayInput( $arguments );
+		return $command->run( $command_input, $this->output );
+	}
+
+	/**
+	 * Run the build command.
+	 *
+	 * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+	 *
+	 * @return int
+	 */
+	protected function runCheck(): int {
 		$application = $this->getApplication();
 		if ( ! $application ) {
 			return 1;

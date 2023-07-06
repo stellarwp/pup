@@ -4,10 +4,11 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
-use Symfony\Component\Console\Command\Command;
+use StellarWP\Pup\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Check extends Command {
@@ -19,6 +20,7 @@ class Check extends Command {
 	protected function configure() {
 		$this->setName( 'check' )
 			->addArgument( 'module', InputArgument::OPTIONAL, 'Module to use as a check' )
+			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run checks against codebase.' )
 			->setHelp( 'Run checks against codebase.' );
 	}
@@ -36,12 +38,18 @@ class Check extends Command {
 		$failures = [];
 
 		foreach ( $collection as $check ) {
-			$command = $application->find( $check->getSlug() );
-			$results = $command->run( new ArrayInput( $check->getArgs() ), $output );
+			$command = $application->find( 'check:' . $check->getSlug() );
+			$args    = $check->getArgs();
+
+			if ( $input->getOption( 'root' ) ) {
+				$args['--root'] = $input->getOption( 'root' );
+			}
+
+			$results = $command->run( new ArrayInput( $args ), $output );
 			if ( $results !== 0 ) {
 				$failures[] = $check->getSlug();
 
-				if ( $check->bailOnFailure() ) {
+				if ( $check->shouldBailOnFailure() ) {
 					return $results;
 				}
 			}
