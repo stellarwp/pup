@@ -62,6 +62,7 @@ class Config {
 			$this->config->$key = $value;
 		}
 
+		$this->parseVersionFiles();
 		$this->validateConfig();
 	}
 
@@ -285,29 +286,14 @@ class Config {
 	/**
 	 * Get version files.
 	 *
-	 * @return array<int, array<string, string>>
+	 * @return array<int, VersionFile>
 	 */
 	public function getVersionFiles() : array {
-		$version_files = $this->getPaths( 'versions' );
-
-		if ( ! is_array( $version_files ) ) {
+		if ( ! isset( $this->config->paths['versions'] ) || ! is_array( $this->config->paths['versions'] ) ) {
 			return [];
 		}
 
-		foreach ( $version_files as &$version_file ) {
-			$version_file = (array) $version_file;
-
-			if ( ! isset( $version_file['file'] ) || ! isset( $version_file['regex' ] ) ) {
-				throw new Exceptions\ConfigException( 'Versions specified in .puprc .paths.versions must have the "file" and "regex" property.' );
-			}
-
-			if ( ! file_exists( $version_file['file'] ) ) {
-				throw new Exceptions\ConfigException( 'Version file does not exist: ' . $version_file['file'] );
-			}
-		}
-
-		/** @var array<int, array<string, string>> */
-		return $version_files;
+		return $this->config->paths['versions'];
 	}
 
 	/**
@@ -365,6 +351,51 @@ class Config {
 	}
 
 	/**
+	 * Parses version files into VersionFile objects.
+	 *
+	 * @return void
+	 */
+	protected function parseVersionFiles() {
+		if ( ! isset( $this->config->paths['versions'] ) ) {
+			return;
+		}
+
+		$version_files = (array) $this->config->paths['versions'];
+		$version_file_objects = [];
+
+		foreach ( $version_files as $file ) {
+			if ( $file instanceof VersionFile ) {
+				$version_file_objects[] = $file;
+				continue;
+			}
+
+			if ( ! isset( $file['file'] ) || ! isset( $file['regex'] ) ) {
+				throw new Exceptions\ConfigException( 'Versions specified in .puprc .paths.versions must have the "file" and "regex" property.' );
+			}
+
+			if ( ! file_exists( $file['file'] ) ) {
+				throw new Exceptions\ConfigException( 'Version file does not exist: ' . $file['file'] );
+			}
+
+			$contents = file_get_contents( $file['file'] );
+
+			if ( ! $contents ) {
+				throw new Exceptions\ConfigException( 'Could not read version file: ' . $file['file'] );
+			}
+
+			preg_match( '/' . $file['regex'] . '/', $contents, $matches );
+
+			if ( empty( $matches[1] ) || empty( $matches[2] ) ) {
+				throw new Exceptions\ConfigException( 'Could not find version in file ' . $file['file'] . ' using regex "/' . $file['regex'] . '/"' );
+			}
+
+			$version_file_objects[] = new VersionFile( $file['file'], $file['regex'] );
+		}
+
+		$this->config->paths['versions'] = $version_file_objects;
+	}
+
+	/**
 	 * Validates the config file.
 	 *
 	 * @throws Exceptions\ConfigException
@@ -416,7 +447,7 @@ class Config {
 
 		$file_paths = [];
 		foreach ( $files as $file ) {
-			$file_paths[] = $file['file'];
+			$file_paths[] = $file->getPath();
 		}
 
 		$this->errorIfPathsDoNotExist( $file_paths, 'The following version files (.paths.versions) in .puprc could not be found:' );

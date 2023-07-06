@@ -41,16 +41,13 @@ class GetVersion extends Command {
 			return 1;
 		}
 
-		$version_file_data = current( $version_files );
-		$version_regex     = $version_file_data['regex'];
-		$version_file      = $version_file_data['file'];
-
-		$contents = file_get_contents( $version_file );
+		$version_file = current( $version_files );
+		$contents     = file_get_contents( $version_file->getPath() );
 		if ( ! $contents ) {
-			throw new BaseException( "Could not read version file: {$version_file}" );
+			throw new BaseException( 'Could not read version file: ' . $version_file->getPath() );
 		}
 
-		preg_match( '/' . $version_regex . '/', $contents, $matches );
+		preg_match( '/' . $version_file->getRegex() . '/', $contents, $matches );
 
 		if ( empty( $matches[2] ) ) {
 			$version = 'unknown';

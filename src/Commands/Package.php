@@ -91,19 +91,13 @@ class Package extends Command {
 	}
 
 	/**
-	 * @param string $source
-	 * @param string $destination
 	 *
 	 * @return void
 	 */
 	protected function undoChanges() {
 		$version_files = App::getConfig()->getVersionFiles();
 		foreach ( $version_files as $file ) {
-			if ( ! isset( $file['file'] ) ) {
-				continue;
-			}
-
-			system( 'git checkout -- ' . escapeshellarg( $file['file'] ) );
+			system( 'git checkout -- ' . escapeshellarg( $file->getPath() ) );
 		}
 		system( 'git stash apply --quiet' );
 	}
@@ -119,18 +113,15 @@ class Package extends Command {
 		$config        = App::getConfig();
 		$version_files = $config->getVersionFiles();
 
-		foreach ( $version_files as $file_data ) {
-			$file  = DirectoryUtils::normalizeDir( $file_data['file'] );
-			$regex = $file_data['regex'];
-
-			$contents = file_get_contents( $root . $file );
+		foreach ( $version_files as $file ) {
+			$contents = file_get_contents( $root . $file->getPath() );
 
 			if ( ! $contents ) {
-				throw new Exceptions\BaseException( "Could not read file: {$file}" );
+				throw new Exceptions\BaseException( 'Could not read file: ' . $file->getPath() );
 			}
 
-			$contents = preg_replace( '/' . $regex . '/', '${1}' . $version, $contents, 1 );
-			$results  = file_put_contents( $root . $file, $contents );
+			$contents = preg_replace( '/' . $file->getRegex() . '/', '${1}' . $version, $contents, 1 );
+			$results  = file_put_contents( $root . $file->getPath(), $contents );
 
 			if ( false === $results ) {
 				return false;

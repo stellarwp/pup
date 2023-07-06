@@ -84,7 +84,12 @@ class Zip extends Command {
 	 * @return int
 	 */
 	protected function runBuild(): int {
-		$command = $this->getApplication()->find( 'build' );
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 1;
+		}
+
+		$command = $application->find( 'build' );
 		$arguments = [];
 
 		if ( $this->input->getOption( 'dev' ) ) {
@@ -107,7 +112,12 @@ class Zip extends Command {
 	 * @return string
 	 */
 	protected function runGetVersion(): string {
-		$command = $this->getApplication()->find( 'get-version' );
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 'unknown';
+		}
+
+		$command = $application->find( 'get-version' );
 		$arguments = [];
 
 		if ( $this->input->getOption( 'dev' ) ) {
@@ -134,7 +144,12 @@ class Zip extends Command {
 	 * @return int
 	 */
 	protected function runClean() {
-		$command = $this->getApplication()->find( 'clean' );
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 1;
+		}
+
+		$command = $application->find( 'clean' );
 		$arguments = [];
 
 		$command_input = new ArrayInput( $arguments );
@@ -151,7 +166,12 @@ class Zip extends Command {
 	 * @return int
 	 */
 	protected function runPackage( string $version ) {
-		$command = $this->getApplication()->find( 'package' );
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 1;
+		}
+
+		$command = $application->find( 'package' );
 		$arguments = [
 			'version' => $version,
 		];
