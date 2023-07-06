@@ -13,7 +13,7 @@
         "js": [],
         "versions": [],
         "views": [],
-        "zip_dir": ".pup-clone"
+        "zip_dir": ".pup-zip"
     },
     "repo": null,
     "rsync_executable": "rsync",
