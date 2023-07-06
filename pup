@@ -1,6 +1,6 @@
 #!/usr/bin/env php
 <?php
-const PUP_VERSION = '0.0.2';
+const PUP_VERSION = '0.0.3';
 define( '__PUP_DIR__', __DIR__ );
 
 call_user_func( function( $version ) {
