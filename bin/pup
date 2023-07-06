@@ -4,4 +4,4 @@ namespace StellarWP\Pup;
 
 $GLOBALS['_pup_composer_bin'] = true;
 
-require_once __DIR__ . '/../stellarwp/pup/pup';
+require_once dirname( __DIR__ ) . '/pup';
