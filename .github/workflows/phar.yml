@@ -16,7 +16,7 @@ jobs:
         uses: shivammathur/setup-php@v2
 
       - name: Install dependencies
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --optimize-autoloader
 
       - name: Build Phar
         run: composer build-phar
