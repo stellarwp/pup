@@ -19,6 +19,7 @@ class GetVersion extends Command {
 	protected function configure() {
 		$this->setName( 'get-version' )
 			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Get the dev version.' )
+			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Gets the version for the product.' )
 			->setHelp( 'Gets the version for the product.' );
 	}
@@ -28,7 +29,12 @@ class GetVersion extends Command {
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$config        = App::getConfig();
+		$root          = $input->getOption( 'root' );
 		$version_files = $config->getVersionFiles();
+
+		if ( $root ) {
+			chdir( $root );
+		}
 
 		if ( empty( $version_files ) ) {
 			$output->writeln( 'No version files found.' );
@@ -54,6 +60,10 @@ class GetVersion extends Command {
 
 		if ( $input->getOption( 'dev' ) ) {
 			$version .= $this->getDevSuffix();
+		}
+
+		if ( $root ) {
+			chdir( $config->getWorkingDir() );
 		}
 
 		$output->writeln( $version );

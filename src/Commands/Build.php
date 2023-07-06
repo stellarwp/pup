@@ -17,6 +17,7 @@ class Build extends Command {
 	protected function configure() {
 		$this->setName( 'build' )
 			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Run the dev build commands.' )
+			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run the build commands.' )
 			->setHelp( 'Run the build commands.' );
 	}
@@ -26,8 +27,13 @@ class Build extends Command {
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$config      = App::getConfig();
+		$root        = $input->getOption( 'root' );
 		$build_steps = $config->getBuildCommands( $input->getOption( 'dev' ) );
 		$result      = 0;
+
+		if ( $root ) {
+			chdir( $root );
+		}
 
 		foreach ( $build_steps as $step ) {
 			$output->writeln( "<info>Running: {$step}</info>" );
@@ -37,6 +43,10 @@ class Build extends Command {
 				$output->writeln( "Build step failed: {$step}" );
 				return $result;
 			}
+		}
+
+		if ( $root ) {
+			chdir( $config->getWorkingDir() );
 		}
 
 		$output->writeln( 'Build complete.' );

@@ -118,13 +118,19 @@ class Config {
 	/**
 	 * Returns the build directory.
 	 *
+	 * @param bool $get_full_path Whether to get the full path or not.
+	 *
 	 * @return string
 	 */
-	public function getBuildDir() : string {
+	public function getBuildDir( bool $get_full_path = true ) : string {
 		$build_dir = '.pup-build';
 
 		if ( ! empty( $this->config->paths['build_dir'] ) ) {
 			$build_dir = DirectoryUtils::normalizeDir( $this->config->paths['build_dir'] );
+		}
+
+		if ( ! $get_full_path ) {
+			return $build_dir;
 		}
 
 		return $this->getAbsolutePathForRelativePath( $build_dir, '.pup-build' );
@@ -133,13 +139,19 @@ class Config {
 	/**
 	 * Returns the clone directory.
 	 *
+	 * @param bool $get_full_path Whether to get the full path or not.
+	 *
 	 * @return string
 	 */
-	public function getZipDir() : string {
+	public function getZipDir( bool $get_full_path = true ) : string {
 		$dir = '.pup-zip';
 
 		if ( ! empty( $this->config->paths['zip_dir'] ) ) {
 			$dir = DirectoryUtils::normalizeDir( $this->config->paths['zip_dir'] );
+		}
+
+		if ( ! $get_full_path ) {
+			return $dir;
 		}
 
 		return $this->getAbsolutePathForRelativePath( $dir, '.pup-zip' );
@@ -288,7 +300,7 @@ class Config {
 			if ( ! isset( $version_file['file'] ) || ! isset( $version_file['regex' ] ) ) {
 				throw new Exceptions\ConfigException( 'Versions specified in .puprc .paths.versions must have the "file" and "regex" property.' );
 			}
-			$version_file['file'] = $this->getAbsolutePathForRelativePath( $version_file['file'] );
+
 			if ( ! file_exists( $version_file['file'] ) ) {
 				throw new Exceptions\ConfigException( 'Version file does not exist: ' . $version_file['file'] );
 			}

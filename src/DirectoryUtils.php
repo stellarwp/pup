@@ -3,6 +3,7 @@
 namespace StellarWP\Pup;
 
 use Exception;
+use FilesystemIterator;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
 
@@ -54,9 +55,9 @@ class DirectoryUtils {
 	 *
 	 * @throws Exception
 	 *
-	 * @return bool
+	 * @return int
 	 */
-	public static function rmdir( string $dir ): bool {
+	public static function rmdir( string $dir ): int {
 		$config      = App::getConfig();
 		$dir         = self::normalizeDir( $dir );
 		$dir         = rtrim( $dir, DIRECTORY_SEPARATOR ) . DIRECTORY_SEPARATOR;
@@ -66,26 +67,19 @@ class DirectoryUtils {
 			throw new Exception( 'You can only delete sub directories in the current working directory.' );
 		}
 
-		// If the directory doesn't exist, we're done and let's call it successful.
-		if ( ! file_exists( $dir ) ) {
-			return true;
+		if ( strpos( $dir, '..' ) !== false ) {
+			throw new Exception( 'You cannot delete directories using ".." anywhere in the path.' );
 		}
 
-		if ( ! is_dir( $dir ) ) {
-			return false;
+		$results = 0;
+
+		if ( stripos( PHP_OS, 'WIN' ) === 0 ) {
+			system( 'rmdir /s /q ' . escapeshellarg( $dir ), $results );
+		} else {
+			system( 'rm -rf ' . escapeshellarg( $dir ), $results );
 		}
 
-		$files = new RecursiveIteratorIterator(
-			new RecursiveDirectoryIterator( $dir, RecursiveDirectoryIterator::SKIP_DOTS ),
-			RecursiveIteratorIterator::CHILD_FIRST
-		);
-
-		foreach ( $files as $file_info ) {
-			$todo = ( $file_info->isDir() ? 'rmdir' : 'unlink' );
-			$todo( $file_info->getRealPath() );
-		}
-
-		return rmdir( $dir );
+		return $results;
 	}
 
 	/**

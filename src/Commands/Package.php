@@ -9,6 +9,7 @@ use stdClass;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use ZipArchive;
 
@@ -24,6 +25,11 @@ class Package extends Command {
 	protected $config;
 
 	/**
+	 * @var InputInterface
+	 */
+	protected $input;
+
+	/**
 	 * @var OutputInterface
 	 */
 	protected $output;
@@ -36,6 +42,7 @@ class Package extends Command {
 	protected function configure() {
 		$this->setName( 'package' )
 			->addArgument( 'version', InputArgument::REQUIRED, 'Version being packaged.' )
+			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Packages the project for distribution.' )
 			->setHelp( 'This command allows you to package the project for distribution.' );
 	}
@@ -44,8 +51,10 @@ class Package extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		$this->input = $input;
 		$this->output = $output;
 		$version  = $input->getArgument( 'version' );
+		$root     = $input->getOption( 'root' ) ?: '.';
 		$config   = App::getConfig();
 		$zip_name = $config->getZipName();
 
@@ -53,15 +62,14 @@ class Package extends Command {
 
 		$this->updateVersionsInFiles( $version );
 
-		$zip_filename  = "{$zip_name}.{$version}.zip";
-		$pup_build_dir = $config->getBuildDir();
-		$pup_zip_dir   = $config->getZipDir();
+		$zip_filename = "{$zip_name}.{$version}.zip";
+		$pup_zip_dir  = $config->getZipDir();
 
-		DirectoryUtils::rmdir( $pup_build_dir );
+		DirectoryUtils::rmdir( $pup_zip_dir );
 
-		mkdir( $pup_build_dir );
+		mkdir( $pup_zip_dir );
 
-		$results = $this->syncFiles( '.', $pup_zip_dir );
+		$results = $this->syncFiles( $root, $pup_zip_dir );
 
 		if ( $results !== 0 ) {
 			$this->undoChanges();
@@ -106,6 +114,8 @@ class Package extends Command {
 	 * @return bool
 	 */
 	protected function updateVersionsInFiles( string $version ): bool {
+		$root          = $this->input->getOption( 'root' );
+		$root          = $root ? DirectoryUtils::trailingSlashIt( $root ) : '';
 		$config        = App::getConfig();
 		$version_files = $config->getVersionFiles();
 
@@ -113,14 +123,14 @@ class Package extends Command {
 			$file  = DirectoryUtils::normalizeDir( $file_data['file'] );
 			$regex = $file_data['regex'];
 
-			$contents = file_get_contents( $file );
+			$contents = file_get_contents( $root . $file );
 
 			if ( ! $contents ) {
 				throw new Exceptions\BaseException( "Could not read file: {$file}" );
 			}
 
-			$contents = preg_replace( '/' . $regex . '/', '${1}' . $version, $contents );
-			$results  = file_put_contents( $file, $contents );
+			$contents = preg_replace( '/' . $regex . '/', '${1}' . $version, $contents, 1 );
+			$results  = file_put_contents( $root . $file, $contents );
 
 			if ( false === $results ) {
 				return false;

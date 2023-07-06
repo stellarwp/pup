@@ -30,12 +30,12 @@ class Clean extends Command {
 		$build_dir = $config->getBuildDir();
 
 		$output->writeln( "Removing zip dir: {$zip_dir}" );
-		if ( file_exists( $zip_dir ) && ! DirectoryUtils::rmdir( $zip_dir ) ) {
+		if ( file_exists( $zip_dir ) && DirectoryUtils::rmdir( $zip_dir ) !== 0 ) {
 			throw new \Exception( "Could not remove {$zip_dir}." );
 		}
 
 		$output->writeln( "Removing build dir: {$build_dir}" );
-		if ( file_exists( $build_dir ) && ! DirectoryUtils::rmdir( $build_dir ) ) {
+		if ( file_exists( $build_dir ) && DirectoryUtils::rmdir( $build_dir ) !== 0 ) {
 			throw new \Exception( "Could not remove {$build_dir}." );
 		}
 
