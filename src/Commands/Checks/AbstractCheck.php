@@ -3,12 +3,19 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
+use StellarWP\Pup\CheckConfig;
 use StellarWP\Pup\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 abstract class AbstractCheck extends Command {
+	/**
+	 * The Config for this check.
+	 * @var CheckConfig
+	 */
+	public $check_config;
+
 	/**
 	 * The slug for the command.
 	 * @var string
@@ -22,12 +29,6 @@ abstract class AbstractCheck extends Command {
 	protected $args = [];
 
 	/**
-	 * Should this command bail on failure?
-	 * @var bool
-	 */
-	protected $bail_on_failure = false;
-
-	/**
 	 * @inheritDoc
 	 *
 	 * @return void
@@ -38,8 +39,18 @@ abstract class AbstractCheck extends Command {
 		}
 
 		$this->setName( 'check:' . static::$slug );
+		$this->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' );
 		$this->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' );
 		$this->checkConfigure();
+
+		$config = App::getConfig();
+		$check_configs = $config->getChecks();
+		if ( ! empty( $check_configs[ static::$slug ] ) ) {
+			$this->check_config = $check_configs[ static::$slug ];
+			$this->args = $check_configs[ static::$slug ]->getArgs();
+		} else {
+			$this->check_config = new CheckConfig( static::$slug, [] );
+		}
 
 		App::getCheckCollection()->add( $this );
 	}
@@ -105,10 +116,30 @@ abstract class AbstractCheck extends Command {
 	}
 
 	/**
-	 * Should this command bail on failure?
+	 * Should this command bail on failure for dist builds?
 	 * @return bool
 	 */
 	public function shouldBailOnFailure(): bool {
-		return $this->bail_on_failure;
+		$config = App::getConfig();
+		$checks = $config->getChecks();
+		if ( isset( $checks[ $this->getSlug() ] ) ) {
+			return $checks[ $this->getSlug() ]->shouldBailOnFailure();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Should this command bail on failure for dev builds?
+	 * @return bool
+	 */
+	public function shouldBailOnFailureDev(): bool {
+		$config = App::getConfig();
+		$checks = $config->getChecks();
+		if ( isset( $checks[ $this->getSlug() ] ) ) {
+			return $checks[ $this->getSlug() ]->shouldBailOnFailureDev();
+		}
+
+		return false;
 	}
 }

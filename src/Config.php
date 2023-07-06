@@ -59,11 +59,65 @@ class Config {
 		}
 
 		foreach ( $this->puprc as $key => $value ) {
-			$this->config->$key = $value;
+			if ( ! isset( $this->config->$key ) ) {
+				$this->config->$key = $value;
+				continue;
+			}
+
+			if ( is_scalar( $this->config->$key ) ) {
+				$this->config->$key = $value;
+				continue;
+			}
+
+			$this->config->$key = $this->mergeConfigValue( $this->config->$key, $value );
 		}
 
+		$this->parseCheckConfig();
 		$this->parseVersionFiles();
 		$this->validateConfig();
+	}
+
+	/**
+	 * Intelligently merges two config values.
+	 *
+	 * @param mixed $original
+	 * @param mixed $new
+	 *
+	 * @return mixed
+	 */
+	public function mergeConfigValue( $original, $new ) {
+		if ( ! is_array( $new ) ) {
+			return (array) $new;
+		}
+
+		if ( ! is_array( $original ) ) {
+			return $new;
+		}
+
+		$keys = array_keys( $original );
+
+		if ( ! $keys ) {
+			return $new;
+		}
+
+		if ( is_numeric( $keys[0] ) ) {
+			return is_array( $new ) ? $new : (array) $new;
+		}
+
+		foreach ( $original as $key => $item ) {
+			if ( ! isset( $new[ $key ] ) ) {
+				continue;
+			}
+
+			if ( isset( $new[ $key ] ) && is_array( $item ) ) {
+				$original[ $key ] = $this->mergeConfigValue( $original[ $key ], $new[ $key ] );
+				continue;
+			}
+
+			$original[ $key ] = $new[ $key ];
+		}
+
+		return $original;
 	}
 
 	/**
@@ -223,6 +277,15 @@ class Config {
 	}
 
 	/**
+	 * Get the checks from the config.
+	 *
+	 * @return array<string, CheckConfig>
+	 */
+	public function getChecks(): array {
+		return $this->config->checks;
+	}
+
+	/**
 	 * Get composer.json name property.
 	 *
 	 * @return string
@@ -348,6 +411,36 @@ class Config {
 	 */
 	public function hasComposer(): bool {
 		return file_exists( $this->working_dir . 'composer.json' );
+	}
+
+	/**
+	 * Parses check config into CheckConfig objects.
+	 *
+	 * @return void
+	 */
+	protected function parseCheckConfig() {
+		if ( ! isset( $this->config->checks ) ) {
+			return;
+		}
+
+		$checks        = (array) $this->config->checks;
+		$check_configs = [];
+
+		foreach ( $checks as $check_slug => $check ) {
+			if ( $check instanceof CheckConfig ) {
+				$check_configs[] = $check;
+				continue;
+			}
+
+			if ( is_int( $check_slug ) ) {
+				$check_slug = $check;
+				$check      = [];
+			}
+
+			$check_configs[ $check_slug ] = new CheckConfig( $check_slug, $check );
+		}
+
+		$this->config->checks = $check_configs;
 	}
 
 	/**

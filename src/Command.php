@@ -15,6 +15,8 @@ abstract class Command extends SymfonyCommand {
 
 	/**
 	 * @inheritdoc
+	 *
+	 * @return void
 	 */
 	protected function initialize( InputInterface $input, OutputInterface $output ) {
 		$this->io = new SymfonyStyle( $input, $output );

@@ -20,6 +20,7 @@ class Check extends Command {
 	protected function configure() {
 		$this->setName( 'check' )
 			->addArgument( 'module', InputArgument::OPTIONAL, 'Module to use as a check' )
+			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' )
 			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run checks against codebase.' )
 			->setHelp( 'Run checks against codebase.' );
@@ -49,7 +50,8 @@ class Check extends Command {
 			if ( $results !== 0 ) {
 				$failures[] = $check->getSlug();
 
-				if ( $check->shouldBailOnFailure() ) {
+				$should_bail_on_failure = $input->getOption( 'dev' ) ? $check->shouldBailOnFailureDev() : $check->shouldBailOnFailure();
+				if ( $should_bail_on_failure ) {
 					return $results;
 				}
 			}

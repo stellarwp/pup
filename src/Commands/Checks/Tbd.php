@@ -22,15 +22,35 @@ class Tbd extends AbstractCheck {
 		$this->setDescription( 'Hunts for docblock TBD occurrences and tells you where to change them.' );
 		$this->setHelp( 'This command alerts if TBD exists in the codebase.' );
 	}
-	protected function checkExecute( InputInterface $input, OutputInterface $output ) {
+
+	/**
+	 * Execute the check command.
+	 *
+	 * @param InputInterface  $input
+	 * @param OutputInterface $output
+	 *
+	 * @return int
+	 */
+	protected function checkExecute( InputInterface $input, OutputInterface $output ): int {
 		$root = $input->getOption( 'root' );
 
 		$found_tbds = false;
 
-		$files_to_skip = [
-			'(\.(png|jpg|jpeg|svg|gif|ico)$)',
-			'(\.min\.(css|js)$)',
-		];
+		$files_to_skip = '.min.css|.min.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico';
+		$directories_to_skip = 'vendor|node_modules|.git|tests';
+
+		$check_config = $this->check_config->getConfig();
+
+		if ( ! empty( $this->check_config->getConfig()['skip_files'] ) ) {
+			$files_to_skip = $this->check_config->getConfig()['skip_files'];
+		}
+
+		if ( ! empty( $this->check_config->getConfig()['skip_directories'] ) ) {
+			$directories_to_skip = $this->check_config->getConfig()['skip_directories'];
+		}
+
+		$files_to_skip       = str_replace( '.', '\.', $files_to_skip );
+		$directories_to_skip = str_replace( '.', '\.', $directories_to_skip );
 
 		$matched_lines = [];
 		$current_dir = getcwd();
@@ -43,17 +63,31 @@ class Tbd extends AbstractCheck {
 			}
 
 			$file_path  = $file->getPathname();
-			$short_path = str_replace( $current_dir . '/', '', $file_path );
+			$short_path = (string) str_replace( $current_dir . '/', '', $file_path );
 
-			if ( preg_match( '/\.((min\.css)|(min\.js)|png|jpg|jpeg|svg|gif|ico)$/', $file_path ) ) {
+			if ( preg_match( '!(' . $files_to_skip . ')$!', $file_path ) ) {
 				continue;
 			}
 
-			if ( preg_match( '!(vendor|node_modules|\.git|tests)' . DIRECTORY_SEPARATOR . '!', $file_path ) ) {
+			if ( preg_match( '!(\.pup-|\.puprc)!', $file_path ) ) {
+				continue;
+			}
+
+			$directory_separator = DIRECTORY_SEPARATOR;
+			if ( $directory_separator === '\\' ) {
+				$directory_separator = '\\\\';
+			}
+
+			if ( preg_match( '!(' . $directories_to_skip . ')' . $directory_separator . '!', $file_path ) ) {
 				continue;
 			}
 
 			$content   = file_get_contents( $file_path );
+
+			if ( ! $content ) {
+				continue;
+			}
+
 			$lines     = explode( "\n", $content );
 			$num_lines = count( $lines );
 
