@@ -71,6 +71,11 @@ class Config {
 				continue;
 			}
 
+			if ( $key === 'checks' ) {
+				$this->config->$key = $value;
+				continue;
+			}
+
 			$this->config->$key = $this->mergeConfigValue( $this->config->$key, $value );
 		}
 

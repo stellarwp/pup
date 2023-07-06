@@ -61,6 +61,15 @@ class Zip extends Command {
 			$output->writeln( '<info>Note: if you have a .nvmrc file, you may need to run "nvm use" before running "pup".</info>' );
 			return $results;
 		}
+
+		$collection = App::getCheckCollection();
+		if ( $collection->count() > 0 ) {
+			$results = $this->runCheck();
+			if ( $results !== 0 ) {
+				return $results;
+			}
+		}
+
 		$version = $this->runGetVersion();
 		$results = $this->runPackage( $version );
 		if ( $results !== 0 ) {

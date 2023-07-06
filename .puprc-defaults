@@ -3,25 +3,10 @@
     "build_dev": [],
     "checks": {
         "tbd": {
-            "type": "pup",
-            "bail_on_failure": true,
-            "bail_on_failure_dev": false,
             "skip_directories": "bin|build|vendor|node_modules|.git|.github|tests",
-            "skip_files": ".min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico",
-            "args": {}
+            "skip_files": ".min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico"
         },
-        "version-conflict": {
-            "type": "pup",
-            "bail_on_failure": true,
-            "bail_on_failure_dev": false,
-            "args": {}
-        },
-        "view-version": {
-            "type": "pup",
-            "bail_on_failure": true,
-            "bail_on_failure_dev": false,
-            "args": {}
-        }
+        "version-conflict": {}
     },
     "paths": {
         "build_dir": ".pup-build",

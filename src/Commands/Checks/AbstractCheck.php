@@ -60,13 +60,12 @@ abstract class AbstractCheck extends Command {
 		if ( ! empty( $check_configs[ $this->slug ] ) ) {
 			$this->check_config = $check_configs[ $this->slug ];
 			$this->args = $check_configs[ $this->slug ]->getArgs();
+			App::getCheckCollection()->add( $this );
 		} else {
 			$this->check_config = new CheckConfig( $this->slug, [] );
 		}
 
 		$this->checkConfigure();
-
-		App::getCheckCollection()->add( $this );
 	}
 
 	/**
