@@ -46,6 +46,7 @@ class App extends Symfony_Application {
 		$this->add( new Commands\Build() );
 		$this->add( new Commands\Check() );
 		$this->add( new Commands\Checks\Tbd() );
+		$this->add( new Commands\Checks\VersionConflict() );
 		$this->add( new Commands\Clean() );
 		$this->add( new Commands\GetVersion() );
 		$this->add( new Commands\Help() );

@@ -58,7 +58,7 @@ class Check extends Command {
 		}
 
 		if ( ! empty( $failures ) ) {
-			$output->writeln( "<error>The following checks failed: \n* " . implode( "\n* ", $failures ) . '</error>' );
+			$output->writeln( "\n<error>The following checks failed:</error> \n* " . implode( "\n* ", $failures ) );
 		}
 
 		return 0;

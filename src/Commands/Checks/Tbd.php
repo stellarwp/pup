@@ -32,6 +32,8 @@ class Tbd extends AbstractCheck {
 	 * @return int
 	 */
 	protected function checkExecute( InputInterface $input, OutputInterface $output ): int {
+		$this->writeln( '<comment>Checking for TBDs...</comment>' );
+
 		$root = $input->getOption( 'root' );
 
 		$found_tbds = false;
@@ -116,26 +118,24 @@ class Tbd extends AbstractCheck {
 
 		if ( $matched_lines ) {
 			$found_tbds = true;
-			$this->getIO()->writeln( "<fg=red>TBDs have been found!</>" );
+			$this->writeln( "<fg=red>TBDs have been found!</>" );
 			foreach ( $matched_lines as $file_path => $info ) {
-				$this->getIO()->writeln( "<fg=cyan>{$file_path}</>" );
+				$this->writeln( "<fg=cyan>{$file_path}</>" );
 				foreach ( $info['lines'] as $line_num => $line ) {
-					$this->getIO()->writeln( "<fg=yellow>{$line_num}:</> {$line}" );
+					$this->writeln( "<fg=yellow>{$line_num}:</> {$line}" );
 				}
-				$this->getIO()->newline();
+				$this->writeln( '' );
 			}
 		} else {
-			$this->getIO()->writeln( '<fg=green>No TBDs found!</>' );
-			$this->getIO()->newline();
+			$this->writeln( '<info>No TBDs found!</info>' );
+			$this->writeln( '' );
 		}
-		$this->getIO()->newline();
+		$this->writeln( '' );
 
-
-		$output->writeln( '<info>-------------------</info>' );
 		if ( $found_tbds ) {
-			$this->getIO()->error( 'TBDs found!' );
+			$this->writeln( '<error>TBDs found!</error>' );
 		} else {
-			$this->getIO()->success( 'DONE' );
+			$this->writeln( '<info>Success! No TBDs found.</info>' );
 		}
 
 		return $found_tbds ? 1 : 0;

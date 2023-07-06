@@ -142,4 +142,15 @@ abstract class AbstractCheck extends Command {
 
 		return false;
 	}
+
+	/**
+	 * Write a message to the console.
+	 *
+	 * @param string $message
+	 *
+	 * @return void
+	 */
+	protected function writeln( string $message ) {
+		$this->getIO()->writeln( '[' . $this->getSlug() . '] ' . $message );
+	}
 }
