@@ -325,6 +325,13 @@ class Config {
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getZipIgnoreDefaults() : string {
+		return $this->config->zip_ignore_include_defaults ? '' : '.distignore-defaults';
+	}
+
+	/**
 	 * Returns the zip name for the project.
 	 *
 	 * @return string

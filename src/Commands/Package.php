@@ -154,6 +154,7 @@ class Package extends Command {
 		$working_dir      = App::getConfig()->getWorkingDir();
 		$build_dir        = str_replace( $working_dir, '', App::getConfig()->getBuildDir() );
 		$zip_dir          = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
+		$ignore_defaults  = App::getConfig()->getZipIgnoreDefaults();
 		$rsync_executable = App::getConfig()->getRsyncExecutable();
 		$rsync_executable = DirectoryUtils::normalizeDir( $rsync_executable );
 		$rsync_split      = explode( DIRECTORY_SEPARATOR, $rsync_executable );
@@ -165,9 +166,7 @@ class Package extends Command {
 
 		$command = [
 			$rsync_executable,
-			'-rc',
-			'--exclude-from=' . escapeshellarg( $working_dir . '/.distignore' ),
-			'--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' ),
+			'-rlc',
 			'--exclude=' . escapeshellarg( $build_dir ),
 			'--exclude=' . escapeshellarg( $zip_dir ),
 			'--exclude=.puprc',
@@ -176,6 +175,15 @@ class Package extends Command {
 			'--delete',
 			'--delete-excluded',
 		];
+
+		if ( file_exists( $working_dir . '/.distignore' ) ) {
+			$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '/.distignore' );
+		}
+
+
+		if ( $ignore_defaults ) {
+			$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
+		}
 
 		$command = implode( ' ', $command );
 		$result_code = 0;
