@@ -22,6 +22,7 @@
         "symfony/filesystem": "^5.4"
     },
     "require-dev": {
+        "humbug/box": "^3.11.0",
         "phpstan/phpstan": "^1.10.0"
     },
     "autoload": {
@@ -30,6 +31,9 @@
         }
     },
     "scripts": {
+        "build-phar" : [
+            "vendor/bin/box build"
+        ],
         "test:analysis": [
             "phpstan analyse -c phpstan.neon.dist --memory-limit=512M"
         ]
