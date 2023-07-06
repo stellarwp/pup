@@ -86,7 +86,7 @@ class App extends Symfony_Application {
 				throw new ConfigException( 'Could not read external check class file: ' . $file );
 			}
 
-			preg_match( '/^\s+class\s+(\w+)/m', $contents, $matches );
+			preg_match( '/^\s*class\s+(\w+)/m', $contents, $matches );
 
 			if ( ! isset( $matches[1] ) ) {
 				throw new ConfigException( 'Could not find class name in external check class file: ' . $file );
@@ -94,12 +94,14 @@ class App extends Symfony_Application {
 
 			$class_name = $matches[1];
 
-			preg_match( '/^\s+namespace\s+([^;]+)/m', $contents, $matches );
+			preg_match( '!^\s*namespace\s+([^;]+)!m', $contents, $matches );
 
 			$namespace = '\\';
 			if ( isset( $matches[1] ) ) {
 				$namespace .= trim( $matches[1] );
 			}
+
+			var_dump( $matches );
 
 			include_once $working_dir . $file;
 

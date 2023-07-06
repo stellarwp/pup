@@ -5,7 +5,6 @@ namespace StellarWP\Pup\Commands\Checks;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Command\Io;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class Tbd extends AbstractCheck {
 	/**
