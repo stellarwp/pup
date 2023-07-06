@@ -4,8 +4,7 @@ namespace StellarWP\Pup;
 
 use Exception;
 use stdClass;
-use StellarWP\Pup\Commands\Checks\SimpleCheck;
-use StellarWP\Pup\Exceptions\ConfigException;
+use StellarWP\Pup\Utils\Directory as DirectoryUtils;
 
 class Config {
 	/**
@@ -108,7 +107,7 @@ class Config {
 		}
 
 		if ( is_numeric( $keys[0] ) ) {
-			return is_array( $new ) ? $new : (array) $new;
+			return $new;
 		}
 
 		foreach ( $original as $key => $item ) {
@@ -296,7 +295,7 @@ class Config {
 	/**
 	 * Get the checks from the config.
 	 *
-	 * @return array<string, CheckConfig>
+	 * @return array<string, Check\Config>
 	 */
 	public function getChecks(): array {
 		return $this->config->checks;
@@ -431,7 +430,7 @@ class Config {
 	}
 
 	/**
-	 * Parses check config into CheckConfig objects.
+	 * Parses check config into Check\Config objects.
 	 *
 	 * @return void
 	 */
@@ -444,7 +443,7 @@ class Config {
 		$check_configs = [];
 
 		foreach ( $checks as $check_slug => $check ) {
-			if ( $check instanceof CheckConfig ) {
+			if ( $check instanceof Check\Config ) {
 				$check_configs[] = $check;
 				continue;
 			}
@@ -454,7 +453,7 @@ class Config {
 				$check      = [];
 			}
 
-			$check_configs[ $check_slug ] = new CheckConfig( $check_slug, $check );
+			$check_configs[ $check_slug ] = new Check\Config( $check_slug, $check );
 		}
 
 		$this->config->checks = $check_configs;

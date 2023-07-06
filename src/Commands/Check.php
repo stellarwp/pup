@@ -4,7 +4,7 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
-use StellarWP\Pup\Command;
+use StellarWP\Pup\Command\Command;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -58,6 +58,8 @@ class Check extends Command {
 			if ( $input->getOption( 'root' ) ) {
 				$args['--root'] = $input->getOption( 'root' );
 			}
+
+			$args['--prefix-output'] = true;
 
 			$results = $command->run( new ArrayInput( $args ), $output );
 			if ( $results !== 0 ) {

@@ -1,8 +1,8 @@
 <?php
 
-namespace StellarWP\Pup;
+namespace StellarWP\Pup\Check;
 
-class CheckConfig {
+class Config {
 	/**
 	 * The check args.
 	 * @var array<string, mixed>
@@ -40,7 +40,7 @@ class CheckConfig {
 	protected $type = 'pup';
 
 	/**
-	 * CheckConfig constructor.
+	 * Config constructor.
 	 *
 	 * @param string $slug  The check slug.
 	 * @param array<string, mixed> $check_config The check config args.

@@ -3,8 +3,9 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
-use StellarWP\Pup\CheckConfig;
-use StellarWP\Pup\Command;
+use StellarWP\Pup\Check;
+use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\Command\Io;
 use Symfony\Component\Console\Exception\LogicException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -13,7 +14,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 abstract class AbstractCheck extends Command {
 	/**
 	 * The Config for this check.
-	 * @var CheckConfig
+	 * @var Check\Config
 	 */
 	public $check_config;
 
@@ -28,6 +29,13 @@ abstract class AbstractCheck extends Command {
 	 * @var array<string, mixed>
 	 */
 	protected $args = [];
+
+	/**
+	 * Whether or not to set an output prefix.
+	 *
+	 * @var bool
+	 */
+	protected $should_set_prefix = false;
 
 	/**
 	 * @param string $slug The name of the command.
@@ -52,6 +60,7 @@ abstract class AbstractCheck extends Command {
 			throw new \Exception( 'The "public $slug" property must be set in ' . __CLASS__ . '.' );
 		}
 
+		$this->addOption( 'prefix-output', null, InputOption::VALUE_NONE, 'Should output be prefixed by the slug?' );
 		$this->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' );
 		$this->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' );
 
@@ -62,7 +71,7 @@ abstract class AbstractCheck extends Command {
 			$this->args = $check_configs[ $this->slug ]->getArgs();
 			App::getCheckCollection()->add( $this );
 		} else {
-			$this->check_config = new CheckConfig( $this->slug, [] );
+			$this->check_config = new Check\Config( $this->slug, [] );
 		}
 
 		$this->checkConfigure();
@@ -79,12 +88,17 @@ abstract class AbstractCheck extends Command {
 	final protected function execute( InputInterface $input, OutputInterface $output ) {
 		$config        = App::getConfig();
 		$root          = $input->getOption( 'root' );
+		$this->should_set_prefix = (bool) $input->getOption( 'prefix-output' );
+
+		if ( $this->should_set_prefix ) {
+			$this->getIO()->setPrefix( $this->getSlug() );
+		}
 
 		if ( $root ) {
 			chdir( $root );
 		}
 
-		$results = $this->checkExecute( $input, $output );
+		$results = $this->checkExecute( $input, $this->getIO() );
 
 		if ( $root ) {
 			chdir( $config->getWorkingDir() );
@@ -104,11 +118,11 @@ abstract class AbstractCheck extends Command {
 	 * Runs the check execute command.
 	 *
 	 * @param InputInterface  $input
-	 * @param OutputInterface $output
+	 * @param Io       $output
 	 *
 	 * @return int
 	 */
-	abstract protected function checkExecute( InputInterface $input, OutputInterface $output );
+	abstract protected function checkExecute( InputInterface $input, Io $output );
 
 	/**
 	 * Get the check's slug.
@@ -164,6 +178,6 @@ abstract class AbstractCheck extends Command {
 	 * @return void
 	 */
 	protected function writeln( string $message ) {
-		$this->getIO()->writeln( '[' . $this->getSlug() . '] ' . $message );
+		$this->getIO()->writeln( $message );
 	}
 }

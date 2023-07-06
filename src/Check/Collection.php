@@ -1,12 +1,12 @@
 <?php
 
-namespace StellarWP\Pup;
+namespace StellarWP\Pup\Check;
 
 use StellarWP\Pup\Commands\Checks;
 use StellarWP\Pup\Exceptions\BaseException;
 use Symfony\Component\Console\Command\Command;
 
-class CheckCollection implements \ArrayAccess, \Iterator, \Countable {
+class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * Collection of checks.
 	 *

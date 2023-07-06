@@ -1,13 +1,14 @@
 <?php
 
-namespace StellarWP\Pup;
+namespace StellarWP\Pup\Utils;
 
 use Exception;
 use FilesystemIterator;
 use RecursiveIteratorIterator;
 use RecursiveDirectoryIterator;
+use StellarWP\Pup\App;
 
-class DirectoryUtils {
+class Directory {
 
 	/**
 	 * Normalizes a directory for the system that the script is running on.

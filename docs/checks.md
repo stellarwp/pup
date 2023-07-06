@@ -1,0 +1,125 @@
+# Checks
+
+Checks are used to gatekeep your builds and flag issues before release. The `pup` command provides a couple of helpful
+checks out of the box, but also provides a simple way to add your own!
+
+* [Default checks](#default-checks)
+  * [`tbd`](#tbd)
+  * [`version-conflict`](#version-conflict)
+* [Running all checks](#running-all-checks)
+* [Running specific checks](#running-specific-checks)
+* [Creating custom checks](#creating-custom-checks)
+  * [Simple checks](#simple-checks)
+  * [Class-based checks](#class-based-checks) 
+
+## Default checks
+
+If you do not include the `checks` property within your `.puprc` file, the default checks will be run for your project.
+
+Those defaults can be found in [`.puprc-defaults`](/.puprc-defaults).
+
+### `tbd`
+
+The `tbd` check will scan your files for `tbd` (case-insensitive) in relevant locations (`@since`, `@todo`, `@version`,
+etc) and display the files and line numbers where they appear.
+
+### `version-conflict`
+
+The `version-conflict` check looks at all of the version files you've declared in your `.puprc` file and ensures that
+they all match. If they do not, it will display the version numbers, file, and associated regex.
+
+_Note:_ If you track your version numbers within `package.json`, that file only allows versions with two dots (`.`). For
+the purposes of validation, `pup` will consider `major.minor.patch` versions within `package.json` to match with
+`major.minor.patch.whatever` versions in other files.
+
+
+## Running all checks
+
+You can run all checks specified by your `.puprc` file (or the `.puprc-defaults` file if your `.puprc` file hasn't 
+declared any checks) by running the following command:
+
+```bash
+pup check
+```
+
+## Running specific checks
+
+You can run any of the default checks (regardless of whether they are in your `.puprc` file or not) or any [custom
+checks](#creating-custom-checks) you've added by running the following command:
+
+```bash
+pup check:<check>
+```
+
+For example, to run the `tbd` check:
+
+```bash
+pup check:tbd
+```
+
+## Creating custom checks
+
+In addition to the provided checks within `pup`, you can create your own! They can either be simple PHP scripts or classes
+that extend `StellarWP\Pup\Commands\Checks\AbstractCheck`.
+
+### Simple checks
+
+Simple checks are simply PHP scripts that get included and executed as a check. There is **one main requirement**, and that
+is that the PHP file must return an integer. If the check is considered valid, it should return `0`. If the check fails,
+it should return `1` (or any number greater than `0`).
+
+#### Here's an example
+
+Let's say that our project has some JS files that get minified during the build process and we want to check to see if
+they were successfully minified.
+
+First, let's create our check file. Let's put it in a `checks` directory within our project:
+
+```bash
+mkdir checks
+touch checks/has-min-js.php
+```
+
+We then edit `checks/has-min-js.php`:
+
+```php
+<?php
+
+// Count the number of minified JS files in a directory.
+$num_min_js_files = exec( 'find src/js -type f -name "*.min.js" | wc -l' );
+
+// If there are no minified JS files, consider it a failure.
+if ( $num_min_js_files === 0 ) {
+    return 1;
+}
+
+// Successful!
+return 0;
+```
+
+Now we have to tell `pup` about our new check. We do that by adding it to our `.puprc` file:
+
+```json
+{
+  "checks": {
+      "has-min-js": {
+          "type": "simple",
+          "file": "checks/has-min-js.php"
+      }
+  }
+}
+```
+
+The `has-min-js` will become the check slug (which we would use in order to run our check). The `type` property tells `pup`
+that this is a simple check that gets its check logic from a file. And that file comes from the `file` property - which
+is a relative path from the root of the project.
+
+We should now be able to run the check!
+
+```bash
+pup check:has-min-js
+```
+
+The output isn't very exciting or informative. But! We can change that!
+
+### Class-based checks

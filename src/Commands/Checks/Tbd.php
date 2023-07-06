@@ -3,6 +3,7 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
+use StellarWP\Pup\Command\Io;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,11 +28,11 @@ class Tbd extends AbstractCheck {
 	 * Execute the check command.
 	 *
 	 * @param InputInterface  $input
-	 * @param OutputInterface $output
+	 * @param Io $output
 	 *
 	 * @return int
 	 */
-	protected function checkExecute( InputInterface $input, OutputInterface $output ): int {
+	protected function checkExecute( InputInterface $input, Io $output ): int {
 		$this->writeln( '<comment>Checking for TBDs...</comment>' );
 
 		$root = $input->getOption( 'root' );
@@ -118,24 +119,24 @@ class Tbd extends AbstractCheck {
 
 		if ( $matched_lines ) {
 			$found_tbds = true;
-			$this->writeln( "<fg=red>TBDs have been found!</>" );
+			$output->writeln( "<fg=red>TBDs have been found!</>" );
 			foreach ( $matched_lines as $file_path => $info ) {
-				$this->writeln( "<fg=cyan>{$file_path}</>" );
+				$output->writeln( "<fg=cyan>{$file_path}</>" );
 				foreach ( $info['lines'] as $line_num => $line ) {
-					$this->writeln( "<fg=yellow>{$line_num}:</> {$line}" );
+					$output->writeln( "<fg=yellow>{$line_num}:</> {$line}" );
 				}
-				$this->writeln( '' );
+				$output->writeln( '' );
 			}
 		} else {
-			$this->writeln( '<info>No TBDs found!</info>' );
-			$this->writeln( '' );
+			$output->writeln( '<info>No TBDs found!</info>' );
+			$output->writeln( '' );
 		}
-		$this->writeln( '' );
+		$output->writeln( '' );
 
 		if ( $found_tbds ) {
-			$this->writeln( '<error>TBDs found!</error>' );
+			$output->writeln( '<error>TBDs found!</error>' );
 		} else {
-			$this->writeln( '<info>Success! No TBDs found.</info>' );
+			$output->writeln( '<info>Success! No TBDs found.</info>' );
 		}
 
 		return $found_tbds ? 1 : 0;

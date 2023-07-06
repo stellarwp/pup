@@ -2,6 +2,8 @@
 
 namespace StellarWP\Pup;
 
+use StellarWP\Pup\Utils\Directory as DirectoryUtils;
+
 class VersionFile {
 	/**
 	 * The file to check.

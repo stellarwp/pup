@@ -2,6 +2,8 @@
 
 namespace StellarWP\Pup;
 
+use StellarWP\Pup\Check;
+use StellarWP\Pup\Command\Command;
 use StellarWP\Pup\Commands\Checks\SimpleCheck;
 use StellarWP\Pup\Exceptions\ConfigException;
 use Symfony\Component\Console\Application as Symfony_Application;
@@ -20,7 +22,7 @@ class App extends Symfony_Application {
 	public static $config;
 
 	/**
-	 * @var ?CheckCollection
+	 * @var ?Check\Collection
 	 */
 	public static $check_collection;
 
@@ -103,7 +105,10 @@ class App extends Symfony_Application {
 
 			$full_class_name = $namespace . '\\' . $class_name;
 
-			$this->add( new $full_class_name( $check->getSlug() ) );
+			/** @var Command */
+			$object = new $full_class_name( $check->getSlug() );
+
+			$this->add( $object );
 		}
 	}
 
@@ -134,11 +139,11 @@ class App extends Symfony_Application {
 	/**
 	 * Get the check collection.
 	 *
-	 * @return CheckCollection
+	 * @return Check\Collection
 	 */
-	public static function getCheckCollection(): CheckCollection {
+	public static function getCheckCollection(): Check\Collection {
 		if ( ! isset( static::$check_collection ) ) {
-			static::$check_collection = new CheckCollection();
+			static::$check_collection = new Check\Collection();
 		}
 
 		return static::$check_collection;

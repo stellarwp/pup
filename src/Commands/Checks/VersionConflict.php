@@ -3,6 +3,7 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
+use StellarWP\Pup\Command\Io;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -27,12 +28,12 @@ class VersionConflict extends AbstractCheck {
 	 * Execute the check command.
 	 *
 	 * @param InputInterface  $input
-	 * @param OutputInterface $output
+	 * @param Io $output
 	 *
 	 * @return int
 	 */
-	protected function checkExecute( InputInterface $input, OutputInterface $output ): int {
-		$this->writeln( '<comment>Checking for version conflicts...</comment>' );
+	protected function checkExecute( InputInterface $input, Io $output ): int {
+		$output->writeln( '<comment>Checking for version conflicts...</comment>' );
 		$version_files = App::getConfig()->getVersionFiles();
 
 		$found_version_problem            = false;
@@ -44,6 +45,7 @@ class VersionConflict extends AbstractCheck {
 			$full_file_path     = App::getConfig()->getWorkingDir() . $relative_file_path;
 			$regex              = $version_file->getRegex();
 			$location           = $relative_file_path . ' :: ' . $regex;
+			$contents           = '';
 
 			$version                         = 'unknown';
 			$package_json_compatible_version = 'unknown';
@@ -59,7 +61,7 @@ class VersionConflict extends AbstractCheck {
 				}
 			}
 
-			if ( ! $found_version_problem ) {
+			if ( ! $found_version_problem && $contents ) {
 				preg_match( '!' . $version_file->getRegex() . '!', $contents, $matches );
 
 				if ( empty( $matches[1] ) || empty( $matches[2] ) ) {
@@ -92,21 +94,21 @@ class VersionConflict extends AbstractCheck {
 
 		if ( count( $package_json_compatible_versions ) !== 1 ) {
 			$found_version_problem = true;
-			$this->writeln( '<error>Found more than one version within the version files.</error>' );
+			$output->writeln( '<error>Found more than one version within the version files.</error>' );
 		}
 
 		if ( $found_version_problem ) {
-			$this->writeln( 'Versions found: ');
+			$output->writeln( 'Versions found: ');
 			foreach ( $versions as $version => $locations ) {
 				foreach ( $locations as $location ) {
-					$this->writeln( " - {$version} in {$location}" );
+					$output->writeln( " - {$version} in {$location}" );
 				}
 			}
 
 			return 1;
 		}
 
-		$this->writeln( '<info>No version conflicts found.</info>' );
+		$output->writeln( '<info>No version conflicts found.</info>' );
 		return 0;
 	}
 }

@@ -3,9 +3,8 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
-use Symfony\Component\Console\Exception\LogicException;
+use StellarWP\Pup\Command\Io;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
 
 class SimpleCheck extends AbstractCheck {
 	/**
@@ -23,7 +22,7 @@ class SimpleCheck extends AbstractCheck {
 	/**
 	 * @inheritdoc
 	 */
-	protected function checkExecute( InputInterface $input, OutputInterface $output ) {
+	protected function checkExecute( InputInterface $input, Io $output ) {
 		$execute_file = $this->check_config->getFile();
 		$full_path    = App::getConfig()->getWorkingDir() . $this->check_config->getFile();
 

@@ -4,9 +4,9 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions;
-use StellarWP\Pup\DirectoryUtils;
+use StellarWP\Pup\Utils\Directory as DirectoryUtils;;
 use stdClass;
-use StellarWP\Pup\Command;
+use StellarWP\Pup\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
