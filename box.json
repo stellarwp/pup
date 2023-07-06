@@ -1,0 +1,6 @@
+{
+    "directories": ["src", "vendor"],
+    "files": [".puprc-defaults", ".distignore-defaults", "pup"],
+    "main": "pup",
+    "output": "pup.phar"
+}
