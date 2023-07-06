@@ -21,25 +21,12 @@ jobs:
       - name: Build Phar
         run: composer build-phar
 
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: |
-            A new release is available.
-          draft: false
-          prerelease: false
-
       - name: Upload Phar
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./pup.phar
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ github.workspace }}/pup.phar
           asset_name: pup-${{ github.ref }}.phar
           asset_content_type: application/octet-stream
