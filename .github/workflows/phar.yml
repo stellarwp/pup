@@ -14,11 +14,9 @@ jobs:
 
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
-        with:
-          php-version: '7.2'
 
       - name: Install dependencies
-        run: composer install --optimize-autoloader
+        run: composer install --no-dev --optimize-autoloader
 
       - name: Build Phar
         run: composer build-phar
