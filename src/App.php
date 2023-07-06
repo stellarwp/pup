@@ -101,8 +101,6 @@ class App extends Symfony_Application {
 				$namespace .= trim( $matches[1] );
 			}
 
-			var_dump( $matches );
-
 			include_once $working_dir . $file;
 
 			$full_class_name = $namespace . '\\' . $class_name;

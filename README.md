@@ -4,59 +4,41 @@ StellarWP's **P**roject **U**tilities &amp; **P**ackager (`pup`)
 
 ## Installation
 
+### Install in a project as a phar (recommended)
+
+This adds `pup` to your project for use in `composer` without actually setting it as a hard depenency. Edit your `composer.json`
+to have the following:
+
+```json
+
+```
+
+### Install as a composer dependency
+
+### Install globally as a phar
+
+Head to [releases](https://github.com/stellarwp/pup/releases) and download the `pup.phar` and place it in a directory that is in your `$PATH` (e.g. `/usr/local/bin`).
+
+```bash
+cd /usr/local/bin
+# Replace VERSION with the version you want to download
+wget https://github.com/stellarwp/pup/releases/download/VERSION/pup.phar
+mv pup.phar pup
+chmod +x pup
+```
+
+### Install globally as a git clone
+
 ## Configuration
 
 At a bare minimum, add the following to your `.puprc` file:
 
-```json
-{
-    "zip_name": "myplugin"
-}
-```
+## Docs
 
-Here are all the possible settings with their defaults:
+* [Commands](/docs/commands.md)
+* [Command flow for `pup zip`](/docs/flow.md)
+* [Checks](/docs/checks.md)
 
-```json
-{
-    "build"          : [],
-    "changelog"      : "readme.txt",
-    "css"            : [],
-    "js"             : [],
-    "repo"           : null, // Defaults to composer.json "name".
-    "version_files"  : [],
-    "views"          : [],
-    "zip_name"       : null, // Defaults to composer.json "name" after the slash.
-    "checks"         : [
-        "tbd",
-        "version-conflict",
-        "view-version"
-    ]
-}
-```
-
-Here's a typical usecase of specifying version files:
-
-```json
-"extra": {
-    "pup": {
-        "zip_name": "myplugin",
-        "version_files": [
-            {
-                "file": "bootstrap-file.php",
-                "regex": "(define\\( 'MYPRODUCT_VERSION', ')([^']+)"
-            },
-            {
-                "file": "bootstrap-file.php",
-                "regex": "(Version: )([^\\s]+)"
-            },
-            {
-                "file": "readme.txt",
-                "regex": "(Stable tag: )([^\\s]+)"
-            }
-        ],
-    }
-}
-```
 
 ```bash
 pup zip [branch] [--dev] [--no-clone]
