@@ -12,8 +12,9 @@
 
 ## `pup build`
 
-This command runs all of the `build` commands specified by your `.puprc` file. If you want your dev builds to build differently,
-you can add a `build_dev` property to your `.puprc` file.
+Runs the `build` commands from the `puprc` file.
+
+If you want your dev builds to build differently, you can add a `build_dev` property to your `.puprc` file.
 
 ```bash
 pup build [--dev]
@@ -28,6 +29,8 @@ composer pup build [--dev]
 
 ## `pup check`
 
+Runs all registered check commands.
+
 You can run all checks specified by your `.puprc` file (or the `.puprc-defaults` file if your `.puprc` file hasn't
 declared any checks) by running the following command:
 
@@ -39,8 +42,10 @@ composer pup check
 
 ### `pup check:tbd`
 
-The `tbd` check will scan your files for `tbd` (case-insensitive) in relevant locations (`@since`, `@todo`, `@version`,
-etc) and display the files and line numbers where they appear.
+Scans your files for `tbd` (case-insensitive) and tells you where to find them.
+
+The `tbd` check will scan your files in relevant locations (`@since`, `@todo`, `@version`, etc) and display the files
+and line numbers where they appear.
 
 ```bash
 pup check:tbd
@@ -50,11 +55,7 @@ composer pup check:tbd
 
 ### `pup check:version-conflict`
 
-```bash
-pup check:version-conflict
-# or
-composer pup check:version-conflict
-```
+Verifies that all of your version numbers match.
 
 The `version-conflict` check looks at all of the version files you've declared in your `.puprc` file and ensures that
 they all match. If they do not, it will display the version numbers, file, and associated regex.
@@ -62,6 +63,13 @@ they all match. If they do not, it will display the version numbers, file, and a
 _Note:_ If you track your version numbers within `package.json`, that file only allows versions with two dots (`.`). For
 the purposes of validation, `pup` will consider `major.minor.patch` versions within `package.json` to match with
 `major.minor.patch.whatever` versions in other files.
+
+
+```bash
+pup check:version-conflict
+# or
+composer pup check:version-conflict
+```
 
 ## `pup clean`
 
@@ -74,6 +82,8 @@ composer pup clean
 ```
 
 ## `pup get-version`
+
+Gets your project's version number.
 
 This command will use the first [version file](/docs/configuration.md#paths-versions) declared in your `.puprc` file to get the version number.
 If you haven't provided a version file, the version will be `unknown`.
@@ -106,6 +116,8 @@ composer pup help [command]
 
 ## `pup package`
 
+Packages your project into a zip file with the passed in version number.
+
 This command uses the provided version number and builds a zip file with the appropriate name. While packaging, this
 command will exclude any file or directory declared in `.distignore`, in `pup`'s own `.distignore-defaults` file, or as
 `export-ignore` within `.gitattributes`.
@@ -126,6 +138,8 @@ composer pup package <version> [--dev]
 | `--dev` | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
 
 ## `pup zip`
+
+Runs the full `pup` set of commands to create a zip file.
 
 This command is a wrapper command for the whole zipping process. You can see its [flow of commands](/docs/flow.md) for 
 more information on which commands it runs and when.
