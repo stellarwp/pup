@@ -39,6 +39,15 @@ class Clean extends Command {
 			throw new \Exception( "Could not remove {$build_dir}." );
 		}
 
+		$pup_distignore = $config->getWorkingDir() . '.pup-distignore';
+		if ( file_exists( $pup_distignore ) ) {
+			if ( unlink( $pup_distignore ) ) {
+				$output->writeln( 'Removing .pup-distignore' );
+			} else {
+				throw new \Exception( "Could not remove {$build_dir}." );
+			}
+		}
+
 		$output->writeln( 'Pup cleanup is complete.' );
 		return 0;
 	}

@@ -16,22 +16,10 @@ checks out of the box, but also provides a simple way to add your own!
 
 If you do not include the `checks` property within your `.puprc` file, the default checks will be run for your project.
 
-Those defaults can be found in [`.puprc-defaults`](/.puprc-defaults).
+Those defaults can be found in [`.puprc-defaults`](/.puprc-defaults) and here are some docs on them:
 
-### `tbd`
-
-The `tbd` check will scan your files for `tbd` (case-insensitive) in relevant locations (`@since`, `@todo`, `@version`,
-etc) and display the files and line numbers where they appear.
-
-### `version-conflict`
-
-The `version-conflict` check looks at all of the version files you've declared in your `.puprc` file and ensures that
-they all match. If they do not, it will display the version numbers, file, and associated regex.
-
-_Note:_ If you track your version numbers within `package.json`, that file only allows versions with two dots (`.`). For
-the purposes of validation, `pup` will consider `major.minor.patch` versions within `package.json` to match with
-`major.minor.patch.whatever` versions in other files.
-
+* [`tbd`](/docs/commands.md#pup-checktbd)
+* [`version-conflict`](/docs/commands.md#pup-checkversion-conflict)
 
 ## Running all checks
 

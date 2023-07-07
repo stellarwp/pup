@@ -20,6 +20,7 @@ tests
 /vendor/bin
 /vendor/composer/installers
 /vendor/**/*.phar
+/vendor/stellarwp/pup
 
 .babelrc
 .distignore

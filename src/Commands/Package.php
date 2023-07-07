@@ -167,13 +167,33 @@ class Package extends Command {
 			'--delete-excluded',
 		];
 
-		if ( file_exists( $working_dir . '/.distignore' ) ) {
-			$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '/.distignore' );
+		if ( file_exists( $working_dir . '.distignore' ) ) {
+			$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '.distignore' );
 		}
 
+		if ( file_exists( $working_dir . '.gitattributes' ) ) {
+			$gitattributes_contents = file_get_contents( $working_dir . '.gitattributes' );
+			if ( $gitattributes_contents && preg_match( '/\sexport-ignore/m', $gitattributes_contents ) ) {
+				$gitattributes_array = file( $working_dir . '.gitattributes' );
+				$exclude = [];
+
+				foreach ( (array) $gitattributes_array as $gitattributes_line ) {
+					$gitattributes_line = trim( (string) $gitattributes_line );
+					if ( strstr( $gitattributes_line, 'export-ignore' ) === false ) {
+						continue;
+					}
+
+					$exclude[] = preg_replace( '/\s+export-ignore/', '', $gitattributes_line );
+				}
+
+				if ( ! empty( $exclude ) && file_put_contents( $working_dir . '.pup-distignore', implode( "\n", $exclude ) ) ) {
+					$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '.pup-distignore' );
+				}
+			}
+		}
 
 		if ( $ignore_defaults ) {
-			$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
+			$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '.distignore-defaults' );
 		}
 
 		$command = implode( ' ', $command );
