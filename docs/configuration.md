@@ -87,7 +87,7 @@ This is what you should add as a `paths.versions` entry:
     "paths": [
         {
             "file": "bootstrap.php",
-            "regex": "(define\\(\\s+'MY_PLUGIN_VERSION',\\s+')([^']+)"
+            "regex": "(define\\( +'MY_PLUGIN_VERSION', +')([^']+)"
         }
     ]
 }
