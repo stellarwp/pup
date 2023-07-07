@@ -383,9 +383,9 @@ class Config {
 	}
 
 	/**
-	 * @return string
+	 * @return bool
 	 */
-	public function getZipUseDefaultIgnore() : string {
+	public function getZipUseDefaultIgnore() : bool {
 		return (bool) $this->config->zip_use_default_ignore;
 	}
 

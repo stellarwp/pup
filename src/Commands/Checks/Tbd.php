@@ -62,7 +62,7 @@ class Tbd extends AbstractCheck {
 		foreach ( $dirs as $dir ) {
 			$results = $this->scanDir(
 				$root ?: '.',
-				$current_dir,
+				$current_dir ?: '.',
 				$dir,
 				$files_to_skip,
 				$directories_to_skip,
@@ -96,7 +96,16 @@ class Tbd extends AbstractCheck {
 		return $found_tbds ? 1 : 0;
 	}
 
-	protected function scanDir( $root, string $current_dir, string $scan_dir, string $files_to_skip, string $directories_to_skip ): array {
+	/**
+	 * @param string $root
+	 * @param string $current_dir
+	 * @param string $scan_dir
+	 * @param string $files_to_skip
+	 * @param string $directories_to_skip
+	 *
+	 * @return array<string, array<string, array<int, string>>>
+	 */
+	protected function scanDir( string $root, string $current_dir, string $scan_dir, string $files_to_skip, string $directories_to_skip ): array {
 		$matched_lines = [];
 
 		$dir = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root . '/' . $scan_dir ) );
