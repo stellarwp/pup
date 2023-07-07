@@ -26,6 +26,7 @@ class Build extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		$io          = $this->getIO();
 		$config      = App::getConfig();
 		$root        = $input->getOption( 'root' );
 		$build_steps = $config->getBuildCommands( $input->getOption( 'dev' ) );
@@ -35,21 +36,22 @@ class Build extends Command {
 			chdir( $root );
 		}
 
-		$output->writeln( '<comment>Running build steps...</comment>' );
+		$io->writeln( '<comment>Running build steps...</comment>' );
 		foreach ( $build_steps as $step ) {
 			$bail_on_failure = true;
 			if ( strpos( $step, '@' ) === 0 ) {
 				$bail_on_failure = false;
 				$step = substr( $step, 1 );
 			}
-			$output->writeln( "* {$step}..." );
+			$io->section( "> <fg=cyan>{$step}</>" );
 			system( $step, $result );
+			$io->newLine();
 
 			if ( $result ) {
-				$output->writeln( "[FAIL] Build step failed: {$step}" );
+				$io->writeln( "[FAIL] Build step failed: {$step}" );
 
 				if ( $bail_on_failure ) {
-					$output->writeln( "<fg=red>Exiting...</>" );
+					$io->writeln( "<fg=red>Exiting...</>" );
 					return $result;
 				}
 			}
@@ -59,7 +61,7 @@ class Build extends Command {
 			chdir( $config->getWorkingDir() );
 		}
 
-		$output->writeln( 'Build complete.' );
+		$io->writeln( '<info>Build complete.</info>' );
 		return 0;
 	}
 }

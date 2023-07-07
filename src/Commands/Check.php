@@ -28,6 +28,7 @@ class Check extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		$io = $this->getIO();
 		$application = $this->getApplication();
 		if ( ! $application ) {
 			throw new BaseException( 'Could not run pup.' );
@@ -37,17 +38,17 @@ class Check extends Command {
 		$failures = [];
 
 		if ( $collection->count() === 0 ) {
-			$output->writeln( '📣 The .puprc does not have any checks configured.' );
-			$output->writeln( '💡 If you would like to use the defaults, simply remove the "<comment>checks</comment>" property in <comment>.puprc</comment>.' );
+			$io->writeln( '📣 The .puprc does not have any checks configured.' );
+			$io->writeln( '💡 If you would like to use the defaults, simply remove the "<comment>checks</comment>" property in <comment>.puprc</comment>.' );
 
-			$output->writeln( '' );
-			$output->writeln( 'If you would like to use one of the default checks, add one or more of the following to the "<comment>checks</comment>" property in your <comment>.puprc</comment>:' );
-			$output->writeln( '      "tbd": {}' );
-			$output->writeln( '      "version-conflict": {}' );
+			$io->writeln( '' );
+			$io->writeln( 'If you would like to use one of the default checks, add one or more of the following to the "<comment>checks</comment>" property in your <comment>.puprc</comment>:' );
+			$io->writeln( '      "tbd": {}' );
+			$io->writeln( '      "version-conflict": {}' );
 
-			$output->writeln( '' );
-			$output->writeln( 'If you would like to create your own check, take a look at the pup docs to learn how:' );
-			$output->writeln( '      https://github.com/stellarwp/pup' );
+			$io->writeln( '' );
+			$io->writeln( 'If you would like to create your own check, take a look at the pup docs to learn how:' );
+			$io->writeln( '      https://github.com/stellarwp/pup' );
 			return 0;
 		}
 
@@ -67,13 +68,15 @@ class Check extends Command {
 
 				$should_bail_on_failure = $input->getOption( 'dev' ) ? $check->shouldBailOnFailureDev() : $check->shouldBailOnFailure();
 				if ( $should_bail_on_failure ) {
+
+					$io->writeln( "<fg=yellow>{$check->getSlug()}'s fail_method in <fg=cyan>.puprc</> is set to \"<fg=red>error</>\". Exiting...</>" );
 					return $results;
 				}
 			}
 		}
 
 		if ( ! empty( $failures ) ) {
-			$output->writeln( "\n<error>The following checks failed:</error> \n* " . implode( "\n* ", $failures ) );
+			$io->writeln( "\n<error>The following checks failed:</error> \n* " . implode( "\n* ", $failures ) );
 		}
 
 		return 0;

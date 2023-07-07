@@ -32,7 +32,7 @@ class VersionConflict extends AbstractCheck {
 	 * @return int
 	 */
 	protected function checkExecute( InputInterface $input, Io $output ): int {
-		$output->writeln( '<comment>Checking for version conflicts...</comment>' );
+		$output->section( '<comment>Checking for version conflicts...</comment>' );
 		$version_files = App::getConfig()->getVersionFiles();
 
 		$found_version_problem            = false;
@@ -40,7 +40,7 @@ class VersionConflict extends AbstractCheck {
 		$package_json_compatible_versions = [];
 
 		if ( empty( $version_files ) ) {
-			$output->writeln( '<fg=yellow>Skipping!</> There are no .paths.versions set in .puprc.' );
+			$output->writeln( '<fg=yellow>Skipping!</> There are no <fg=cyan>.paths.versions</> set in <fg=cyan>.puprc</>.' );
 			return 0;
 		}
 

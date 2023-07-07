@@ -32,7 +32,7 @@ class Tbd extends AbstractCheck {
 	 * @return int
 	 */
 	protected function checkExecute( InputInterface $input, Io $output ): int {
-		$this->writeln( '<comment>Checking for TBDs...</comment>' );
+		$output->section( '<comment>Checking for TBDs...</comment>' );
 
 		$root = $input->getOption( 'root' );
 
@@ -73,7 +73,6 @@ class Tbd extends AbstractCheck {
 
 		if ( $matched_lines ) {
 			$found_tbds = true;
-			$output->writeln( "<fg=red>TBDs have been found!</>" );
 			foreach ( $matched_lines as $file_path => $info ) {
 				$output->writeln( "<fg=cyan>{$file_path}</>" );
 				foreach ( $info['lines'] as $line_num => $line ) {
@@ -88,7 +87,7 @@ class Tbd extends AbstractCheck {
 		$output->writeln( '' );
 
 		if ( $found_tbds ) {
-			$output->writeln( '<error>TBDs found!</error>' );
+			$output->writeln( "<fg=red>TBDs have been found!</>" );
 		} else {
 			$output->writeln( '<info>Success! No TBDs found.</info>' );
 		}
