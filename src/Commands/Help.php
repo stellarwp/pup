@@ -44,7 +44,12 @@ class Help extends Command {
 		return 0;
 	}
 
-	protected function printCommandList() {
+	/**
+	 * Prints the command list.
+	 *
+	 * @return void
+	 */
+	protected function printCommandList(): void {
 		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
 		$io = $this->getIO();
 
@@ -56,7 +61,11 @@ class Help extends Command {
 		$io->writeln( 'Run <fg=cyan>pup help <topic></> for more information on a specific command.' );
 		$io->newLine();
 
-		foreach ( $docs as $doc_line ) {
+		foreach ( (array) $docs as $doc_line ) {
+			if ( ! $doc_line ) {
+				continue;
+			}
+
 			$doc_line = trim( $doc_line );
 			if ( ! $doc_line ) {
 				continue;
@@ -89,7 +98,7 @@ class Help extends Command {
 	 *
 	 * @return void
 	 */
-	protected function printCommandHelp( string $topic ) {
+	protected function printCommandHelp( string $topic ): void {
 		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
 		$io = $this->getIO();
 
@@ -100,7 +109,11 @@ class Help extends Command {
 		$arguments_headers = [];
 		$arguments_lines = [];
 
-		foreach ( $docs as $doc_line ) {
+		foreach ( (array) $docs as $doc_line ) {
+			if ( ! $doc_line ) {
+				continue;
+			}
+
 			$doc_line = trim( $doc_line );
 			if ( ! $doc_line ) {
 				continue;
@@ -130,9 +143,9 @@ class Help extends Command {
 					}
 				}
 
-				$doc_line = preg_replace( '/`([^`]+)`/', '<fg=cyan>$1</>', $doc_line );
-				$doc_line = preg_replace( '/\*\*([^*]+)\*\*/', '<fg=red>$1</>', $doc_line );
-				$doc_line = preg_replace( '/\[([^\]]+)\]\([^\)]+\)/', '$1', $doc_line );
+				$doc_line = (string) preg_replace( '/`([^`]+)`/', '<fg=cyan>$1</>', $doc_line );
+				$doc_line = (string) preg_replace( '/\*\*([^*]+)\*\*/', '<fg=red>$1</>', $doc_line );
+				$doc_line = (string) preg_replace( '/\[([^\]]+)\]\([^\)]+\)/', '$1', $doc_line );
 
 				if ( preg_match( '/^##(#+ )(Arguments)/', $doc_line, $matches ) ) {
 					$io->section( str_repeat( '>', substr_count( $matches[1], '#' ) ) . ' ' . $matches[2] . ':' );
@@ -192,12 +205,5 @@ class Help extends Command {
 				$arguments_lines
 			);
 		}
-	}
-
-	public function printArgumentsTable( $arguments_headers, $arguments_lines ) {
-		$this->getIO()->horizontalTable(
-			$arguments_headers,
-			$arguments_lines
-		);
 	}
 }
