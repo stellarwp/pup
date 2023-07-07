@@ -1,0 +1,6 @@
+{
+    "build": [
+        "ls -al",
+        "echo 'fake project, yo'"
+    ]
+}

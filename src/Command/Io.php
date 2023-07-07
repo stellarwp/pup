@@ -37,7 +37,7 @@ class Io extends SymfonyStyle {
 	 * @return void
 	 */
 	public function setPrefix( string $prefix ): void {
-		$this->output_prefix = $prefix ? "<fg=gray>[{$prefix}]</> " : '';
+		$this->output_prefix = $prefix ? "<info>[{$prefix}]</info> " : '';
 	}
 
 	/**
