@@ -28,22 +28,3 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
   * [Creating custom checks](#creating-custom-checks)
     * [Simple checks](#simple-checks)
     * [Class-based checks](#class-based-checks)
-
-
-
-## Configuration
-
-At a bare minimum, add the following to your `.puprc` file:
-
-## Docs
-
-
-
-```bash
-pup zip [branch] [--dev] [--no-clone]
-  pup build [--dev]
-  pup check [name]
-  pup get-version [--dev]
-  pup package {version}
-  pup clean
-``` 
