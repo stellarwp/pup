@@ -1,7 +1,8 @@
 <?php
 
-namespace StellarWP\Pup\Tests\Cli;
+namespace StellarWP\Pup\Tests\Cli\Commands;
 
+use StellarWP\Pup\Tests\Cli\AbstractBase;
 use StellarWP\Pup\Tests\CliTester;
 
 class BuildCest extends AbstractBase {
@@ -17,7 +18,7 @@ class BuildCest extends AbstractBase {
 		$puprc['build'][] = 'echo "fake project, yo"';
 		$this->write_puprc( $puprc );
 
-		chdir( dirname( __DIR__ ) . '/_data/fake-project' );
+		chdir( $this->tests_root . '/_data/fake-project' );
 
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
@@ -37,7 +38,7 @@ class BuildCest extends AbstractBase {
 		unset( $puprc['build'] );
 		$this->write_puprc( $puprc );
 
-		chdir( dirname( __DIR__ ) . '/_data/fake-project' );
+		chdir( $this->tests_root . '/_data/fake-project' );
 
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
@@ -54,7 +55,7 @@ class BuildCest extends AbstractBase {
 	 * @test
 	 */
 	public function it_should_run_no_build_steps_when_missing_puprc( CliTester $I ) {
-		chdir( dirname( __DIR__ ) . '/_data/fake-project' );
+		chdir( $this->tests_root . '/_data/fake-project' );
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'Build complete.' );

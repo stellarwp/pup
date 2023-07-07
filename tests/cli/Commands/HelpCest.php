@@ -1,8 +1,9 @@
 <?php
 
-namespace StellarWP\Pup\Tests\Cli;
+namespace StellarWP\Pup\Tests\Cli\Commands;
 
 use Codeception\Example;
+use StellarWP\Pup\Tests\Cli\AbstractBase;
 use StellarWP\Pup\Tests\CliTester;
 
 class HelpCest extends AbstractBase {

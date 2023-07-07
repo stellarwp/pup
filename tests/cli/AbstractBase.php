@@ -8,6 +8,13 @@ class AbstractBase {
 	use \tad\Codeception\SnapshotAssertions\SnapshotAssertions;
 
 	protected $pup;
+	protected $pup_root;
+	protected $tests_root;
+
+	public function __construct() {
+		$this->tests_root = dirname( __DIR__ );
+		$this->pup_root = dirname( $this->tests_root );
+	}
 
 	public function _before( CliTester $I ) {
 		$this->pup = dirname( dirname( __DIR__ ) ) . '/pup';
