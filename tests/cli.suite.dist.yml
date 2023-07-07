@@ -1,0 +1,6 @@
+actor: CliTester
+modules:
+    enabled:
+        - Asserts
+        - Cli
+        - \StellarWP\Pup\Tests\Helper\Cli
