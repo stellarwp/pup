@@ -16,6 +16,8 @@ Runs the `build` commands from the `puprc` file.
 
 If you want your dev builds to build differently, you can add a `build_dev` property to your `.puprc` file.
 
+### Usage
+
 ```bash
 pup build [--dev]
 # or
@@ -27,6 +29,25 @@ composer pup build [--dev]
 |--- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--dev` | **Optional.** Whether or not this is a dev build. Using this option will run the `build_dev` commands from your `.puprc` file if they exist, otherwise it will run `build` commands. |
 
+### Specifying build commands
+
+You can specify build commands within your `.puprc` file by adding to either the `build` or `build_dev` properties. These
+commands will be run in the order they are specified. By default, if any command fails, the build will fail. You can,
+however, prepend your commands with `@` and that will tell `pup` to ignore failures for that step. Here's an example:
+
+```json
+{
+    "build": [
+        "npm ci",
+        "npm run build",
+        "@composer run some-script"
+    ]
+}
+```
+
+In the above example, `npm ci` and `npm run build` will need to complete successfully for the build to succeed, but the
+`composer run some-script` is prepended by `@` so if it fails, the build will continue forward.
+
 ## `pup check`
 
 Runs all registered check commands.
@@ -34,6 +55,7 @@ Runs all registered check commands.
 You can run all checks specified by your `.puprc` file (or the `.puprc-defaults` file if your `.puprc` file hasn't
 declared any checks) by running the following command:
 
+### Usage
 ```bash
 pup check
 # or
@@ -47,6 +69,8 @@ Scans your files for `tbd` (case-insensitive) and tells you where to find them.
 The `tbd` check will scan your files in relevant locations (`@since`, `@todo`, `@version`, etc) and display the files
 and line numbers where they appear.
 
+#### Usage
+
 ```bash
 pup check:tbd
 # or
@@ -57,8 +81,8 @@ composer pup check:tbd
 
 | Option                | Description                                                                                                                |
 |-----------------------|----------------------------------------------------------------------------------------------------------------------------|
-| `bail_on_failure`     | **Optional.** Whether or not to bail on failure. Defaults to `true`.                                                       |
-| `bail_on_failure_dev` | **Optional.** Whether or not to bail on failure when running with `--dev`. Defaults to `false`.                            |
+| `fail_method`     | **Optional.** How the check should fail. Defaults to `error`.                                |
+| `fail_method_dev` | **Optional.** How the check should fail when running with `--dev`. Defaults to `warn`. |
 | `dirs`                | **Optional.** An array of directories to scan. Defaults to `['src']`.                                                      |
 | `skip_directories`    | **Optional.** A pipe delimited list of directories to skip. Defaults can be seen in [`.puprc-defaults`](/.puprc-defaults). |
 | `skip_files`          | **Optional.** A pipe delimited list of files to skip. Defaults can be seen in [`.puprc-defaults`](/.puprc-defaults).       |
@@ -75,7 +99,7 @@ _Note:_ If you track your version numbers within `package.json`, that file only 
 the purposes of validation, `pup` will consider `major.minor.patch` versions within `package.json` to match with
 `major.minor.patch.whatever` versions in other files.
 
-
+### Usage
 ```bash
 pup check:version-conflict
 # or
@@ -84,15 +108,16 @@ composer pup check:version-conflict
 
 #### `.puprc` options
 
-| Option                | Description                                                                                                                |
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
-| `bail_on_failure`     | **Optional.** Whether or not to bail on failure. Defaults to `true`.                                                       |
-| `bail_on_failure_dev` | **Optional.** Whether or not to bail on failure when running with `--dev`. Defaults to `false`.                            |
+| Option            | Description                                                                                  |
+|-------------------|----------------------------------------------------------------------------------------------|
+| `fail_method`     | **Optional.** How the check should fail. Defaults to `error`.                                |
+| `fail_method_dev` | **Optional.** How the check should fail when running with `--dev`. Defaults to `warn`. |
 
 ## `pup clean`
 
 This command cleans up any directories that `pup` creates.
 
+### Usage
 ```bash
 pup clean
 # or
@@ -106,6 +131,7 @@ Gets your project's version number.
 This command will use the first [version file](/docs/configuration.md#paths-versions) declared in your `.puprc` file to get the version number.
 If you haven't provided a version file, the version will be `unknown`.
 
+### Usage
 ```bash
 pup get-version [--dev]
 # or
@@ -121,6 +147,7 @@ composer pup get-version [--dev]
 
 Shows the help menu.
 
+### Usage
 ```bash
 pup help [command]
 # or
@@ -142,6 +169,7 @@ command will exclude any file or directory declared in `.distignore`, in `pup`'s
 
 The zip that is generated will be placed in your project's root directory.
 
+### Usage
 ```bash
 pup package <version> [--dev]
 # or
@@ -162,6 +190,7 @@ Runs the full `pup` set of commands to create a zip file.
 This command is a wrapper command for the whole zipping process. You can see its [flow of commands](/docs/flow.md) for 
 more information on which commands it runs and when.
 
+### Usage
 ```bash
 pup zip <branch> [--dev] [--no-clone]
 # or

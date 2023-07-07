@@ -3,8 +3,8 @@
     "build_dev": [],
     "checks": {
         "tbd": {
-            "bail_on_failure": true,
-            "bail_on_failure_dev": false,
+            "fail_method": "error",
+            "fail_method_dev": "warn",
             "skip_directories": "bin|build|vendor|node_modules|.git|.github|tests",
             "skip_files": ".min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico",
             "dirs": [
@@ -12,8 +12,8 @@
             ]
         },
         "version-conflict": {
-            "bail_on_failure": true,
-            "bail_on_failure_dev": false
+            "fail_method": "error",
+            "fail_method_dev": "warn"
         }
     },
     "paths": {

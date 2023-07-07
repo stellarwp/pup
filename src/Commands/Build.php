@@ -37,13 +37,21 @@ class Build extends Command {
 
 		$output->writeln( '<comment>Running build steps...</comment>' );
 		foreach ( $build_steps as $step ) {
+			$bail_on_failure = true;
+			if ( strpos( $step, '@' ) === 0 ) {
+				$bail_on_failure = false;
+				$step = substr( $step, 1 );
+			}
 			$output->writeln( "* {$step}..." );
 			system( $step, $result );
-			$output->writeln( "* {$step}...Complete." . PHP_EOL );
 
 			if ( $result ) {
-				$output->writeln( "Build step failed: {$step}" );
-				return $result;
+				$output->writeln( "[FAIL] Build step failed: {$step}" );
+
+				if ( $bail_on_failure ) {
+					$output->writeln( "<fg=red>Exiting...</>" );
+					return $result;
+				}
 			}
 		}
 

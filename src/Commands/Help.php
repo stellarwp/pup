@@ -110,11 +110,7 @@ class Help extends Command {
 		$arguments_lines = [];
 
 		foreach ( (array) $docs as $doc_line ) {
-			if ( ! $doc_line ) {
-				continue;
-			}
-
-			$doc_line = trim( $doc_line );
+			$doc_line = trim( $doc_line, "\n" );
 			if ( ! $doc_line ) {
 				continue;
 			}
@@ -126,12 +122,11 @@ class Help extends Command {
 
 				if ( preg_match( '/^```/', $doc_line ) ) {
 					if ( ! $example ) {
-						$io->section( '> Usage:' );
 						$example = true;
 					} else {
 						$example = false;
 					}
-					$io->writeln( '<fg=green>' . str_repeat( '*', 50 ) . '</>' );
+					$io->writeln( '<fg=green>' . str_repeat( '.', 50 ) . '</>' );
 					continue;
 				}
 
@@ -146,18 +141,6 @@ class Help extends Command {
 				$doc_line = (string) preg_replace( '/`([^`]+)`/', '<fg=cyan>$1</>', $doc_line );
 				$doc_line = (string) preg_replace( '/\*\*([^*]+)\*\*/', '<fg=red>$1</>', $doc_line );
 				$doc_line = (string) preg_replace( '/\[([^\]]+)\]\([^\)]+\)/', '$1', $doc_line );
-
-				if ( preg_match( '/^##(#+ )(Arguments|`\.puprc` options)/', $doc_line, $matches ) ) {
-					$io->section( str_repeat( '>', substr_count( $matches[1], '#' ) ) . ' ' . $matches[2] . ':' );
-					$arguments = true;
-					continue;
-				}
-
-				if ( preg_match( '/^##(#+ )(.+)/', $doc_line, $matches ) ) {
-					$io->section( str_repeat( '>', substr_count( $matches[1], '#' ) ) . ' ' . $matches[2] . ':' );
-					$arguments = true;
-					continue;
-				}
 
 				if ( $arguments ) {
 					if ( preg_match( '/^\| (Arg|Opt)/', $doc_line ) ) {
@@ -181,8 +164,16 @@ class Help extends Command {
 							$arguments_headers,
 							$arguments_lines
 						);
-						continue;
 					}
+				}
+
+				if ( preg_match( '/^##(#+ )(.+)/', $doc_line, $matches ) ) {
+					$io->section( str_repeat( '>', substr_count( $matches[1], '#' ) ) . ' ' . $matches[2] . ':' );
+
+					if ( preg_match( '/^##(#+ )(Arguments|`\.puprc` options)/', $doc_line, $matches ) ) {
+						$arguments = true;
+					}
+					continue;
 				}
 
 				$io->writeln( $doc_line );

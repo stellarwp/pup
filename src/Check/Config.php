@@ -11,15 +11,15 @@ class Config {
 
 	/**
 	 * Should the check bail on failure when running dist builds?
-	 * @var bool
+	 * @var string
 	 */
-	protected $bail_on_failure = false;
+	protected $fail_method = 'error';
 
 	/**
 	 * Should the check bail on failure when running dev builds?
-	 * @var bool
+	 * @var string
 	 */
-	protected $bail_on_failure_dev = false;
+	protected $fail_method_dev = 'warning';
 
 	/**
 	 * The check config.
@@ -49,12 +49,12 @@ class Config {
 		$this->slug   = $slug;
 		$this->config = $check_config;
 
-		if ( isset( $this->config['bail_on_failure'] ) ) {
-			$this->bail_on_failure = (bool) $this->config['bail_on_failure'];
+		if ( isset( $this->config['fail_method'] ) ) {
+			$this->fail_method = (string) $this->config['fail_method'];
 		}
 
-		if ( isset( $this->config['bail_on_failure_dev'] ) ) {
-			$this->bail_on_failure = (bool) $this->config['bail_on_failure_dev'];
+		if ( isset( $this->config['fail_method_dev'] ) ) {
+			$this->fail_method_dev = (string) $this->config['fail_method_dev'];
 		}
 
 		if ( isset( $this->config['args'] ) ) {
@@ -94,6 +94,24 @@ class Config {
 	}
 
 	/**
+	 * Get fail method.
+	 *
+	 * @return string
+	 */
+	public function getFailMethod(): string {
+		return $this->fail_method;
+	}
+
+	/**
+	 * Get fail method for --dev.
+	 *
+	 * @return string
+	 */
+	public function getFailMethodDev(): string {
+		return $this->fail_method_dev;
+	}
+
+	/**
 	 * Get the file.
 	 *
 	 * @return string
@@ -126,7 +144,7 @@ class Config {
 	 * @return bool
 	 */
 	public function shouldBailOnFailure(): bool {
-		return $this->bail_on_failure;
+		return $this->fail_method === 'error';
 	}
 
 	/**
@@ -135,6 +153,6 @@ class Config {
 	 * @return bool
 	 */
 	public function shouldBailOnFailureDev(): bool {
-		return $this->bail_on_failure_dev;
+		return $this->fail_method_dev === 'error';
 	}
 }
