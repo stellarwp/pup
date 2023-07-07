@@ -172,6 +172,10 @@ class Package extends Command {
 			'-rlc',
 		];
 
+		if ( file_exists( $working_dir . '.distinclude' ) ) {
+			$command[] = '--include-from=' . escapeshellarg( $working_dir . '.distinclude' );
+		}
+
 		if ( file_exists( $working_dir . '.distignore' ) ) {
 			$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '.distignore' );
 		}

@@ -8,6 +8,7 @@ use StellarWP\Pup\Commands\Checks\SimpleCheck;
 use StellarWP\Pup\Exceptions\ConfigException;
 use Symfony\Component\Console\Application as Symfony_Application;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Process\Process;
 
 class App extends Symfony_Application {
 	/**
@@ -127,6 +128,32 @@ class App extends Symfony_Application {
 
 			$this->add( new SimpleCheck( $check->getSlug() ) );
 		}
+	}
+
+	/**
+	 * Returns the long version of the application.
+	 *
+	 * @return string
+	 */
+	public function getLongVersion() {
+
+		$process = new Process( [ 'php', '--version' ] );
+		$process->run();
+
+		$php_version_line = null;
+		if ( $process->isSuccessful() ) {
+			$php_version_line = $process->getOutput();
+			$php_version_line = explode( "\n", $php_version_line );
+			$php_version_line = $php_version_line[0];
+		}
+
+		return sprintf(
+			'%1$s <info>%2$s</info> from <comment>%3$s</comment>' . ( $php_version_line ? PHP_EOL . 'Using: %4$s' : '' ),
+			$this->getName(),
+			$this->getVersion(),
+			__PUP_DIR__ . '/pup',
+			$php_version_line
+		);
 	}
 
 	/**

@@ -163,9 +163,15 @@ composer pup help [command]
 
 Packages your project into a zip file with the passed in version number.
 
-This command uses the provided version number and builds a zip file with the appropriate name. While packaging, this
-command will exclude any file or directory declared in `.distignore`, in `pup`'s own `.distignore-defaults` file, or as
-`export-ignore` within `.gitattributes`.
+This command uses the provided version number and builds a zip file with the appropriate name. You can adjust what files
+get included and excluded from zipping in a couple of ways by adding files to your project:
+
+* `.distinclude` - Any file pattern included here will cause files/directories matching that pattern to be included. **Note:** This file will supersede any exclusions.
+* `.distignore` - Any file pattern included here will cause files/directories matching that pattern to be excluded.
+* `.gitattributes` - Any file pattern with `export-ignore` after it will be treated similar to files within `.distignore`.
+
+By default, `pup` will use its own `.distignore-defaults` file to exclude a number of common patterns. You can turn the
+default exclusion rules off by adding `"zip_use_default_ignore": false` to your `.puprc` file.
 
 The zip that is generated will be placed in your project's root directory.
 

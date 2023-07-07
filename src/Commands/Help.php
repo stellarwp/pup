@@ -5,7 +5,9 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use const StellarWP\Pup\PUP_VERSION;
 
 class Help extends Command {
 	/**
@@ -25,15 +27,6 @@ class Help extends Command {
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		$topic = $input->getArgument( 'topic' );
-		$io = $this->getIO();
-
-		$io->writeln( str_repeat( '*', 80 ) );
-		$io->writeln( '*' );
-		$io->writeln( '* <fg=blue><fg=magenta>P</>roduct <fg=magenta>U</>tility & <fg=magenta>P</>ackager</>' );
-		$io->writeln( '* ' . str_repeat( '-', 78 ) . '' );
-		$io->writeln( '* A CLI utility by StellarWP' );
-		$io->writeln( '*' );
-		$io->writeln( str_repeat( '*', 80 ) );
 
 		if ( $topic ) {
 			$this->printCommandHelp( $topic );
@@ -52,6 +45,14 @@ class Help extends Command {
 	protected function printCommandList(): void {
 		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
 		$io = $this->getIO();
+
+		$io->writeln( str_repeat( '*', 80 ) );
+		$io->writeln( '*' );
+		$io->writeln( '* <fg=blue><fg=magenta>P</>roduct <fg=magenta>U</>tility & <fg=magenta>P</>ackager</>' );
+		$io->writeln( '* ' . str_repeat( '-', 78 ) . '' );
+		$io->writeln( '* A CLI utility by StellarWP' );
+		$io->writeln( '*' );
+		$io->writeln( str_repeat( '*', 80 ) );
 
 		$commands = [];
 		$command = null;
@@ -110,11 +111,6 @@ class Help extends Command {
 		$arguments_lines = [];
 
 		foreach ( (array) $docs as $doc_line ) {
-			$doc_line = trim( $doc_line, "\n" );
-			if ( ! $doc_line ) {
-				continue;
-			}
-
 			if ( $start ) {
 				if ( preg_match( '/##+\s+`pup /', $doc_line ) ) {
 					break;
@@ -176,7 +172,7 @@ class Help extends Command {
 					continue;
 				}
 
-				$io->writeln( $doc_line );
+				$io->write( $doc_line );
 
 				if ( ! $did_first_line ) {
 					$did_first_line = true;
