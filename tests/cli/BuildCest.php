@@ -21,8 +21,12 @@ class BuildCest extends AbstractBase {
 
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
-		$I->seeInShellOutput( 'drwxr-xr-x' );
+		$I->seeInShellOutput( '.puprc' );
+		$I->seeInShellOutput( 'bootstrap.php' );
 		$I->seeInShellOutput( 'fake project, yo' );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
 	}
 
 	/**
@@ -38,8 +42,12 @@ class BuildCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'Build complete.' );
-		$I->dontSeeInShellOutput( 'drwxr-xr-x' );
+		$I->dontSeeInShellOutput( '.puprc' );
+		$I->dontSeeInShellOutput( 'bootstrap.php' );
 		$I->dontSeeInShellOutput( 'fake project, yo' );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
 	}
 
 	/**
@@ -50,7 +58,11 @@ class BuildCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'Build complete.' );
-		$I->dontSeeInShellOutput( 'drwxr-xr-x' );
+		$I->dontSeeInShellOutput( '.puprc' );
+		$I->dontSeeInShellOutput( 'bootstrap.php' );
 		$I->dontSeeInShellOutput( 'fake project, yo' );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
 	}
 }

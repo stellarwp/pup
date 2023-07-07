@@ -18,6 +18,9 @@ class HelpCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup}" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'A CLI utility' );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
 	}
 
 	/**
@@ -27,16 +30,21 @@ class HelpCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} help" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'A CLI utility' );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
 	}
 
 	/**
 	 * @test
 	 * @dataProvider topicProvider
 	 */
-	public function it_should_show_build_docs( CliTester $I, Example $example ) {
-		$I->runShellCommand( "php {$this->pup} help {$example['topic']}" );
+	public function it_should_show_topic_docs( CliTester $I, Example $example ) {
+		$I->runShellCommand( "php {$this->pup} help build" );
 		$I->seeResultCodeIs( 0 );
-		$I->seeInShellOutput( 'pup ' . $example['topic'] );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
 	}
 
 	protected function topicProvider(): array {

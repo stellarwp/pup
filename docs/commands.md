@@ -11,7 +11,7 @@
 * [`pup zip`](/docs/commands.md#pup-zip)
 
 ## `pup build`
-Runs the `build` commands from the `puprc` file.
+Runs the `build` commands from the `.puprc` file.
 
 If you want your dev builds to build differently, you can add a `build_dev` property to your `.puprc` file.
 

@@ -5,6 +5,8 @@ namespace StellarWP\Pup\Tests\Cli;
 use StellarWP\Pup\Tests\CliTester;
 
 class AbstractBase {
+	use \tad\Codeception\SnapshotAssertions\SnapshotAssertions;
+
 	protected $pup;
 
 	public function _before( CliTester $I ) {
@@ -20,7 +22,7 @@ class AbstractBase {
 	protected function get_puprc( array $data = [] ) {
 		$defaults = [
 			'build' => [
-				"ls -al",
+				"ls -a",
 			],
 			"paths" => [
 				"versions" => [
