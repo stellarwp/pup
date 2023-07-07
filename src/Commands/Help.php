@@ -29,9 +29,9 @@ class Help extends Command {
 
 		$io->writeln( str_repeat( '*', 80 ) );
 		$io->writeln( '*' );
-		$io->writeln( '* <fg=white><fg=cyan>P</>roduct <fg=cyan>U</>tility & <fg=cyan>P</>ackager</>' );
-		$io->writeln( '* <fg=gray>' . str_repeat( '-', 78 ) . '</>' );
-		$io->writeln( '* <fg=gray>A CLI utility by StellarWP</>' );
+		$io->writeln( '* <fg=blue><fg=magenta>P</>roduct <fg=magenta>U</>tility & <fg=magenta>P</>ackager</>' );
+		$io->writeln( '* ' . str_repeat( '-', 78 ) . '' );
+		$io->writeln( '* A CLI utility by StellarWP' );
 		$io->writeln( '*' );
 		$io->writeln( str_repeat( '*', 80 ) );
 
@@ -131,13 +131,13 @@ class Help extends Command {
 					} else {
 						$example = false;
 					}
-					$io->writeln( '<fg=gray>' . str_repeat( '*', 50 ) . '</>' );
+					$io->writeln( '<fg=green>' . str_repeat( '*', 50 ) . '</>' );
 					continue;
 				}
 
 				if ( $example ) {
 					if ( preg_match( '/^#/', $doc_line ) ) {
-						$doc_line = '<fg=gray>' . $doc_line . '</>';
+						$doc_line = '<fg=green>' . $doc_line . '</>';
 					} else {
 						$doc_line = '<fg=cyan>' . $doc_line . '</>';
 					}

@@ -37,9 +37,9 @@ class Build extends Command {
 
 		$output->writeln( '<comment>Running build steps...</comment>' );
 		foreach ( $build_steps as $step ) {
-			$output->write( "* {$step}..." );
+			$output->writeln( "* {$step}..." );
 			system( $step, $result );
-			$output->write( 'Complete.' . PHP_EOL );
+			$output->writeln( "* {$step}...Complete." . PHP_EOL );
 
 			if ( $result ) {
 				$output->writeln( "Build step failed: {$step}" );
