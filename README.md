@@ -2,6 +2,8 @@
 
 This is a CLI utility built by [StellarWP](https://stellarwp.com) for running project build processes, sanity checks, and packaging into zips.
 
+[![Static Analysis](https://github.com/stellarwp/pup/actions/workflows/static-analysis.yml/badge.svg)](https://github.com/stellarwp/pup/actions/workflows/static-analysis.yml)
+
 ## Docs
 
 * [Installation](/docs/installation.md)
