@@ -147,7 +147,7 @@ class Help extends Command {
 				$doc_line = (string) preg_replace( '/\*\*([^*]+)\*\*/', '<fg=red>$1</>', $doc_line );
 				$doc_line = (string) preg_replace( '/\[([^\]]+)\]\([^\)]+\)/', '$1', $doc_line );
 
-				if ( preg_match( '/^##(#+ )(Arguments)/', $doc_line, $matches ) ) {
+				if ( preg_match( '/^##(#+ )(Arguments|`\.puprc` options)/', $doc_line, $matches ) ) {
 					$io->section( str_repeat( '>', substr_count( $matches[1], '#' ) ) . ' ' . $matches[2] . ':' );
 					$arguments = true;
 					continue;
@@ -160,7 +160,7 @@ class Help extends Command {
 				}
 
 				if ( $arguments ) {
-					if ( preg_match( '/^\| Arg/', $doc_line ) ) {
+					if ( preg_match( '/^\| (Arg|Opt)/', $doc_line ) ) {
 						$arguments_headers = array_map( 'trim', explode( '|', trim( $doc_line, '|' ) ) );
 						continue;
 					}

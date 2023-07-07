@@ -57,7 +57,49 @@ class Tbd extends AbstractCheck {
 		$matched_lines = [];
 		$current_dir = getcwd();
 
-		$dir = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( App::getConfig()->getWorkingDir() . $root ) );
+		$dirs = isset( $this->check_config->getConfig()['dirs'] ) ? $this->check_config->getConfig()['dirs'] : [];
+
+		foreach ( $dirs as $dir ) {
+			$results = $this->scanDir(
+				$root,
+				$current_dir,
+				$dir,
+				$files_to_skip,
+				$directories_to_skip,
+			);
+
+			$matched_lines = array_merge( $matched_lines, $results );
+		}
+
+		if ( $matched_lines ) {
+			$found_tbds = true;
+			$output->writeln( "<fg=red>TBDs have been found!</>" );
+			foreach ( $matched_lines as $file_path => $info ) {
+				$output->writeln( "<fg=cyan>{$file_path}</>" );
+				foreach ( $info['lines'] as $line_num => $line ) {
+					$output->writeln( "<fg=yellow>{$line_num}:</> {$line}" );
+				}
+				$output->writeln( '' );
+			}
+		} else {
+			$output->writeln( '<info>No TBDs found!</info>' );
+			$output->writeln( '' );
+		}
+		$output->writeln( '' );
+
+		if ( $found_tbds ) {
+			$output->writeln( '<error>TBDs found!</error>' );
+		} else {
+			$output->writeln( '<info>Success! No TBDs found.</info>' );
+		}
+
+		return $found_tbds ? 1 : 0;
+	}
+
+	protected function scanDir( $root, string $current_dir, string $scan_dir, string $files_to_skip, string $directories_to_skip ): array {
+		$matched_lines = [];
+
+		$dir = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( App::getConfig()->getWorkingDir() . $root . '/' . $scan_dir ) );
 		foreach ( $dir as $file ) {
 			// Skip directories like "." and ".." to avoid file_get_contents errors.
 			if ( $file->isDir() ) {
@@ -67,7 +109,7 @@ class Tbd extends AbstractCheck {
 			$file_path  = $file->getPathname();
 			$short_path = (string) str_replace( $current_dir . '/', '', $file_path );
 
-			if ( preg_match( '!(' . $files_to_skip . ')$!', $file_path ) ) {
+			if ( preg_match( '!(' . $files_to_skip . ')$!', $short_path ) ) {
 				continue;
 			}
 
@@ -80,7 +122,7 @@ class Tbd extends AbstractCheck {
 				$directory_separator = '\\\\';
 			}
 
-			if ( preg_match( '!(' . $directories_to_skip . ')' . $directory_separator . '!', $file_path ) ) {
+			if ( preg_match( '!(' . $directories_to_skip . ')' . $directory_separator . '!', $short_path ) ) {
 				continue;
 			}
 
@@ -116,28 +158,6 @@ class Tbd extends AbstractCheck {
 			}
 		}
 
-		if ( $matched_lines ) {
-			$found_tbds = true;
-			$output->writeln( "<fg=red>TBDs have been found!</>" );
-			foreach ( $matched_lines as $file_path => $info ) {
-				$output->writeln( "<fg=cyan>{$file_path}</>" );
-				foreach ( $info['lines'] as $line_num => $line ) {
-					$output->writeln( "<fg=yellow>{$line_num}:</> {$line}" );
-				}
-				$output->writeln( '' );
-			}
-		} else {
-			$output->writeln( '<info>No TBDs found!</info>' );
-			$output->writeln( '' );
-		}
-		$output->writeln( '' );
-
-		if ( $found_tbds ) {
-			$output->writeln( '<error>TBDs found!</error>' );
-		} else {
-			$output->writeln( '<info>Success! No TBDs found.</info>' );
-		}
-
-		return $found_tbds ? 1 : 0;
+		return $matched_lines;
 	}
 }

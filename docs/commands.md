@@ -53,6 +53,17 @@ pup check:tbd
 composer pup check:tbd
 ```
 
+#### `.puprc` options
+
+| Option                | Description                                                                                                                |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `bail_on_failure`     | **Optional.** Whether or not to bail on failure. Defaults to `true`.                                                       |
+| `bail_on_failure_dev` | **Optional.** Whether or not to bail on failure when running with `--dev`. Defaults to `false`.                            |
+| `dirs`                | **Optional.** An array of directories to scan. Defaults to `['src']`.                                                      |
+| `skip_directories`    | **Optional.** A pipe delimited list of directories to skip. Defaults can be seen in [`.puprc-defaults`](/.puprc-defaults). |
+| `skip_files`          | **Optional.** A pipe delimited list of files to skip. Defaults can be seen in [`.puprc-defaults`](/.puprc-defaults).       |
+
+
 ### `pup check:version-conflict`
 
 Verifies that all of your version numbers match.
@@ -70,6 +81,13 @@ pup check:version-conflict
 # or
 composer pup check:version-conflict
 ```
+
+#### `.puprc` options
+
+| Option                | Description                                                                                                                |
+|-----------------------|----------------------------------------------------------------------------------------------------------------------------|
+| `bail_on_failure`     | **Optional.** Whether or not to bail on failure. Defaults to `true`.                                                       |
+| `bail_on_failure_dev` | **Optional.** Whether or not to bail on failure when running with `--dev`. Defaults to `false`.                            |
 
 ## `pup clean`
 

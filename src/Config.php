@@ -25,7 +25,7 @@ class Config {
 	/**
 	 * @var array<string, mixed>
 	 */
-	protected $puprc;
+	protected $puprc = [];
 
 	/**
 	 * Loads the composer.json file and pup config.
