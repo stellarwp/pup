@@ -36,6 +36,12 @@
             "StellarWP\\Pup\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "StellarWP\\Pup\\Tests\\Helper\\": "tests/_support/Helper/",
+            "StellarWP\\Pup\\Tests\\Cli\\": "tests/cli/"
+        }
+    },
     "scripts": {
         "build-phar": [
             "test -f ./bin/box.phar || curl -o bin/box.phar -L -C - https://github.com/box-project/box/releases/download/3.16.0/box.phar",

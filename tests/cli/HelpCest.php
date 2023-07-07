@@ -1,22 +1,21 @@
 <?php
 
-namespace StellarWP\Pup\Tests;
+namespace StellarWP\Pup\Tests\Cli;
 
 use Codeception\Example;
 use StellarWP\Pup\Tests\CliTester;
 
-class HelpCest {
-	protected $path_to_pup;
+class HelpCest extends AbstractBase {
 
 	public function _before( CliTester $I ) {
-		$this->path_to_pup = dirname( dirname( __DIR__ ) ) . '/pup';
+		parent::_before( $I );
 	}
 
 	/**
 	 * @test
 	 */
 	public function it_should_default_to_help( CliTester $I ) {
-		$I->runShellCommand( "php {$this->path_to_pup}" );
+		$I->runShellCommand( "php {$this->pup}" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'A CLI utility' );
 	}
@@ -25,7 +24,7 @@ class HelpCest {
 	 * @test
 	 */
 	public function it_should_run_help( CliTester $I ) {
-		$I->runShellCommand( "php {$this->path_to_pup} help" );
+		$I->runShellCommand( "php {$this->pup} help" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'A CLI utility' );
 	}
@@ -35,7 +34,7 @@ class HelpCest {
 	 * @dataProvider topicProvider
 	 */
 	public function it_should_show_build_docs( CliTester $I, Example $example ) {
-		$I->runShellCommand( "php {$this->path_to_pup} help {$example['topic']}" );
+		$I->runShellCommand( "php {$this->pup} help {$example['topic']}" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'pup ' . $example['topic'] );
 	}
