@@ -123,14 +123,12 @@ class Config {
 			$original[ $key ] = $new[ $key ];
 		}
 
-		if ( is_array( $new ) ) {
-			foreach ( $new as $key => $item ) {
-				if ( isset( $original[ $key ] ) ) {
-					continue;
-				}
-
-				$original[ $key ] = $item;
+		foreach ( $new as $key => $item ) {
+			if ( isset( $original[ $key ] ) ) {
+				continue;
 			}
+
+			$original[ $key ] = $item;
 		}
 
 		return $original;
