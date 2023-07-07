@@ -11,13 +11,11 @@
 * [`pup zip`](/docs/commands.md#pup-zip)
 
 ## `pup build`
-
 Runs the `build` commands from the `puprc` file.
 
 If you want your dev builds to build differently, you can add a `build_dev` property to your `.puprc` file.
 
 ### Usage
-
 ```bash
 pup build [--dev]
 # or
@@ -30,7 +28,6 @@ composer pup build [--dev]
 | `--dev` | **Optional.** Whether or not this is a dev build. Using this option will run the `build_dev` commands from your `.puprc` file if they exist, otherwise it will run `build` commands. |
 
 ### Specifying build commands
-
 You can specify build commands within your `.puprc` file by adding to either the `build` or `build_dev` properties. These
 commands will be run in the order they are specified. By default, if any command fails, the build will fail. You can,
 however, prepend your commands with `@` and that will tell `pup` to ignore failures for that step. Here's an example:
@@ -49,7 +46,6 @@ In the above example, `npm ci` and `npm run build` will need to complete success
 `composer run some-script` is prepended by `@` so if it fails, the build will continue forward.
 
 ## `pup check`
-
 Runs all registered check commands.
 
 You can run all checks specified by your `.puprc` file (or the `.puprc-defaults` file if your `.puprc` file hasn't
@@ -63,14 +59,12 @@ composer pup check
 ```
 
 ### `pup check:tbd`
-
 Scans your files for `tbd` (case-insensitive) and tells you where to find them.
 
 The `tbd` check will scan your files in relevant locations (`@since`, `@todo`, `@version`, etc) and display the files
 and line numbers where they appear.
 
 #### Usage
-
 ```bash
 pup check:tbd
 # or
@@ -78,7 +72,6 @@ composer pup check:tbd
 ```
 
 #### `.puprc` options
-
 | Option                | Description                                                                                                                |
 |-----------------------|----------------------------------------------------------------------------------------------------------------------------|
 | `fail_method`     | **Optional.** How the check should fail. Defaults to `error`.                                |
@@ -89,7 +82,6 @@ composer pup check:tbd
 
 
 ### `pup check:version-conflict`
-
 Verifies that all of your version numbers match.
 
 The `version-conflict` check looks at all of the version files you've declared in your `.puprc` file and ensures that
@@ -107,14 +99,12 @@ composer pup check:version-conflict
 ```
 
 #### `.puprc` options
-
 | Option            | Description                                                                                  |
 |-------------------|----------------------------------------------------------------------------------------------|
 | `fail_method`     | **Optional.** How the check should fail. Defaults to `error`.                                |
 | `fail_method_dev` | **Optional.** How the check should fail when running with `--dev`. Defaults to `warn`. |
 
 ## `pup clean`
-
 This command cleans up any directories that `pup` creates.
 
 ### Usage
@@ -125,7 +115,6 @@ composer pup clean
 ```
 
 ## `pup get-version`
-
 Gets your project's version number.
 
 This command will use the first [version file](/docs/configuration.md#paths-versions) declared in your `.puprc` file to get the version number.
@@ -144,7 +133,6 @@ composer pup get-version [--dev]
 | `--dev` | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
 
 ## `pup help`
-
 Shows the help menu.
 
 ### Usage
@@ -160,7 +148,6 @@ composer pup help [command]
 | `command` | **Optional.** The command to get help for. If omitted, the general help menu will be displayed.          |
 
 ## `pup package`
-
 Packages your project into a zip file with the passed in version number.
 
 This command uses the provided version number and builds a zip file with the appropriate name. You can adjust what files
@@ -183,14 +170,12 @@ composer pup package <version> [--dev]
 ```
 
 ### Arguments
-
 | Argument | Description                                                                                              |
 |--- |----------------------------------------------------------------------------------------------------------|
 | `version` | **Required.** The version number to use when packaging.                                                  |
 | `--dev` | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
 
 ## `pup zip`
-
 Runs the full `pup` set of commands to create a zip file.
 
 This command is a wrapper command for the whole zipping process. You can see its [flow of commands](/docs/flow.md) for 
