@@ -63,12 +63,14 @@ This is what you should add as a `paths.versions` entry:
 
 ```json
 {
-    "paths": [
-        {
-            "file": "readme.txt",
-            "regex": "^(Stable tag: +)(.+)"
-        }
-    ]
+    "paths": {
+        "versions": [
+            {
+                "file": "readme.txt",
+                "regex": "^(Stable tag: +)(.+)"
+            }
+        ]
+    }
 }
 ```
 
@@ -89,12 +91,14 @@ This is what you should add as a `paths.versions` entry:
 
 ```json
 {
-    "paths": [
-        {
-            "file": "bootstrap.php",
-            "regex": "(define\\( +'MY_PLUGIN_VERSION', +')([^']+)"
-        }
-    ]
+    "paths": {
+        "versions": [
+            {
+                "file": "bootstrap.php",
+                "regex": "(define\\( +['\"]MY_PLUGIN_VERSION['\"], +['\"])([^'\"]+)"
+            }
+        ]
+    }
 }
 ```
 
@@ -123,11 +127,13 @@ This is what you should add as a `paths.versions` entry:
 
 ```json
 {
-    "paths": [
-        {
-            "file": "src/MyPlugin/Plugin.php",
-            "regex": "(const +VERSION += +')([^']+)"
-        }
-    ]
+    "paths": {
+        "versions": [
+            {
+                "file": "src/MyPlugin/Plugin.php",
+                "regex": "(const +VERSION += +['\"])([^'\"]+)"
+            }
+        ]
+    }
 }
 ```

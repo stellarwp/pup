@@ -5,9 +5,7 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
-use const StellarWP\Pup\PUP_VERSION;
 
 class Help extends Command {
 	/**
@@ -111,6 +109,10 @@ class Help extends Command {
 		$arguments_lines = [];
 
 		foreach ( (array) $docs as $doc_line ) {
+			if ( ! is_string( $doc_line ) ) {
+				continue;
+			}
+
 			if ( $start ) {
 				if ( preg_match( '/##+\s+`pup /', $doc_line ) ) {
 					break;

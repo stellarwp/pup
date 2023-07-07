@@ -28,6 +28,11 @@ if ( ! \Phar::running() ) {
 	require __PUP_DIR__ . '/vendor/autoload.php';
 }
 
-App::getConfig();
-$app = App::instance();
-$app->run();
+try {
+	App::getConfig();
+	$app = App::instance();
+	$app->run();
+} catch ( \Exception $e ) {
+	echo 'ERROR: ' . $e->getMessage() . PHP_EOL;
+	exit( 1 );
+}

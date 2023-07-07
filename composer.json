@@ -47,6 +47,9 @@
             "test -f ./bin/box.phar || curl -o bin/box.phar -L -C - https://github.com/box-project/box/releases/download/3.16.0/box.phar",
             "@php bin/box.phar build"
         ],
+        "cr": [
+            "vendor/bin/codecept run "
+        ],
         "test:analysis": [
             "phpstan analyse -c phpstan.neon.dist --memory-limit=512M"
         ]
