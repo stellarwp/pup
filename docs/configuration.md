@@ -29,7 +29,12 @@ root of the project. This file is a JSON file that contains the configuration op
 | `paths.zip_dir`   | `string` | The directory that will be created when creating a zip. Defaults to `pup-zip`.                                                                                                                                                                                                      |
 
 
-### `paths.versions` examples
+### `paths.versions`
+
+The regular expressions used to locate version numbers must have two capture groups. The first capture group is the _thing_
+you are looking for that immediately prefixes the version number. The second capture group is the version number itself.
+
+Here are some examples:
 
 * [A file with the version number in a docblock](#example-a-file-with-the-version-number-in-a-docblock)
 * [A file with the version number in a PHP define](#example-a-file-with-the-version-number-in-a-php-define)
