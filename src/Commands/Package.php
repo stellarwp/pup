@@ -58,11 +58,20 @@ class Package extends Command {
 		$config   = App::getConfig();
 		$zip_name = $config->getZipName();
 
-		system( 'git stash' );
+		$output->writeln( '<comment>Packaging zip...</comment>' );
 
-		$this->updateVersionsInFiles( $version );
+		system( 'git stash --quiet' );
 
-		$zip_filename = "{$zip_name}.{$version}.zip";
+		$zip_filename = "{$zip_name}.zip";
+
+		$output->write( '* Updating version files...' );
+		if ( $version !== 'unknown' ) {
+			$this->updateVersionsInFiles( $version );
+			$zip_filename = "{$zip_name}.{$version}.zip";
+		}
+		$output->write( 'Complete.' . PHP_EOL );
+
+		$output->write( '* Synchronizing files to zip directory...' );
 		$pup_zip_dir  = $config->getZipDir();
 
 		DirectoryUtils::rmdir( $pup_zip_dir );
@@ -70,18 +79,21 @@ class Package extends Command {
 		mkdir( $pup_zip_dir );
 
 		$results = $this->syncFiles( $root, $pup_zip_dir );
+		$output->write( 'Complete.' . PHP_EOL );
 
 		if ( $results !== 0 ) {
 			$this->undoChanges();
 			return $results;
 		}
 
+		$output->write( '* Zipping...' );
 		$results = $this->createZip( $pup_zip_dir, $zip_filename, $zip_name );
 
 		if ( $results !== 0 ) {
 			$this->undoChanges();
 			return $results;
 		}
+		$output->write( 'Complete.' . PHP_EOL );
 
 		$this->undoChanges();
 
@@ -145,7 +157,7 @@ class Package extends Command {
 		$working_dir      = App::getConfig()->getWorkingDir();
 		$build_dir        = str_replace( $working_dir, '', App::getConfig()->getBuildDir() );
 		$zip_dir          = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
-		$ignore_defaults  = App::getConfig()->getZipIgnoreDefaults();
+		$use_ignore_defaults  = App::getConfig()->getZipUseDefaultIgnore();
 		$rsync_executable = App::getConfig()->getRsyncExecutable();
 		$rsync_executable = DirectoryUtils::normalizeDir( $rsync_executable );
 		$rsync_split      = explode( DIRECTORY_SEPARATOR, $rsync_executable );
@@ -158,13 +170,6 @@ class Package extends Command {
 		$command = [
 			$rsync_executable,
 			'-rlc',
-			'--exclude=' . escapeshellarg( $build_dir ),
-			'--exclude=' . escapeshellarg( $zip_dir ),
-			'--exclude=.puprc',
-			escapeshellarg( $source . '/' ),
-			escapeshellarg( $destination . '/' ),
-			'--delete',
-			'--delete-excluded',
 		];
 
 		if ( file_exists( $working_dir . '.distignore' ) ) {
@@ -192,9 +197,19 @@ class Package extends Command {
 			}
 		}
 
-		if ( $ignore_defaults ) {
-			$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '.distignore-defaults' );
+		if ( $use_ignore_defaults ) {
+			$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
 		}
+
+		$command[] = '--exclude=' . escapeshellarg( $build_dir );
+		$command[] = '--exclude=' . escapeshellarg( $zip_dir );
+		$command[] = '--exclude=\'.puprc\'';
+		$command[] = '--exclude=\'.pup-distignore\'';
+
+		$command[] = escapeshellarg( $source . '/' );
+		$command[] = escapeshellarg( $destination . '/' );
+		$command[] = '--delete';
+		$command[] = '--delete-excluded';
 
 		$command = implode( ' ', $command );
 		$result_code = 0;

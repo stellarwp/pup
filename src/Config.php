@@ -70,7 +70,7 @@ class Config {
 				continue;
 			}
 
-			if ( $key === 'checks' ) {
+			if ( $key === 'checks' && $value ) {
 				$this->config->$key = $value;
 				continue;
 			}
@@ -385,15 +385,8 @@ class Config {
 	/**
 	 * @return string
 	 */
-	public function getZipIgnore() : string {
-		return $this->config->zip_ignore ?: '.distignore';
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getZipIgnoreDefaults() : string {
-		return $this->config->zip_ignore_include_defaults ? '' : '.distignore-defaults';
+	public function getZipUseDefaultIgnore() : string {
+		return (bool) $this->config->zip_use_default_ignore;
 	}
 
 	/**

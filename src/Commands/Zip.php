@@ -50,9 +50,11 @@ class Zip extends Command {
 				$branch_arg = "-b {$branch}";
 			}
 
-			system( 'git clone --recursive ' . $branch_arg . ' ' . App::getConfig()->getRepo() . ' ' . App::getConfig()->getBuildDir( false ) );
+			$output->writeln( '<comment>Cloning the repo into ' . App::getConfig()->getBuildDir( false ) . '...</comment>' );
+			system( 'git clone --quiet --recursive ' . $branch_arg . ' ' . App::getConfig()->getRepo() . ' ' . App::getConfig()->getBuildDir( false ) );
+			$output->writeln( 'Clone complete.' );
 		} elseif ( $branch ) {
-			system( 'git checkout ' . $branch );
+			system( 'git checkout --quiet ' . $branch );
 		}
 
 		$results = $this->runBuild();
@@ -76,6 +78,7 @@ class Zip extends Command {
 			$output->writeln( '<error>The package step of `pup zip` failed.</error>' );
 			return $results;
 		}
+
 		$results = $this->runClean();
 		if ( $results !== 0 ) {
 			$output->writeln( '<error>The clean step of `pup zip` failed.</error>' );
@@ -125,7 +128,7 @@ class Zip extends Command {
 			return 1;
 		}
 
-		$command = $application->find( 'build' );
+		$command = $application->find( 'check' );
 		$arguments = [];
 
 		if ( $this->input->getOption( 'dev' ) ) {
@@ -167,7 +170,11 @@ class Zip extends Command {
 		$buffer = new BufferedOutput();
 
 		$command_input = new ArrayInput( $arguments );
-		$command->run( $command_input, $buffer );
+		$results = $command->run( $command_input, $buffer );
+
+		if ( $results !== 0 ) {
+			return 'unknown';
+		}
 
 		return trim( $buffer->fetch() );
 	}

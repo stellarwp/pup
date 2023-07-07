@@ -38,8 +38,8 @@ class Tbd extends AbstractCheck {
 
 		$found_tbds = false;
 
-		$files_to_skip = '.min.css|.min.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico';
-		$directories_to_skip = 'vendor|node_modules|.git|tests';
+		$files_to_skip = '.min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico';
+		$directories_to_skip = 'bin|build|vendor|node_modules|.git|.github|tests';
 
 		$check_config = $this->check_config->getConfig();
 
@@ -61,7 +61,7 @@ class Tbd extends AbstractCheck {
 
 		foreach ( $dirs as $dir ) {
 			$results = $this->scanDir(
-				$root,
+				$root ?: '.',
 				$current_dir,
 				$dir,
 				$files_to_skip,
@@ -99,7 +99,7 @@ class Tbd extends AbstractCheck {
 	protected function scanDir( $root, string $current_dir, string $scan_dir, string $files_to_skip, string $directories_to_skip ): array {
 		$matched_lines = [];
 
-		$dir = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( App::getConfig()->getWorkingDir() . $root . '/' . $scan_dir ) );
+		$dir = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root . '/' . $scan_dir ) );
 		foreach ( $dir as $file ) {
 			// Skip directories like "." and ".." to avoid file_get_contents errors.
 			if ( $file->isDir() ) {
@@ -113,7 +113,7 @@ class Tbd extends AbstractCheck {
 				continue;
 			}
 
-			if ( preg_match( '!(\.pup-|\.puprc)!', $file_path ) ) {
+			if ( preg_match( '!(\.pup-)|(\.puprc)!', $short_path ) ) {
 				continue;
 			}
 
@@ -126,7 +126,7 @@ class Tbd extends AbstractCheck {
 				continue;
 			}
 
-			$content   = file_get_contents( $file_path );
+			$content   = file_get_contents( $short_path );
 
 			if ( ! $content ) {
 				continue;

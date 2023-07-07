@@ -36,6 +36,8 @@ tests
 .phpstorm.meta.php
 .prettierignore
 .prettierrc.json
+.puprc
+.pup-distignore
 .stylelintignore
 .stylelintrc
 .stylelintrc.json

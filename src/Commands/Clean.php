@@ -29,26 +29,29 @@ class Clean extends Command {
 		$zip_dir   = $config->getZipDir();
 		$build_dir = $config->getBuildDir();
 
-		$output->writeln( "Removing zip dir: {$zip_dir}" );
+		$output->writeln( '<fg=yellow>Cleaning up...</>' );
+
+		$output->write( "* Removing zip dir..." );
 		if ( file_exists( $zip_dir ) && DirectoryUtils::rmdir( $zip_dir ) !== 0 ) {
 			throw new \Exception( "Could not remove {$zip_dir}." );
 		}
+		$output->write( 'Complete.' . PHP_EOL );
 
-		$output->writeln( "Removing build dir: {$build_dir}" );
+		$output->write( "* Removing build dir..." );
 		if ( file_exists( $build_dir ) && DirectoryUtils::rmdir( $build_dir ) !== 0 ) {
 			throw new \Exception( "Could not remove {$build_dir}." );
 		}
+		$output->write( 'Complete.' . PHP_EOL );
 
 		$pup_distignore = $config->getWorkingDir() . '.pup-distignore';
 		if ( file_exists( $pup_distignore ) ) {
 			if ( unlink( $pup_distignore ) ) {
-				$output->writeln( 'Removing .pup-distignore' );
+				$output->writeln( 'Removing .pup-distignore...Complete.' );
 			} else {
 				throw new \Exception( "Could not remove {$build_dir}." );
 			}
 		}
 
-		$output->writeln( 'Pup cleanup is complete.' );
 		return 0;
 	}
 }

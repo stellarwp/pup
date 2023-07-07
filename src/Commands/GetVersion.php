@@ -37,6 +37,9 @@ class GetVersion extends Command {
 
 		if ( empty( $version_files ) ) {
 			$output->writeln( 'No version files found.' );
+			if ( $root ) {
+				chdir( $config->getWorkingDir() );
+			}
 			return 1;
 		}
 

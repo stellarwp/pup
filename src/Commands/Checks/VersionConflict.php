@@ -39,6 +39,11 @@ class VersionConflict extends AbstractCheck {
 		$versions                         = [];
 		$package_json_compatible_versions = [];
 
+		if ( empty( $version_files ) ) {
+			$output->writeln( '<fg=yellow>Skipping!</> There are no .paths.versions set in .puprc.' );
+			return 0;
+		}
+
 		foreach ( $version_files as $version_file ) {
 			$relative_file_path = $version_file->getPath();
 			$full_file_path     = App::getConfig()->getWorkingDir() . $relative_file_path;
