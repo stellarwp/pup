@@ -17,5 +17,9 @@ jobs:
       - uses: ramsey/composer-install@v2
         with:
           composer-options: "--ignore-platform-reqs --optimize-autoloader"
+      - name: Setup git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "<>"
       - name: Run tests
         run: composer cr cli
