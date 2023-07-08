@@ -1,7 +1,5 @@
 Packaging zip...
-tests/_data/fake-project-with-tbds/.puprc: needs merge
 * Updating version files...Complete.
 * Synchronizing files to zip directory...Complete.
 * Zipping...Complete.
-tests/_data/fake-project-with-tbds/.puprc: needs merge
 Zip fake-project.zip created!

@@ -18,7 +18,28 @@ class AbstractBase {
 
 	public function _before( CliTester $I ) {
 		$this->pup = dirname( dirname( __DIR__ ) ) . '/pup';
-		$this->rm_puprc( 'fake-project' );
+		$this->reset_data_and_location();
+	}
+
+	public function _after( CliTester $I ) {
+		$this->reset_data_and_location();
+	}
+
+	protected function reset_data_and_location() {
+		chdir( __DIR__ );
+		$files = [
+			'.puprc',
+			'.distignore',
+			'.distinclude',
+			'.gitattributes',
+			'fake-project.1.0.0.zip',
+			'fake-project.zip',
+		];
+
+		foreach ( $files as $file ) {
+			@unlink( $this->tests_root . '/_data/fake-project/' . $file );
+			@unlink( $this->tests_root . '/_data/fake-project-with-tbds/' . $file );
+		}
 	}
 
 	/**

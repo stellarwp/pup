@@ -25,11 +25,9 @@ Build complete.
 
 [version-conflict] No version conflicts found.
 Packaging zip...
-tests/_data/fake-project-with-tbds/.puprc: needs merge
 * Updating version files...Complete.
 * Synchronizing files to zip directory...Complete.
 * Zipping...Complete.
-tests/_data/fake-project-with-tbds/.puprc: needs merge
 Zip fake-project.1.0.0.zip created!
 Cleaning up...
 * Removing zip dir...Complete.
