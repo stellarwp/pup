@@ -37,6 +37,8 @@ abstract class Command extends SymfonyCommand {
 			$output->writeln( '<fg=red>!!</>' );
 			$output->writeln( str_repeat( '<fg=red>!</>', 80 ) );
 		}
+
+		return 0;
 	}
 
 	/**

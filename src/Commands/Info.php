@@ -67,20 +67,20 @@ class Info extends Command {
 			$$array_to_populate[] = "{$prefix} {$file_styled} - {$suffix}";
 		}
 
-		foreach ( $files_error as $file_line ) {
+		foreach ( (array) $files_error as $file_line ) { // @phpstan-ignore-line - false positive, array populated by variable variable
 			$io->writeln( $file_line );
 		}
 
-		foreach ( $files_exist as $file_line ) {
+		foreach ( (array) $files_exist as $file_line ) { // @phpstan-ignore-line - false positive, array populated by variable variable
 			$io->writeln( $file_line );
 		}
 
-		foreach ( $files_absent as $file_line ) {
+		foreach ( (array) $files_absent as $file_line ) { // @phpstan-ignore-line - false positive, array populated by variable variable
 			$io->writeln( $file_line );
 		}
 
 		$io->section( 'Config' );
-		$io->writeln( json_encode( $config, JSON_PRETTY_PRINT ) );
+		$io->writeln( (string) json_encode( $config, JSON_PRETTY_PRINT ) );
 
 		return 0;
 	}
