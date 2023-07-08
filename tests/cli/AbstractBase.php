@@ -85,6 +85,6 @@ class AbstractBase {
 	 * @return void
 	 */
 	protected function write_puprc( array $puprc, $project = 'fake-project' ): void {
-		file_put_contents( dirname( __DIR__ ) . '/_data/' . $project . '/.puprc', json_encode( $puprc ) );
+		file_put_contents( dirname( __DIR__ ) . '/_data/' . $project . '/.puprc', json_encode( $puprc, JSON_PRETTY_PRINT ) );
 	}
 }

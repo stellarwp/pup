@@ -9,7 +9,6 @@ Running build steps...
 ..
 .git
 bootstrap.php
-fake-project.1.0.0.zip
 src
 
 Build complete.

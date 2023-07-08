@@ -94,7 +94,7 @@ class Config implements \JsonSerializable {
 				continue;
 			}
 
-			if ( $key === 'checks' && $value ) {
+			if ( $key === 'checks' && is_array( $value ) ) {
 				$default_checks     = $this->config->$key;
 				$this->config->$key = $value;
 

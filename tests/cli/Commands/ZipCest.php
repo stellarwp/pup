@@ -6,12 +6,17 @@ use StellarWP\Pup\Tests\Cli\AbstractBase;
 use StellarWP\Pup\Tests\CliTester;
 
 class ZipCest extends AbstractBase {
+	protected function reset_data_and_location() {
+		chdir( __DIR__ );
+		@unlink( $this->tests_root . '/_data/fake-project/.puprc' );
+		@unlink( $this->tests_root . '/_data/fake-project/fake-project.1.0.0.zip' );
+	}
 
 	/**
 	 * @test
 	 */
 	public function it_should_zip_with_repo_using_path( CliTester $I ) {
-		codecept_debug( getcwd() );
+		$this->reset_data_and_location();
 		$project_path = $this->tests_root . '/_data/fake-project-git-repo';
 		$I->runShellCommand( 'rm -rf ' . $project_path );
 		$I->runShellCommand( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
@@ -38,7 +43,7 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
-		chdir( $current_dir );
+		$this->reset_data_and_location();
 
 		$I->runShellCommand( 'rm -rf ' . $project_path );
 	}
@@ -47,6 +52,7 @@ class ZipCest extends AbstractBase {
 	 * @test
 	 */
 	public function it_should_zip_with_repo_using_file_colon_slash_slash( CliTester $I ) {
+		$this->reset_data_and_location();
 		$project_path = $this->tests_root . '/_data/fake-project-git-repo';
 		$I->runShellCommand( 'rm -rf ' . $project_path );
 		$I->runShellCommand( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
@@ -73,7 +79,7 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
-		chdir( $current_dir );
+		$this->reset_data_and_location();
 
 		$I->runShellCommand( 'rm -rf ' . $project_path );
 	}
@@ -82,6 +88,7 @@ class ZipCest extends AbstractBase {
 	 * @test
 	 */
 	public function it_should_zip_without_cloning( CliTester $I ) {
+		$this->reset_data_and_location();
 		$this->write_default_puprc();
 
 		$current_dir = getcwd();
@@ -99,7 +106,7 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
-		chdir( $current_dir );
+		$this->reset_data_and_location();
 	}
 
 
@@ -107,6 +114,7 @@ class ZipCest extends AbstractBase {
 	 * @test
 	 */
 	public function it_should_zip_without_running_checks_when_checks_are_empty( CliTester $I ) {
+		$this->reset_data_and_location();
 		$puprc = $this->get_puprc();
 		$puprc['checks'] = [];
 		$this->write_puprc( $puprc );
@@ -127,6 +135,6 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
-		chdir( $current_dir );
+		$this->reset_data_and_location();
 	}
 }
