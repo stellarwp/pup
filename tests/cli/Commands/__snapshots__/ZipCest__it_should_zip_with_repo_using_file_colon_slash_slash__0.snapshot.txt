@@ -1,0 +1,36 @@
+Cloning the file:///home/matt/git/pup/tests/_data/fake-project-git-repo repo into .pup-build...
+Clone complete.
+Running build steps...
+
+> ls -a
+-------
+
+.
+..
+.git
+bootstrap.php
+other-file.php
+src
+
+Build complete.
+
+[tbd] Checking for TBDs...
+[tbd] --------------------
+
+[tbd] No TBDs found!
+[tbd]
+[tbd]
+[tbd] Success! No TBDs found.
+
+[version-conflict] Checking for version conflicts...
+[version-conflict] ---------------------------------
+
+[version-conflict] No version conflicts found.
+Packaging zip...
+* Updating version files...Complete.
+* Synchronizing files to zip directory...Complete.
+* Zipping...Complete.
+Zip fake-project.1.0.0.zip created!
+Cleaning up...
+* Removing zip dir...Complete.
+* Removing build dir...Complete.

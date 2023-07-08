@@ -1,0 +1,7 @@
+.
+..
+.puprc
+bootstrap.php
+fake-project
+other-file.php
+src

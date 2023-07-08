@@ -28,14 +28,14 @@ class ZipCest extends AbstractBase {
 	public function it_should_zip_with_repo_using_path( CliTester $I ) {
 		$this->reset_data_and_location();
 		$project_path = $this->tests_root . '/_data/fake-project-git-repo';
-		$I->runShellCommand( 'rm -rf ' . $project_path );
-		$I->runShellCommand( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
+		system( 'rm -rf ' . $project_path );
+		system( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
 
 		chdir( $project_path );
 
-		$I->runShellCommand( 'git init --quiet' );
-		$I->runShellCommand( 'git add .' );
-		$I->runShellCommand( 'git commit -m "Initial commit" --quiet' );
+		system( 'git init --quiet' );
+		system( 'git add .' );
+		system( 'git commit -m "Initial commit" --quiet' );
 
 		$puprc = $this->get_puprc();
 		$puprc['repo'] = $project_path;
@@ -53,7 +53,7 @@ class ZipCest extends AbstractBase {
 
 		$this->reset_data_and_location();
 
-		$I->runShellCommand( 'rm -rf ' . $project_path );
+		system( 'rm -rf ' . $project_path );
 	}
 
 	/**
@@ -62,14 +62,14 @@ class ZipCest extends AbstractBase {
 	public function it_should_zip_with_repo_using_file_colon_slash_slash( CliTester $I ) {
 		$this->reset_data_and_location();
 		$project_path = $this->tests_root . '/_data/fake-project-git-repo';
-		$I->runShellCommand( 'rm -rf ' . $project_path );
-		$I->runShellCommand( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
+		system( 'rm -rf ' . $project_path );
+		system( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
 
 		chdir( $project_path );
 
-		$I->runShellCommand( 'git init --quiet' );
-		$I->runShellCommand( 'git add .' );
-		$I->runShellCommand( 'git commit -m "Initial commit" --quiet' );
+		system( 'git init --quiet' );
+		system( 'git add .' );
+		system( 'git commit -m "Initial commit" --quiet' );
 
 		$puprc = $this->get_puprc();
 		$puprc['repo'] = 'file://' . $project_path;
@@ -87,7 +87,7 @@ class ZipCest extends AbstractBase {
 
 		$this->reset_data_and_location();
 
-		$I->runShellCommand( 'rm -rf ' . $project_path );
+		system( 'rm -rf ' . $project_path );
 	}
 
 	/**

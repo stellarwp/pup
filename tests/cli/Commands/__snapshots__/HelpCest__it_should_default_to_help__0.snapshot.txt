@@ -1,0 +1,27 @@
+********************************************************************************
+*
+* Product Utility & Packager
+* ------------------------------------------------------------------------------
+* A CLI utility by StellarWP
+*
+********************************************************************************
+
+Run pup help <topic> for more information on a specific command.
+
+ ------------------------ -------------------------------------------------------------------------------
+  Command                  Description
+ ------------------------ -------------------------------------------------------------------------------
+  build                    Runs the build commands from the .puprc file.
+  check:tbd                Scans your files for tbd (case-insensitive) and tells you where to find them.
+  check:version-conflict   Verifies that all of your version numbers match.
+  check                    Runs all registered check commands.
+  clean                    This command cleans up any directories that pup creates.
+  get-version              Gets your project's version number.
+  help                     Shows the help menu.
+  info                     Gets pup details for the current project.
+  package                  Packages your project into a zip file with the passed in version number.
+  zip                      Runs the full pup set of commands to create a zip file.
+ ------------------------ -------------------------------------------------------------------------------
+
+
+For more documentation, head over to https://github.com/stellarwp/pup

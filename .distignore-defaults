@@ -23,6 +23,7 @@ tests
 /vendor/stellarwp/pup
 
 .babelrc
+.distinclude
 .distignore
 .editorconfig
 .eslintignore

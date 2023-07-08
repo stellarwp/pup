@@ -133,4 +133,79 @@ class PackageCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} clean" );
 		$this->reset_data_and_location();
 	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_package_the_zip_and_ignore_files_from_distignore_and_gitattributes( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		file_put_contents( '.distignore', "bootstrap.php\n" );
+		file_put_contents( '.gitattributes', "other-file.php export-ignore\n" );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_package_the_zip_and_include_files_in_distinclude( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		file_put_contents( '.distinclude', ".puprc\n" );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_package_the_zip_and_include_files_in_distinclude_even_if_in_distignore_and_gitattributes( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		file_put_contents( '.distinclude', ".puprc\n" );
+		file_put_contents( '.distignore', ".puprc\n" );
+		file_put_contents( '.gitattributes', ".puprc export-ignore\n" );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
+	}
 }

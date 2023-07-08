@@ -1,0 +1,26 @@
+
+[tbd] Checking for TBDs...
+[tbd] --------------------
+
+[tbd] ./src/Plugin.php
+[tbd] 9: * @since TBD
+[tbd]
+[tbd] ./src/Thing/AnotherFile.php
+[tbd] 5: _deprecated_file( __FILE__, 'TBD' );
+[tbd] 9: * @since TBD
+[tbd] 10: * @version TBD
+[tbd] 18: * @since tbd
+[tbd] 19: * @version tbd
+[tbd] 28: * @deprecated TBD
+[tbd] 32: _deprecated_function( __METHOD__, 'TBD' );
+[tbd]
+[tbd]
+[tbd] TBDs have been found!
+
+[version-conflict] Checking for version conflicts...
+[version-conflict] ---------------------------------
+
+[version-conflict] No version conflicts found.
+
+The following checks failed:
+* tbd
