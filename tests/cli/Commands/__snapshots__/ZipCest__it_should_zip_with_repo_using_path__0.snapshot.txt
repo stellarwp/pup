@@ -1,3 +1,5 @@
+Cloning the /home/matt/git/pup/tests/_data/fake-project-git-repo repo into .pup-build...
+Clone complete.
 Running build steps...
 
 > ls -a
@@ -5,7 +7,7 @@ Running build steps...
 
 .
 ..
-.puprc
+.git
 bootstrap.php
 fake-project.1.0.0.zip
 src
@@ -25,11 +27,9 @@ Build complete.
 
 [version-conflict] No version conflicts found.
 Packaging zip...
-tests/cli/Commands/ZipCest.php: needs merge
 * Updating version files...Complete.
 * Synchronizing files to zip directory...Complete.
 * Zipping...Complete.
-tests/cli/Commands/ZipCest.php: needs merge
 Zip fake-project.1.0.0.zip created!
 Cleaning up...
 * Removing zip dir...Complete.

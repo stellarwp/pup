@@ -51,8 +51,10 @@ class Zip extends Command {
 				$branch_arg = "-b {$branch}";
 			}
 
-			$output->writeln( '<comment>Cloning the repo into ' . App::getConfig()->getBuildDir( false ) . '...</comment>' );
-			system( 'git clone --quiet --recursive ' . $branch_arg . ' ' . App::getConfig()->getRepo() . ' ' . App::getConfig()->getBuildDir( false ) );
+			$repo = App::getConfig()->getRepo();
+
+			$output->writeln( '<comment>Cloning the ' . $repo . ' repo into ' . App::getConfig()->getBuildDir( false ) . '...</comment>' );
+			system( 'git clone --quiet --recursive ' . $branch_arg . ' ' . $repo . ' ' . App::getConfig()->getBuildDir( false ) );
 			$output->writeln( 'Clone complete.' );
 		} elseif ( $branch ) {
 			system( 'git checkout --quiet ' . $branch );

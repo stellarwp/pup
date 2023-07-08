@@ -380,8 +380,10 @@ class Config implements \JsonSerializable {
 
 		if (
 			! str_contains( $this->config->repo, 'https://' )
+			&& ! str_contains( $this->config->repo, 'file://' )
 			&& ! str_contains( $this->config->repo, 'git://' )
 			&& ! str_contains( $this->config->repo, 'git@github.com' )
+			&& ! file_exists( $this->config->repo )
 		) {
 			return 'git@github.com:' . $this->config->repo . '.git';
 		}
