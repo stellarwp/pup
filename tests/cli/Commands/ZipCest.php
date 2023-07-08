@@ -17,8 +17,8 @@ class ZipCest extends AbstractBase {
 
 		chdir( $project_path );
 
-		system( 'cd ' . $project_path . ' && git config user.email "test@test.test' );
-		system( 'cd ' . $project_path . ' && git config user.name "test' );
+		system( 'cd ' . $project_path . ' && git config user.email "test@test.test"' );
+		system( 'cd ' . $project_path . ' && git config user.name "test"' );
 		system( 'cd ' . $project_path . ' && git init --quiet' );
 		system( 'cd ' . $project_path . ' && git add .' );
 		system( 'cd ' . $project_path . ' && git commit -m "Initial commit" --quiet' );
@@ -53,8 +53,8 @@ class ZipCest extends AbstractBase {
 
 		chdir( $project_path );
 
-		system( 'cd ' . $project_path . ' && git config user.email "test@test.test' );
-		system( 'cd ' . $project_path . ' && git config user.name "test' );
+		system( 'cd ' . $project_path . ' && git config user.email "test@test.test"' );
+		system( 'cd ' . $project_path . ' && git config user.name "test"' );
 		system( 'cd ' . $project_path . ' && git init --quiet' );
 		system( 'cd ' . $project_path . ' && git add .' );
 		system( 'cd ' . $project_path . ' && git commit -m "Initial commit" --quiet' );
