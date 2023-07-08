@@ -8,8 +8,18 @@ use StellarWP\Pup\Tests\CliTester;
 class ZipCest extends AbstractBase {
 	protected function reset_data_and_location() {
 		chdir( __DIR__ );
-		@unlink( $this->tests_root . '/_data/fake-project/.puprc' );
-		@unlink( $this->tests_root . '/_data/fake-project/fake-project.1.0.0.zip' );
+		$files = [
+			'.puprc',
+			'.distignore',
+			'.distinclude',
+			'.gitattributes',
+			'fake-project.1.0.0.zip',
+		];
+
+		foreach ( $files as $file ) {
+			@unlink( $this->tests_root . '/_data/fake-project/' . $file );
+			@unlink( $this->tests_root . '/_data/fake-project-with-tbds/' . $file );
+		}
 	}
 
 	/**
@@ -21,7 +31,6 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( 'rm -rf ' . $project_path );
 		$I->runShellCommand( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
 
-		$current_dir = getcwd();
 		chdir( $project_path );
 
 		$I->runShellCommand( 'git init --quiet' );
@@ -40,7 +49,6 @@ class ZipCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 
-		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
 		$this->reset_data_and_location();
@@ -57,7 +65,6 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( 'rm -rf ' . $project_path );
 		$I->runShellCommand( 'cp -r ' . $this->tests_root . '/_data/fake-project ' . $project_path );
 
-		$current_dir = getcwd();
 		chdir( $project_path );
 
 		$I->runShellCommand( 'git init --quiet' );
@@ -76,7 +83,6 @@ class ZipCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 
-		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
 		$this->reset_data_and_location();
@@ -91,7 +97,6 @@ class ZipCest extends AbstractBase {
 		$this->reset_data_and_location();
 		$this->write_default_puprc();
 
-		$current_dir = getcwd();
 		chdir( $this->tests_root . '/_data/fake-project' );
 		//$I->runShellCommand( 'rm *.zip' );
 
@@ -103,12 +108,10 @@ class ZipCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 
-		$I->runShellCommand( 'rm *.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
 
 		$this->reset_data_and_location();
 	}
-
 
 	/**
 	 * @test
@@ -119,7 +122,6 @@ class ZipCest extends AbstractBase {
 		$puprc['checks'] = [];
 		$this->write_puprc( $puprc );
 
-		$current_dir = getcwd();
 		chdir( $this->tests_root . '/_data/fake-project' );
 
 		$I->runShellCommand( "php {$this->pup} zip --no-clone" );
@@ -132,7 +134,64 @@ class ZipCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 
-		$I->runShellCommand( 'rm *.zip' );
+		$I->runShellCommand( "php {$this->pup} clean" );
+
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_fail_zipping_when_check_errors( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc( 'fake-project-with-tbds' );
+
+		chdir( $this->tests_root . '/_data/fake-project-with-tbds' );
+
+		try {
+			$I->runShellCommand( "php {$this->pup} zip --no-clone" );
+		} catch ( \Exception $e ) {
+			// do nothing
+		}
+
+		$I->seeResultCodeIs( 1 );
+		$I->seeInShellOutput( '[tbd]' );
+
+		$I->assertFalse( file_exists( 'fake-project.1.0.0.zip' ) );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_zip_when_check_has_errors_but_set_to_warn( CliTester $I ) {
+		$this->reset_data_and_location();
+		$puprc = $this->get_puprc();
+		$puprc['checks'] = [
+			'tbd' => [
+				'fail_method' => 'warn',
+			],
+			'version-conflict' => [],
+		];
+		$this->write_puprc( $puprc, 'fake-project-with-tbds' );
+
+		chdir( $this->tests_root . '/_data/fake-project-with-tbds' );
+
+		try {
+			$I->runShellCommand( "php {$this->pup} zip --no-clone" );
+		} catch ( \Exception $e ) {
+			// do nothing
+		}
+
+		$I->seeResultCodeIs( 0 );
+		$I->seeInShellOutput( '[tbd]' );
+		$I->seeInShellOutput( '[version-conflict]' );
+
+		$I->assertTrue( file_exists( 'fake-project.1.0.0.zip' ) );
+
 		$I->runShellCommand( "php {$this->pup} clean" );
 
 		$this->reset_data_and_location();

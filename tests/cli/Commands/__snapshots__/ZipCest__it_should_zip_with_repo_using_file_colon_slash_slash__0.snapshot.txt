@@ -9,6 +9,7 @@ Running build steps...
 ..
 .git
 bootstrap.php
+other-file.php
 src
 
 Build complete.

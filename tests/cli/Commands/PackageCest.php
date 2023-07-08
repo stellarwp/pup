@@ -6,11 +6,27 @@ use StellarWP\Pup\Tests\Cli\AbstractBase;
 use StellarWP\Pup\Tests\CliTester;
 
 class PackageCest extends AbstractBase {
+	protected function reset_data_and_location() {
+		chdir( __DIR__ );
+		$files = [
+			'.puprc',
+			'.distignore',
+			'.distinclude',
+			'.gitattributes',
+			'fake-project.1.0.0.zip',
+			'fake-project.zip',
+		];
+
+		foreach ( $files as $file ) {
+			@unlink( $this->tests_root . '/_data/fake-project/' . $file );
+		}
+	}
 
 	/**
 	 * @test
 	 */
 	public function it_should_package_the_zip( CliTester $I ) {
+		$this->reset_data_and_location();
 		$this->write_default_puprc();
 
 		chdir( $this->tests_root . '/_data/fake-project' );
@@ -23,14 +39,15 @@ class PackageCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 
-		$I->runShellCommand( 'rm fake-project.1.0.0.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
 	}
 
 	/**
 	 * @test
 	 */
 	public function it_should_package_the_zip_without_version_number_if_unknown( CliTester $I ) {
+		$this->reset_data_and_location();
 		$this->write_default_puprc();
 
 		chdir( $this->tests_root . '/_data/fake-project' );
@@ -43,7 +60,77 @@ class PackageCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 
-		$I->runShellCommand( 'rm fake-project.zip' );
 		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_package_the_zip_and_ignore_files_from_defaults( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_package_the_zip_and_ignore_files_from_distignore( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		file_put_contents( '.distignore', "bootstrap.php\n" );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
+	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_package_the_zip_and_ignore_files_from_gitattributes( CliTester $I ) {
+		$this->reset_data_and_location();
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		file_put_contents( '.gitattributes', "bootstrap.php export-ignore\n" );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+
+		$I->runShellCommand( "php {$this->pup} clean" );
+		$this->reset_data_and_location();
 	}
 }
