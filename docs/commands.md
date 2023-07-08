@@ -147,6 +147,16 @@ composer pup help [command]
 |--- |----------------------------------------------------------------------------------------------------------|
 | `command` | **Optional.** The command to get help for. If omitted, the general help menu will be displayed.          |
 
+## `pup info`
+Gets `pup` details for the current project.
+
+### Usage
+```bash
+pup info
+# or
+composer pup info
+```
+
 ## `pup package`
 Packages your project into a zip file with the passed in version number.
 
