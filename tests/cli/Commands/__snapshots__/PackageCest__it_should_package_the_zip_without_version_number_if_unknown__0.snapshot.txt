@@ -1,5 +1,0 @@
-Packaging zip...
-* Updating version files...Complete.
-* Synchronizing files to zip directory...Complete.
-* Zipping...Complete.
-Zip fake-project.zip created!

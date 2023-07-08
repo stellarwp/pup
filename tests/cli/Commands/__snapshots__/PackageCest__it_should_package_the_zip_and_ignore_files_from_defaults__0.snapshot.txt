@@ -1,5 +1,0 @@
-.
-..
-bootstrap.php
-fake-project
-src
