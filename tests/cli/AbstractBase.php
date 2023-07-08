@@ -33,6 +33,7 @@ class AbstractBase {
 			'.distinclude',
 			'.gitattributes',
 			'fake-project.1.0.0.zip',
+			'fake-project.1.0.0.1.zip',
 			'fake-project.zip',
 		];
 

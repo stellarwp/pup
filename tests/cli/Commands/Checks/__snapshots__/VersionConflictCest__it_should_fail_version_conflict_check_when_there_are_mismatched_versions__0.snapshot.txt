@@ -7,4 +7,5 @@ Versions found:
  - 1.0.0.1 in bootstrap.php :: (define\( +['"]FAKE_PROJECT_VERSION['"], +['"])([^'"]+)
  - 1.0.0.1 in bootstrap.php :: (Version: )(.+)
  - 1.0.0.1 in src/Plugin.php :: (const VERSION = ['"])([^'"]+)
+ - 1.0.0 in package.json :: ("version": ")([^"]+)
  - 1.0.1 in src/OtherFileWithBadVersion.php :: (const VERSION = ['"])([^'"]+)

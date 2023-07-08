@@ -3,5 +3,6 @@
 .puprc
 bootstrap.php
 fake-project
+fake-project.1.0.0.1.zip
 other-file.php
 src

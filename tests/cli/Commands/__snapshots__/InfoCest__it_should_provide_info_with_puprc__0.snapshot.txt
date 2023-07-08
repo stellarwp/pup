@@ -58,6 +58,10 @@ Config
             {
                 "file": "src\/Plugin.php",
                 "regex": "(const VERSION = ['\"])([^'\"]+)"
+            },
+            {
+                "file": "package.json",
+                "regex": "(\"version\": \")([^\"]+)"
             }
         ],
         "views": [],

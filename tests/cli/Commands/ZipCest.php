@@ -28,7 +28,8 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} zip" );
 		$I->seeResultCodeIs( 0 );
 
-		$I->assertTrue( file_exists( 'fake-project.1.0.0.zip' ) );
+
+		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
@@ -61,7 +62,7 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} zip" );
 		$I->seeResultCodeIs( 0 );
 
-		$I->assertTrue( file_exists( 'fake-project.1.0.0.zip' ) );
+		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
@@ -84,7 +85,7 @@ class ZipCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} zip --no-clone" );
 		$I->seeResultCodeIs( 0 );
 
-		$I->assertTrue( file_exists( 'fake-project.1.0.0.zip' ) );
+		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
@@ -107,7 +108,7 @@ class ZipCest extends AbstractBase {
 		$I->dontSeeInShellOutput( '[tbd]' );
 		$I->dontSeeInShellOutput( '[version-conflict]' );
 
-		$I->assertTrue( file_exists( 'fake-project.1.0.0.zip' ) );
+		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
@@ -132,7 +133,7 @@ class ZipCest extends AbstractBase {
 		$I->seeResultCodeIs( 1 );
 		$I->seeInShellOutput( '[tbd]' );
 
-		$I->assertFalse( file_exists( 'fake-project.1.0.0.zip' ) );
+		$I->assertFalse( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
 	}
@@ -162,7 +163,7 @@ class ZipCest extends AbstractBase {
 		$I->seeInShellOutput( '[tbd]' );
 		$I->seeInShellOutput( '[version-conflict]' );
 
-		$I->assertTrue( file_exists( 'fake-project.1.0.0.zip' ) );
+		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
 	}
