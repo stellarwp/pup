@@ -31,22 +31,24 @@ class AbstractBase {
 			'build' => [
 				"ls -a",
 			],
-			"paths" => [
-				"versions" => [
+			'paths' => [
+				'versions' => [
 					[
-						"file"  => "bootstrap.php",
-						"regex" => "(define\\( +['\"]FAKE_PROJECT_VERSION['\"], +['\"])([^'\"]+)",
+						'file'  => 'bootstrap.php',
+						'regex' => "(define\\( +['\"]FAKE_PROJECT_VERSION['\"], +['\"])([^'\"]+)",
 					],
 					[
-						"file"  => "bootstrap.php",
-						"regex" => "(Version: )(.+)",
+						'file'  => 'bootstrap.php',
+						'regex' => "(Version: )(.+)",
 					],
 					[
-						"file"  => "src/Plugin.php",
-						"regex" => "(const VERSION = ['\"])([^'\"]+)",
+						'file'  => 'src/Plugin.php',
+						'regex' => "(const VERSION = ['\"])([^'\"]+)",
 					],
 				],
 			],
+			'rsync_executable' => '/usr/bin/rsync',
+			'zip_name' => 'fake-project',
 		];
 
 		return array_merge( $defaults, $data );
@@ -64,9 +66,21 @@ class AbstractBase {
 	}
 
 	/**
+	 * Writes the default .puprc to the provided project in _data.
+	 *
+	 * @param string $project
+	 *
+	 * @return void
+	 */
+	protected function write_default_puprc( $project = 'fake-project' ): void {
+		$this->write_puprc( $this->get_puprc(), $project );
+	}
+
+	/**
 	 * Writes the .puprc to the provided project in _data.
 	 *
 	 * @param array $puprc
+	 * @param string $project
 	 *
 	 * @return void
 	 */

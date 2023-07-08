@@ -28,6 +28,7 @@ class Check extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		parent::execute( $input, $output );
 		$io = $this->getIO();
 		$application = $this->getApplication();
 		if ( ! $application ) {

@@ -86,6 +86,7 @@ abstract class AbstractCheck extends Command {
 	 * @return int
 	 */
 	final protected function execute( InputInterface $input, OutputInterface $output ) {
+		parent::execute( $input, $output );
 		$config        = App::getConfig();
 		$root          = $input->getOption( 'root' );
 		$this->should_set_prefix = (bool) $input->getOption( 'prefix-output' );

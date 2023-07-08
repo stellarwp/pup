@@ -24,6 +24,7 @@ class Help extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		parent::execute( $input, $output );
 		$topic = $input->getArgument( 'topic' );
 
 		if ( $topic ) {

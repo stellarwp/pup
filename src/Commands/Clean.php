@@ -25,6 +25,7 @@ class Clean extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		parent::execute( $input, $output );
 		$config    = App::getConfig();
 		$zip_dir   = $config->getZipDir();
 		$build_dir = $config->getBuildDir();

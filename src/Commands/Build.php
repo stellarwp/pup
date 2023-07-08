@@ -26,6 +26,7 @@ class Build extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		parent::execute( $input, $output );
 		$io          = $this->getIO();
 		$config      = App::getConfig();
 		$root        = $input->getOption( 'root' );

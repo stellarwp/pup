@@ -2,7 +2,7 @@
 
 namespace StellarWP\Pup\Check;
 
-class Config {
+class Config implements \JsonSerializable {
 	/**
 	 * The check args.
 	 * @var array<string, mixed>
@@ -136,6 +136,13 @@ class Config {
 	 */
 	public function getType(): string {
 		return $this->type;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function jsonSerialize() {
+		return $this->config;
 	}
 
 	/**

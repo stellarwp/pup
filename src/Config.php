@@ -6,7 +6,7 @@ use Exception;
 use stdClass;
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;
 
-class Config {
+class Config implements \JsonSerializable {
 	/**
 	 * @var string
 	 */
@@ -18,6 +18,11 @@ class Config {
 	protected $config;
 
 	/**
+	 * @var bool
+	 */
+	protected $has_invalid_puprc = false;
+
+	/**
 	 * @var string
 	 */
 	protected $puprc_file_path;
@@ -26,6 +31,11 @@ class Config {
 	 * @var array<string, mixed>
 	 */
 	protected $puprc = [];
+
+	/**
+	 * @var string
+	 */
+	protected $puprc_parse_error = '';
 
 	/**
 	 * Loads the composer.json file and pup config.
@@ -44,6 +54,18 @@ class Config {
 		$this->working_dir     = DirectoryUtils::trailingSlashIt( DirectoryUtils::normalizeDir( $cwd ) );
 		$this->puprc_file_path = $this->working_dir . '.puprc';
 
+		$this->mergeConfigWithDefaults();
+		$this->parseCheckConfig();
+		$this->parseVersionFiles();
+		$this->validateConfig();
+	}
+
+	/**
+	 * Merges the local .puprc (if it exists) with the default .puprc-defaults.
+	 *
+	 * @return void
+	 */
+	public function mergeConfigWithDefaults() {
 		$this->config = (object) $this->getDefaultConfig();
 
 		if ( file_exists( $this->puprc_file_path ) ) {
@@ -55,7 +77,9 @@ class Config {
 			$this->puprc = json_decode( $puprc_file_contents, true );
 
 			if ( ! $this->puprc ) {
-				throw new Exceptions\ConfigException( 'Could not parse the .puprc file! Check the json syntax and try again.' );
+				$this->has_invalid_puprc = true;
+				$this->puprc_parse_error = json_last_error_msg();
+				$this->puprc = [];
 			}
 		}
 
@@ -71,16 +95,21 @@ class Config {
 			}
 
 			if ( $key === 'checks' && $value ) {
+				$default_checks     = $this->config->$key;
 				$this->config->$key = $value;
+
+				foreach ( $this->config->$key as $check_slug => $check_config ) {
+					if ( ! isset( $default_checks[ $check_slug ] ) ) {
+						continue;
+					}
+
+					$this->config->$key[ $check_slug ] = $this->mergeConfigValue( $default_checks[ $check_slug ], $check_config );
+				}
 				continue;
 			}
 
 			$this->config->$key = $this->mergeConfigValue( $this->config->$key, $value );
 		}
-
-		$this->parseCheckConfig();
-		$this->parseVersionFiles();
-		$this->validateConfig();
 	}
 
 	/**
@@ -323,6 +352,15 @@ class Config {
 	}
 
 	/**
+	 * Gets the parse error for .puprc.
+	 *
+	 * @return string
+	 */
+	public function getPuprcParseError(): string {
+		return $this->puprc_parse_error;
+	}
+
+	/**
 	 * Returns the repo.
 	 *
 	 * @return string
@@ -418,6 +456,35 @@ class Config {
 	 */
 	public function hasComposer(): bool {
 		return file_exists( $this->working_dir . 'composer.json' );
+	}
+
+	/**
+	 * Returns whether or not there is an invalid .puprc file.
+	 *
+	 * @return bool
+	 */
+	public function hasInvalidPuprc(): bool {
+		return $this->has_invalid_puprc;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function jsonSerialize() {
+		$config = $this->config;
+		if ( isset( $config->checks ) ) {
+			$config->checks = array_map( function ( Check\Config $check ) {
+				return $check->jsonSerialize();
+			}, $config->checks );
+		}
+
+		if ( isset( $config->paths['versions'] ) ) {
+			$config->paths['versions'] = array_map( function ( VersionFile $file ) {
+				return $file->jsonSerialize();
+			}, $config->paths['versions'] );
+		}
+
+		return $config;
 	}
 
 	/**

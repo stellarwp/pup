@@ -51,6 +51,7 @@ class Package extends Command {
 	 * @inheritDoc
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
+		parent::execute( $input, $output );
 		$this->input = $input;
 		$this->output = $output;
 		$version  = $input->getArgument( 'version' );

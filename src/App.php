@@ -53,6 +53,7 @@ class App extends Symfony_Application {
 		$this->add( new Commands\Clean() );
 		$this->add( new Commands\GetVersion() );
 		$this->add( new Commands\Help() );
+		$this->add( new Commands\Info() );
 		$this->add( new Commands\Package() );
 		$this->add( new Commands\Zip() );
 

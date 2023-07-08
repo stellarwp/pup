@@ -4,7 +4,7 @@ namespace StellarWP\Pup;
 
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;
 
-class VersionFile {
+class VersionFile implements \JsonSerializable {
 	/**
 	 * The file to check.
 	 * @var string
@@ -44,5 +44,15 @@ class VersionFile {
 	 */
 	public function getRegex(): string {
 		return $this->regex;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function jsonSerialize() {
+		return [
+			'file'  => $this->getPath(),
+			'regex' => $this->getRegex(),
+		];
 	}
 }
