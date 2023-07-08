@@ -8,6 +8,7 @@ Running build steps...
 .puprc
 bootstrap.php
 other-file.php
+package.json
 src
 
 > echo "fake project, yo"

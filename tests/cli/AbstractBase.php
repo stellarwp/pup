@@ -66,6 +66,10 @@ class AbstractBase {
 						'file'  => 'src/Plugin.php',
 						'regex' => "(const VERSION = ['\"])([^'\"]+)",
 					],
+					[
+						'file'  => 'package.json',
+						'regex' => '("version": ")([^"]+)',
+					],
 				],
 			],
 			'rsync_executable' => '/usr/bin/rsync',
