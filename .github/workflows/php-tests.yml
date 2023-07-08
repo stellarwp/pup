@@ -22,4 +22,4 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "<>"
       - name: Run tests
-        run: composer cr cli
+        run: php vendor/bin/codecept run cli --debug
