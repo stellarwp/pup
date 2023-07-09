@@ -7,6 +7,7 @@
 * [`pup clean`](/docs/commands.md#pup-clean)
 * [`pup get-version`](/docs/commands.md#pup-get-version)
 * [`pup help`](/docs/commands.md#pup-help)
+* [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
 * [`pup zip`](/docs/commands.md#pup-zip)
 
