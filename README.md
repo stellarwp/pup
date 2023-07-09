@@ -7,10 +7,10 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
 ## Docs
 
 * [Installation](/docs/installation.md)
-  * [Install as a composer dependency](#install-as-a-composer-dependency)
-  * [Install in a project as a phar](#install-in-a-project-as-a-phar)
-  * [Install globally as a phar](#install-globally-as-a-phar)
-  * [Install globally as a git clone](#install-globally-as-a-git-clone)
+  * [Install in a project as a phar](#install-in-a-project-as-a-phar) - recommended for most projects.
+  * [Install as a composer dependency](#install-as-a-composer-dependency) - easy, but comes with some caveats.
+  * [Install globally as a phar](#install-globally-as-a-phar) - good option for your system.
+  * [Install globally as a git clone](#install-globally-as-a-git-clone) - another good option for your system.
 * [Configuration](/docs/configuration.md)
 * [Commands](/docs/commands.md)
   * [`pup build`](/docs/commands.md#pup-build)
