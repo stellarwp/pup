@@ -66,7 +66,10 @@ class Package extends Command {
 		system( 'git stash --quiet' );
 
 		$buffer = new BufferedOutput();
-		$this->getApplication()->find( 'zip-name' )->run( new ArrayInput( [ 'version' => $version ] ), $buffer );
+		$application = $this->getApplication();
+		if ( $application ) {
+			$application->find( 'zip-name' )->run( new ArrayInput( [ 'version' => $version ] ), $buffer );
+		}
 		$full_zip_name = trim( $buffer->fetch() );
 
 		$zip_filename = "{$full_zip_name}.zip";
