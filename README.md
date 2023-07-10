@@ -7,10 +7,10 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
 ## Docs
 
 * [Installation](/docs/installation.md)
-  * [Install in a project as a phar](#install-in-a-project-as-a-phar) - recommended for most projects.
-  * [Install as a composer dependency](#install-as-a-composer-dependency) - easy, but comes with some caveats.
-  * [Install globally as a phar](#install-globally-as-a-phar) - good option for your system.
-  * [Install globally as a git clone](#install-globally-as-a-git-clone) - another good option for your system.
+  * [Install in a project as a phar](/docs/installation.md#install-in-a-project-as-a-phar) - recommended for most projects.
+  * [Install as a composer dependency](/docs/installation.md#install-as-a-composer-dependency) - easy, but comes with some caveats.
+  * [Install globally as a phar](/docs/installation.md#install-globally-as-a-phar) - good option for your system.
+  * [Install globally as a git clone](/docs/installation.md#install-globally-as-a-git-clone) - another good option for your system.
 * [Configuration](/docs/configuration.md)
 * [Commands](/docs/commands.md)
   * [`pup build`](/docs/commands.md#pup-build)
@@ -32,3 +32,5 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
   * [Creating custom checks](#creating-custom-checks)
     * [Simple checks](#simple-checks)
     * [Class-based checks](#class-based-checks)
+* Examples
+  * [GitHub Workflow: Zipping](/examples/workflows/zip.yml) - Breaks up the `pup zip` command into multiple steps so debugging is easy.
