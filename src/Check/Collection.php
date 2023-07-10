@@ -32,6 +32,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function current() {
 		return current( $this->checks );
 	}
@@ -39,6 +40,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function key() {
 		return key( $this->checks );
 	}
@@ -46,6 +48,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function next() {
 		next( $this->checks );
 	}
@@ -60,6 +63,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet( $offset ) {
 		return $this->checks[ $offset ];
 	}
@@ -67,6 +71,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetSet( $offset, $value ) {
 		if ( ! $value instanceof Checks\AbstractCheck ) {
 			throw new BaseException( 'The value must be an instance of ' . Checks\AbstractCheck::class . '.' );
@@ -78,6 +83,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetUnset( $offset ) {
 		unset( $this->checks[ $offset ] );
 	}
@@ -98,6 +104,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	/**
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function rewind() {
 		reset( $this->checks );
 	}
@@ -123,6 +130,7 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 		return key( $this->checks ) !== null;
 	}
 
+	#[\ReturnTypeWillChange]
 	public function count() {
 		return count( $this->checks );
 	}

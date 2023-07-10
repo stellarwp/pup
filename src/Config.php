@@ -473,6 +473,7 @@ class Config implements \JsonSerializable {
 	/**
 	 * @inheritdoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		$config = $this->config;
 		if ( isset( $config->checks ) ) {
