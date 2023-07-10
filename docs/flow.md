@@ -13,6 +13,8 @@ flowchart TD
     isDev{Is this a dev build?}
     generateDevVersion[Generate dev version number]
     updateVersionNumbers[Update version numbers in version files]
+    zipName[Run pup zip-name]
+    fetchZipName[Grab zip name from config]
     generateZipName[Generate zip name]
     buildZipDir[Move files to dir to be zipped]
     checks[Run pup check]
@@ -50,8 +52,13 @@ flowchart TD
                 isDev --> |Yes| generateDevVersion
             end
             generateDevVersion --> updateVersionNumbers
-            isDev --> |No| generateZipName
-            updateVersionNumbers --> generateZipName
+            isDev --> |No| zipName
+            updateVersionNumbers --> zipName
+            zipName --> fetchZipName
+            subgraph pup zip-name
+                fetchZipName --> generateZipName
+            end
+            
             generateZipName --> buildZipDir
             buildZipDir --> packageZip
             
