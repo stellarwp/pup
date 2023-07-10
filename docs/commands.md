@@ -10,6 +10,7 @@
 * [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
 * [`pup zip`](/docs/commands.md#pup-zip)
+* [`pup zip-name`](/docs/commands.md#pup-zip-name)
 
 ## `pup build`
 Runs the `build` commands from the `.puprc` file.
@@ -205,3 +206,21 @@ composer pup zip <branch> [--dev] [--no-clone]
 | `branch` | **Optional.** The branch to package.                                                                                                      |
 | `--dev`  | **Optional.** Whether or not this is a dev build. If passed, it will be added to all sub commands that `pup zip` executes                 |
 | `--no-clone` | **Optional.** Don't clone the repo. By default, the `pup zip` clones the repo into a directory where it will perform all of its commands. |
+
+## `pup zip-name`
+Gets your project's zip name (sans the `.zip` extension).
+
+This command will build a zip name based on data provided by `.puprc` and optionally from arguments passed to the command.
+
+### Usage
+```bash
+pup zip-name <version> [--dev]
+# or
+composer pup zip-name <version> [--dev]
+```
+
+### Arguments
+| Argument | Description                                                                                                                 |
+|--- |-----------------------------------------------------------------------------------------------------------------------------|
+| `version` | **Optional.** The version number to use for naming the zip. If not provided, it will use the output from `pup get-version`. |
+| `--dev` | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number.                    |

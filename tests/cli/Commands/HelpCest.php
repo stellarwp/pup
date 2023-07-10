@@ -58,6 +58,7 @@ class HelpCest extends AbstractBase {
 			[ 'topic' => 'get-version' ],
 			[ 'topic' => 'package' ],
 			[ 'topic' => 'zip' ],
+			[ 'topic' => 'zip-name' ],
 		];
 	}
 }

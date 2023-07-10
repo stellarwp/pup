@@ -23,6 +23,7 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
   * [`pup info`](/docs/commands.md#pup-info)
   * [`pup package`](/docs/commands.md#pup-package)
   * [`pup zip`](/docs/commands.md#pup-zip)
+  * [`pup zip-name`](/docs/commands.md#pup-zip-name)
 * [Command flow for `pup zip`](/docs/flow.md)
 * [Checks](/docs/checks.md)
   * [Default checks](#default-checks)

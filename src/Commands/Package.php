@@ -7,9 +7,11 @@ use StellarWP\Pup\Exceptions;
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;;
 use stdClass;
 use StellarWP\Pup\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 use ZipArchive;
 
@@ -63,12 +65,15 @@ class Package extends Command {
 
 		system( 'git stash --quiet' );
 
-		$zip_filename = "{$zip_name}.zip";
+		$buffer = new BufferedOutput();
+		$this->getApplication()->find( 'zip-name' )->run( new ArrayInput( [ 'version' => $version ] ), $buffer );
+		$full_zip_name = trim( $buffer->fetch() );
+
+		$zip_filename = "{$full_zip_name}.zip";
 
 		$output->write( '* Updating version files...' );
 		if ( $version !== 'unknown' ) {
 			$this->updateVersionsInFiles( $version );
-			$zip_filename = "{$zip_name}.{$version}.zip";
 		}
 		$output->write( 'Complete.' . PHP_EOL );
 

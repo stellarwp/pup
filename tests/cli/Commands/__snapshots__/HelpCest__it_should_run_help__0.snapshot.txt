@@ -20,6 +20,7 @@ Run pup help <topic> for more information on a specific command.
   help                     Shows the help menu.
   info                     Gets pup details for the current project.
   package                  Packages your project into a zip file with the passed in version number.
+  zip-name                 Gets your project's zip name (sans the .zip extension).
   zip                      Runs the full pup set of commands to create a zip file.
  ------------------------ -------------------------------------------------------------------------------
 

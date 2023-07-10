@@ -61,6 +61,7 @@ class App extends Symfony_Application {
 		$this->add( new Commands\Info() );
 		$this->add( new Commands\Package() );
 		$this->add( new Commands\Zip() );
+		$this->add( new Commands\ZipName() );
 
 		// Add default pup checks.
 		$this->add( new Commands\Checks\Tbd( 'tbd' ) );
