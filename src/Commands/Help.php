@@ -43,11 +43,7 @@ class Help extends Command {
 	 * @return void
 	 */
 	protected function printCommandList(): void {
-		if ( App::isPhar() ) {
-			$docs = file( 'phar://' . __PUP_DIR__ . '/docs/commands.md' );
-		} else {
-			$docs = file( __PUP_DIR__ . '/docs/commands.md' );
-		}
+		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
 
 		$io = $this->getIO();
 
@@ -105,11 +101,8 @@ class Help extends Command {
 	 * @return void
 	 */
 	protected function printCommandHelp( string $topic ): void {
-		if ( App::isPhar() ) {
-			$docs = file( 'phar://' . __PUP_DIR__ . '/docs/commands.md' );
-		} else {
-			$docs = file( __PUP_DIR__ . '/docs/commands.md' );
-		}
+		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
+
 		$io = $this->getIO();
 
 		$start = false;

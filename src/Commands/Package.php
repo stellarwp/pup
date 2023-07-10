@@ -204,7 +204,7 @@ class Package extends Command {
 
 		if ( $use_ignore_defaults ) {
 			if ( App::isPhar() ) {
-				$command[] = '--exclude-from=<(php -r \'include ' . escapeshellarg( 'phar://' . __PUP_DIR__ . '/.distignore-defaults' ) . ';\')';
+				$command[] = '--exclude-from=<(php -r \'include ' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' ) . ';\')';
 			} else {
 				$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
 			}

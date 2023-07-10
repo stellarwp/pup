@@ -261,11 +261,7 @@ class Config implements \JsonSerializable {
 	 * @return array<string, mixed>
 	 */
 	protected function getDefaultConfig() : array {
-		if ( App::isPhar() ) {
-			$defaults = file_get_contents( 'phar://' . __PUP_DIR__ . '/.puprc-defaults' );
-		} else {
-			$defaults = file_get_contents( __PUP_DIR__ . '/.puprc-defaults' );
-		}
+		$defaults = file_get_contents( __PUP_DIR__ . '/.puprc-defaults' );
 
 		if ( ! $defaults ) {
 			throw new Exceptions\ConfigException( 'Could not read the ' . __PUP_DIR__ . DIRECTORY_SEPARATOR . '.puprc-defaults file!' );
