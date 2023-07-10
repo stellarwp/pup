@@ -54,7 +54,7 @@ class Zip extends Command {
 			$repo = App::getConfig()->getRepo();
 
 			$output->writeln( '<comment>Cloning the ' . $repo . ' repo into ' . App::getConfig()->getBuildDir( false ) . '...</comment>' );
-			system( 'git clone --quiet --recursive ' . $branch_arg . ' ' . $repo . ' ' . App::getConfig()->getBuildDir( false ) );
+			system( 'git clone --quiet --recurse-submodules -j8 --shallow-submodules --depth 1 ' . $branch_arg . ' ' . $repo . ' ' . App::getConfig()->getBuildDir( false ) );
 			$output->writeln( 'Clone complete.' );
 		} elseif ( $branch ) {
 			system( 'git checkout --quiet ' . $branch );
