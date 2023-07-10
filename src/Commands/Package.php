@@ -202,9 +202,16 @@ class Package extends Command {
 			}
 		}
 
+		$defaults_filename = null;
+
 		if ( $use_ignore_defaults ) {
 			if ( App::isPhar() ) {
-				$command[] = '--exclude-from=<(php -r \'include ' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' ) . ';\')';
+				$defaults_contents = file_get_contents( __PUP_DIR__ . '/.distignore-defaults' );
+				$defaults_filename = $working_dir . '.distignore-defaults-' . uniqid();
+				if ( $defaults_contents ) {
+					file_put_contents( $defaults_filename, $defaults_contents );
+				}
+				$command[] = '--exclude-from=' . escapeshellarg( $defaults_filename );
 			} else {
 				$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
 			}
@@ -223,6 +230,11 @@ class Package extends Command {
 		$command = implode( ' ', $command );
 		$result_code = 0;
 		system( $command, $result_code );
+
+		if ( App::isPhar() && $defaults_filename && file_exists( $defaults_filename ) ) {
+			unlink( $defaults_filename );
+		}
+
 		return $result_code;
 	}
 

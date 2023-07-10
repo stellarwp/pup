@@ -25,6 +25,7 @@ tests
 .babelrc
 .distinclude
 .distignore
+.distignore-defaults
 .editorconfig
 .eslintignore
 .eslintrc
