@@ -21,12 +21,6 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      - name: Install node and pnpm
-        uses: dafnik/setup-node-pnpm@v1
-        with:
-          node: 18
-          pnpm: 8
-
       - name: install pup
         run: composer -- pup
 
