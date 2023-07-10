@@ -21,7 +21,7 @@ If you want your dev builds to build differently, you can add a `build_dev` prop
 ```bash
 pup build [--dev]
 # or
-composer pup build [--dev]
+composer -- pup build [--dev]
 ```
 
 ### Arguments
@@ -57,7 +57,7 @@ declared any checks) by running the following command:
 ```bash
 pup check
 # or
-composer pup check
+composer -- pup check
 ```
 
 ### `pup check:tbd`
@@ -70,7 +70,7 @@ and line numbers where they appear.
 ```bash
 pup check:tbd
 # or
-composer pup check:tbd
+composer -- pup check:tbd
 ```
 
 #### `.puprc` options
@@ -97,7 +97,7 @@ the purposes of validation, `pup` will consider `major.minor.patch` versions wit
 ```bash
 pup check:version-conflict
 # or
-composer pup check:version-conflict
+composer -- pup check:version-conflict
 ```
 
 #### `.puprc` options
@@ -113,7 +113,7 @@ This command cleans up any directories that `pup` creates.
 ```bash
 pup clean
 # or
-composer pup clean
+composer -- pup clean
 ```
 
 ## `pup get-version`
@@ -126,7 +126,7 @@ If you haven't provided a version file, the version will be `unknown`.
 ```bash
 pup get-version [--dev]
 # or
-composer pup get-version [--dev]
+composer -- pup get-version [--dev]
 ```
 
 ### Arguments
@@ -141,7 +141,7 @@ Shows the help menu.
 ```bash
 pup help [command]
 # or
-composer pup help [command]
+composer -- pup help [command]
 ```
 
 ### Arguments
@@ -156,7 +156,7 @@ Gets `pup` details for the current project.
 ```bash
 pup info
 # or
-composer pup info
+composer -- pup info
 ```
 
 ## `pup package`
@@ -178,7 +178,7 @@ The zip that is generated will be placed in your project's root directory.
 ```bash
 pup package <version> [--dev]
 # or
-composer pup package <version> [--dev]
+composer -- pup package <version> [--dev]
 ```
 
 ### Arguments
@@ -197,7 +197,7 @@ more information on which commands it runs and when.
 ```bash
 pup zip <branch> [--dev] [--no-clone]
 # or
-composer pup zip <branch> [--dev] [--no-clone]
+composer -- pup zip <branch> [--dev] [--no-clone]
 ```
 
 ### Arguments
@@ -216,7 +216,7 @@ This command will build a zip name based on data provided by `.puprc` and option
 ```bash
 pup zip-name <version> [--dev]
 # or
-composer pup zip-name <version> [--dev]
+composer -- pup zip-name <version> [--dev]
 ```
 
 ### Arguments
