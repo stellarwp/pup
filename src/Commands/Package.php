@@ -203,7 +203,11 @@ class Package extends Command {
 		}
 
 		if ( $use_ignore_defaults ) {
-			$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
+			if ( App::isPhar() ) {
+				$command[] = '--exclude-from=<(php -r \'include ' . escapeshellarg( 'phar://' . __PUP_DIR__ . '/.distignore-defaults' ) . ';\')';
+			} else {
+				$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
+			}
 		}
 
 		$command[] = '--exclude=' . escapeshellarg( $build_dir );

@@ -2,6 +2,7 @@
 
 namespace StellarWP\Pup\Commands;
 
+use StellarWP\Pup\App;
 use StellarWP\Pup\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -42,7 +43,12 @@ class Help extends Command {
 	 * @return void
 	 */
 	protected function printCommandList(): void {
-		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
+		if ( App::isPhar() ) {
+			$docs = file( 'phar://' . __PUP_DIR__ . '/docs/commands.md' );
+		} else {
+			$docs = file( __PUP_DIR__ . '/docs/commands.md' );
+		}
+
 		$io = $this->getIO();
 
 		$io->writeln( str_repeat( '*', 80 ) );
@@ -99,7 +105,11 @@ class Help extends Command {
 	 * @return void
 	 */
 	protected function printCommandHelp( string $topic ): void {
-		$docs = file( __PUP_DIR__ . '/docs/commands.md' );
+		if ( App::isPhar() ) {
+			$docs = file( 'phar://' . __PUP_DIR__ . '/docs/commands.md' );
+		} else {
+			$docs = file( __PUP_DIR__ . '/docs/commands.md' );
+		}
 		$io = $this->getIO();
 
 		$start = false;

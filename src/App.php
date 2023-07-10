@@ -28,6 +28,11 @@ class App extends Symfony_Application {
 	public static $check_collection;
 
 	/**
+	 * @var bool
+	 */
+	public static $is_phar = false;
+
+	/**
 	 * Get the instance.
 	 *
 	 * @return App
@@ -188,5 +193,25 @@ class App extends Symfony_Application {
 		}
 
 		return static::$config;
+	}
+
+	/**
+	 * Sets whether the app is running from a phar.
+	 *
+	 * @return bool
+	 */
+	public static function isPhar(): bool {
+		return static::$is_phar;
+	}
+
+	/**
+	 * Sets whether the app is running from a phar.
+	 *
+	 * @param bool $is_phar
+	 *
+	 * @return void
+	 */
+	public static function setIsPhar( bool $is_phar ): void {
+		static::$is_phar = $is_phar;
 	}
 }

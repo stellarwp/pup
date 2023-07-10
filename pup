@@ -31,6 +31,7 @@ if ( ! \Phar::running() ) {
 try {
 	App::getConfig();
 	$app = App::instance();
+	$app->setIsPhar( \Phar::running() );
 	$app->run();
 } catch ( \Exception $e ) {
 	echo 'ERROR: ' . $e->getMessage() . PHP_EOL;
