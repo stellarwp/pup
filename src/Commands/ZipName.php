@@ -42,10 +42,12 @@ class ZipName extends Command {
 
 		if ( ! $version ) {
 			$buffer = new BufferedOutput();
+
 			$application = $this->getApplication();
 			if ( $application ) {
 				$application->find( 'get-version' )->run( $input, $buffer );
 			}
+
 			$version = trim( $buffer->fetch() );
 		}
 
