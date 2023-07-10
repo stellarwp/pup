@@ -13,7 +13,7 @@ If you want your dev builds to build differently, you can add a build_dev proper
 ..................................................
 pup build [--dev]
 # or
-composer pup build [--dev]
+composer -- pup build [--dev]
 ..................................................
 
 > Arguments:
