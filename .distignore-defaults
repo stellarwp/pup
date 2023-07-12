@@ -1,27 +1,29 @@
-/__mocks__
-/.env
-/.env.*
+__mocks__
+__tests__
+__snapshots__
+.env
+.env.*
 codeception.*
 
-/.git
+.git
 .gitignore
 .gitattributes
 .gitmodules
 
-/.idea
-/.github
-/.storybook
-/.phpstan
-/.wordpress-org
+.idea
+.github
+.storybook
+.phpstan
+.wordpress-org
 
-/bin
+bin
 tests
-/node_modules
-/vendor/bin
-/vendor/composer/installers
-/vendor/**/*.phar
-/vendor/stellarwp/pup
+node_modules/*
+vendor/bin
+vendor/composer/installers
+vendor/stellarwp/pup
 
+*.phar
 .babelrc
 .distinclude
 .distignore
@@ -39,7 +41,10 @@ tests
 .prettierignore
 .prettierrc.json
 .puprc
+.pup-distfiles
 .pup-distignore
+.pup-distignore-*
+.pup-distinclude
 .stylelintignore
 .stylelintrc
 .stylelintrc.json

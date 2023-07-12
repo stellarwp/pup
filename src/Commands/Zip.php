@@ -106,10 +106,6 @@ class Zip extends Command {
 		$command = $application->find( 'build' );
 		$arguments = [];
 
-		if ( $this->input->getOption( 'dev' ) ) {
-			$arguments['--dev'] = true;
-		}
-
 		if ( ! $this->input->getOption( 'no-clone' ) ) {
 			$arguments['--root'] = App::getConfig()->getBuildDir();
 		}

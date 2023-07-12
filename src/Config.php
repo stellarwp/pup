@@ -235,24 +235,12 @@ class Config implements \JsonSerializable {
 	}
 
 	/**
-	 * Returns the clone directory.
+	 * Returns the clean steps.
 	 *
-	 * @param bool $get_full_path Whether to get the full path or not.
-	 *
-	 * @return string
+	 * @return array<int, string>
 	 */
-	public function getZipDir( bool $get_full_path = true ) : string {
-		$dir = '.pup-zip';
-
-		if ( ! empty( $this->config->paths['zip_dir'] ) ) {
-			$dir = DirectoryUtils::normalizeDir( $this->config->paths['zip_dir'] );
-		}
-
-		if ( ! $get_full_path ) {
-			return $dir;
-		}
-
-		return $this->getAbsolutePathForRelativePath( $dir, '.pup-zip' );
+	public function getCleanCommands() : array {
+		return $this->config->clean ? (array) $this->config->clean : [];
 	}
 
 	/**
@@ -402,6 +390,32 @@ class Config implements \JsonSerializable {
 	}
 
 	/**
+	 * Get sync files from config.
+	 *
+	 * @return string[]
+	 */
+	public function getSyncFiles(): array {
+		$defaults = [
+			'.distfiles',
+			'.distinclude',
+			'.distignore',
+			'.gitattributes',
+		];
+
+		if ( ! isset( $this->config->paths['sync_files'] ) ) {
+			return $defaults;
+		}
+
+		if ( ! is_array( $this->config->paths['sync_files'] ) ) {
+			$files = array_merge( $defaults, [ $this->config->paths['sync_files'] ] );
+		} else {
+			$files = array_merge( $defaults, $this->config->paths['sync_files'] );
+		}
+
+		return array_unique( $files );
+	}
+
+	/**
 	 * Get version files.
 	 *
 	 * @return array<int, VersionFile>
@@ -422,10 +436,24 @@ class Config implements \JsonSerializable {
 	}
 
 	/**
-	 * @return bool
+	 * Returns the clone directory.
+	 *
+	 * @param bool $get_full_path Whether to get the full path or not.
+	 *
+	 * @return string
 	 */
-	public function getZipUseDefaultIgnore() : bool {
-		return (bool) $this->config->zip_use_default_ignore;
+	public function getZipDir( bool $get_full_path = true ) : string {
+		$dir = '.pup-zip';
+
+		if ( ! empty( $this->config->paths['zip_dir'] ) ) {
+			$dir = DirectoryUtils::normalizeDir( $this->config->paths['zip_dir'] );
+		}
+
+		if ( ! $get_full_path ) {
+			return $dir;
+		}
+
+		return $this->getAbsolutePathForRelativePath( $dir, '.pup-zip' );
 	}
 
 	/**
@@ -450,6 +478,13 @@ class Config implements \JsonSerializable {
 		}
 
 		return $this->config->zip_name;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getZipUseDefaultIgnore() : bool {
+		return (bool) $this->config->zip_use_default_ignore;
 	}
 
 	/**

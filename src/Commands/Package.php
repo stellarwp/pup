@@ -63,7 +63,7 @@ class Package extends Command {
 
 		$output->writeln( '<comment>Packaging zip...</comment>' );
 
-		system( 'git stash --quiet' );
+		//system( 'git stash --quiet' );
 
 		$buffer = new BufferedOutput();
 		$application = $this->getApplication();
@@ -120,7 +120,7 @@ class Package extends Command {
 		foreach ( $version_files as $file ) {
 			system( 'git checkout -- ' . escapeshellarg( $file->getPath() ) );
 		}
-		system( 'git stash apply --quiet' );
+		//system( 'git stash apply --quiet' );
 	}
 
 	/**
@@ -157,12 +157,12 @@ class Package extends Command {
 	 *
 	 * This mimics rsync so that it works on non-unix systems.
 	 *
-	 * @param string $source      Directory to sync.
+	 * @param string $root      Directory to sync.
 	 * @param string $destination Where to sync to.
 	 *
 	 * @return int
 	 */
-	protected function syncFiles( string $source, string $destination ): int {
+	protected function syncFiles( string $root, string $destination ): int {
 		$working_dir      = App::getConfig()->getWorkingDir();
 		$build_dir        = str_replace( $working_dir, '', App::getConfig()->getBuildDir() );
 		$zip_dir          = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
@@ -178,36 +178,29 @@ class Package extends Command {
 
 		$command = [
 			$rsync_executable,
-			'-rlc',
+			'-arqv',
 		];
 
-		if ( file_exists( $working_dir . '.distinclude' ) ) {
-			$command[] = '--include-from=' . escapeshellarg( $working_dir . '.distinclude' );
+		if ( $root === '.' ) {
+			$source = $working_dir;
+		} elseif ( strpos( $root, $working_dir ) === false ) {
+			$source = DirectoryUtils::trailingSlashIt( $working_dir . $root );
+		} else {
+			$source = DirectoryUtils::trailingSlashIt( $root );
 		}
 
-		if ( file_exists( $working_dir . '.distignore' ) ) {
-			$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '.distignore' );
+		$this->buildSyncFiles( $source );
+
+		if ( file_exists( $source . '.pup-distfiles' ) ) {
+			$command[] = '--include-from=' . escapeshellarg( $source . '.pup-distfiles' );
 		}
 
-		if ( file_exists( $working_dir . '.gitattributes' ) ) {
-			$gitattributes_contents = file_get_contents( $working_dir . '.gitattributes' );
-			if ( $gitattributes_contents && preg_match( '/\sexport-ignore/m', $gitattributes_contents ) ) {
-				$gitattributes_array = file( $working_dir . '.gitattributes' );
-				$exclude = [];
+		if ( file_exists( $source . '.pup-distinclude' ) ) {
+			$command[] = '--include-from=' . escapeshellarg( $source . '.pup-distinclude' );
+		}
 
-				foreach ( (array) $gitattributes_array as $gitattributes_line ) {
-					$gitattributes_line = trim( (string) $gitattributes_line );
-					if ( strstr( $gitattributes_line, 'export-ignore' ) === false ) {
-						continue;
-					}
-
-					$exclude[] = preg_replace( '/\s+export-ignore/', '', $gitattributes_line );
-				}
-
-				if ( ! empty( $exclude ) && file_put_contents( $working_dir . '.pup-distignore', implode( "\n", $exclude ) ) ) {
-					$command[] = '--exclude-from=' . escapeshellarg( $working_dir . '.pup-distignore' );
-				}
-			}
+		if ( file_exists( $source . '.pup-distignore' ) ) {
+			$command[] = '--exclude-from=' . escapeshellarg( $source . '.pup-distignore' );
 		}
 
 		$defaults_filename = null;
@@ -215,7 +208,7 @@ class Package extends Command {
 		if ( $use_ignore_defaults ) {
 			if ( App::isPhar() ) {
 				$defaults_contents = file_get_contents( __PUP_DIR__ . '/.distignore-defaults' );
-				$defaults_filename = $working_dir . '.distignore-defaults-' . uniqid();
+				$defaults_filename = $working_dir . '.pup-distignore-defaults-' . uniqid();
 				if ( $defaults_contents ) {
 					file_put_contents( $defaults_filename, $defaults_contents );
 				}
@@ -228,22 +221,180 @@ class Package extends Command {
 		$command[] = '--exclude=' . escapeshellarg( $build_dir );
 		$command[] = '--exclude=' . escapeshellarg( $zip_dir );
 		$command[] = '--exclude=\'.puprc\'';
+		$command[] = '--exclude=\'.pup-distfiles\'';
 		$command[] = '--exclude=\'.pup-distignore\'';
+		$command[] = '--exclude=\'.pup-distinclude\'';
+		//$command[] = '--exclude=\'*\'';
 
-		$command[] = escapeshellarg( $source . '/' );
+		$command[] = escapeshellarg( $source );
 		$command[] = escapeshellarg( $destination . '/' );
-		$command[] = '--delete';
-		$command[] = '--delete-excluded';
 
 		$command = implode( ' ', $command );
 		$result_code = 0;
+
 		system( $command, $result_code );
+
+		// Delete empty directories
+		system( 'find ' . escapeshellarg( $destination ) . ' -type d -empty -delete' );
 
 		if ( App::isPhar() && $defaults_filename && file_exists( $defaults_filename ) ) {
 			unlink( $defaults_filename );
 		}
 
 		return $result_code;
+	}
+
+	protected function buildSyncFiles( string $source ) {
+		$this->buildSyncFile( $source, '.distfiles', $this->getDistfilesFiles() );
+		$this->buildSyncFile( $source, '.distinclude', $this->getDistincludeFiles() );
+		$this->buildSyncFile( $source, '.distignore', $this->getDistignoreFiles() );
+		$this->buildSyncFile( $source, '.gitattributes', $this->getGitattributesFiles() );
+	}
+
+	/**
+	 * Convert the contents of a .gitattributes file to a .distignore file.
+	 *
+	 * @param string $contents
+	 *
+	 * @return string
+	 */
+	protected function convertGitattributesContentsToDistignore( string $contents ): string {
+		if ( ! $contents || ! preg_match( '/\sexport-ignore/m', $contents ) ) {
+			return '';
+		}
+
+		$gitattributes_array = explode( "\n", $contents );
+		$exclude = [];
+
+		foreach ( (array) $gitattributes_array as $gitattributes_line ) {
+			$gitattributes_line = trim( (string) $gitattributes_line );
+			if ( strstr( $gitattributes_line, 'export-ignore' ) === false ) {
+				continue;
+			}
+
+			$exclude[] = preg_replace( '/\s+export-ignore/', '', $gitattributes_line );
+		}
+
+		return implode( "\n", $exclude );
+	}
+
+	/**
+	 * Builds pup-specific distfiles, distignore, and distinclude files.
+	 *
+	 * @param string $target_file Target file that we're checking for.
+	 * @param array  $files Files provided by .puprc.
+	 *
+	 * @return void
+	 */
+	protected function buildSyncFile( string $source, string $target_file, array $files ): void {
+		if ( $target_file === '.gitattributes' ) {
+			$pup_file = '.pup-distignore';
+		} else {
+			$pup_file = '.pup-' . trim( $target_file, '.' );
+		}
+
+		$this->getIO()->writeln( 'Checking ' . $target_file . '...' );
+		$this->getIO()->writeln( '* ' . implode( "\n* ", $files ) );
+
+		foreach ( $files as $file ) {
+			if ( ! file_exists( $file ) ) {
+				continue;
+			}
+
+			$contents = file_get_contents( $source . $file );
+			if ( ! $contents ) {
+				continue;
+			}
+
+			if ( $target_file === '.gitattributes' ) {
+				$contents = $this->convertGitattributesContentsToDistignore( $contents );
+
+				if ( ! $contents ) {
+					continue;
+				}
+			}
+
+			if ( strpos( $file, '/' ) === false ) {
+				file_put_contents( $source . $pup_file, $contents . "\n", FILE_APPEND );
+				continue;
+			}
+
+			$contents = explode( "\n", $contents );
+			$contents = (array) array_filter( $contents );
+			$contents = array_map( 'trim', $contents );
+			$contents = array_unique( $contents );
+
+			$relative_path = str_replace( '/' . $target_file, '', $file );
+
+			foreach ( $contents as $line ) {
+				if ( strpos( $line, '/' ) !== 0 ) {
+					$line = $relative_path . '/' . $line;
+				} else {
+					$line = $relative_path . $line;
+				}
+
+				file_put_contents( $source . $pup_file, $line . "\n", FILE_APPEND );
+			}
+		}
+	}
+
+	/**
+	 * Get files of a given filename from the sync files.
+	 *
+	 * @param string $filename
+	 *
+	 * @return array
+	 */
+	protected function getSyncFiles( string $filename ): array {
+		$files = [];
+
+		$files_from_config = App::getConfig()->getSyncFiles();
+
+		foreach ( $files_from_config as $file ) {
+			if ( strpos( $file, $filename ) === false ) {
+				continue;
+			}
+
+			$files[] = $file;
+		}
+
+		return $files;
+	}
+
+	/**
+	 * Get the .distfiles files.
+	 *
+	 * @return array
+	 */
+	protected function getDistfilesFiles(): array {
+		return $this->getSyncFiles( '.distfiles' );
+	}
+
+	/**
+	 * Get the .distignore files.
+	 *
+	 * @return array
+	 */
+	protected function getDistignoreFiles(): array {
+		return $this->getSyncFiles( '.distignore' );
+	}
+
+	/**
+	 * Get the .distinclude files.
+	 *
+	 * @return array
+	 */
+	protected function getDistincludeFiles(): array {
+		return $this->getSyncFiles( '.distinclude' );
+	}
+
+	/**
+	 * Get the .gitattributes files.
+	 *
+	 * @return array
+	 */
+	protected function getGitattributesFiles(): array {
+		return $this->getSyncFiles( '.gitattributes' );
 	}
 
 	/**
