@@ -244,6 +244,13 @@ class Package extends Command {
 		return $result_code;
 	}
 
+	/**
+	 * Build the sync files to be used within the final sync.
+	 *
+	 * @param string $source
+	 *
+	 * @return void
+	 */
 	protected function buildSyncFiles( string $source ) {
 		$this->buildSyncFile( $source, '.distfiles', $this->getDistfilesFiles() );
 		$this->buildSyncFile( $source, '.distinclude', $this->getDistincludeFiles() );
@@ -282,7 +289,7 @@ class Package extends Command {
 	 * Builds pup-specific distfiles, distignore, and distinclude files.
 	 *
 	 * @param string $target_file Target file that we're checking for.
-	 * @param array  $files Files provided by .puprc.
+	 * @param array<int, string>  $files Files provided by .puprc.
 	 *
 	 * @return void
 	 */
@@ -343,7 +350,7 @@ class Package extends Command {
 	 *
 	 * @param string $filename
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	protected function getSyncFiles( string $filename ): array {
 		$files = [];
@@ -364,7 +371,7 @@ class Package extends Command {
 	/**
 	 * Get the .distfiles files.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	protected function getDistfilesFiles(): array {
 		return $this->getSyncFiles( '.distfiles' );
@@ -373,7 +380,7 @@ class Package extends Command {
 	/**
 	 * Get the .distignore files.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	protected function getDistignoreFiles(): array {
 		return $this->getSyncFiles( '.distignore' );
@@ -382,7 +389,7 @@ class Package extends Command {
 	/**
 	 * Get the .distinclude files.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	protected function getDistincludeFiles(): array {
 		return $this->getSyncFiles( '.distinclude' );
@@ -391,7 +398,7 @@ class Package extends Command {
 	/**
 	 * Get the .gitattributes files.
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	protected function getGitattributesFiles(): array {
 		return $this->getSyncFiles( '.gitattributes' );
