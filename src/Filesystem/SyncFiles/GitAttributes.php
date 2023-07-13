@@ -11,6 +11,11 @@ class GitAttributes extends AbstractFile {
 	/**
 	 * @inheritdoc
 	 */
+	protected $pup_filename = '.pup-distignore';
+
+	/**
+	 * @inheritdoc
+	 */
 	protected function alterContents( string $contents ): string {
 		if ( ! $contents || ! preg_match( '/\sexport-ignore/m', $contents ) ) {
 			return '';

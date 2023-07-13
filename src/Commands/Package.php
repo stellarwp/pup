@@ -253,69 +253,10 @@ class Package extends Command {
 	 * @return void
 	 */
 	protected function buildSyncFiles( string $source ) {
-		SyncFiles::getDistFiles( $source, $this->getDistfilesFiles() )->writeContents( '.pup-distfiles' );
-		SyncFiles::getDistInclude( $source, $this->getDistincludeFiles() )->writeContents( '.pup-distinclude' );
-		SyncFiles::getDistIgnore( $source, $this->getDistignoreFiles() )->writeContents( '.pup-distignore' );
-		SyncFiles::getGitAttributes( $source, $this->getGitattributesFiles() )->writeContents( '.pup-distignore' );
-	}
-
-	/**
-	 * Get files of a given filename from the sync files.
-	 *
-	 * @param string $filename
-	 *
-	 * @return array<int, string>
-	 */
-	protected function getSyncFiles( string $filename ): array {
-		$files = [];
-
-		$files_from_config = App::getConfig()->getSyncFiles();
-
-		foreach ( $files_from_config as $file ) {
-			if ( strpos( $file, $filename ) === false ) {
-				continue;
-			}
-
-			$files[] = $file;
-		}
-
-		return $files;
-	}
-
-	/**
-	 * Get the .distfiles files.
-	 *
-	 * @return array<int, string>
-	 */
-	protected function getDistfilesFiles(): array {
-		return $this->getSyncFiles( '.distfiles' );
-	}
-
-	/**
-	 * Get the .distignore files.
-	 *
-	 * @return array<int, string>
-	 */
-	protected function getDistignoreFiles(): array {
-		return $this->getSyncFiles( '.distignore' );
-	}
-
-	/**
-	 * Get the .distinclude files.
-	 *
-	 * @return array<int, string>
-	 */
-	protected function getDistincludeFiles(): array {
-		return $this->getSyncFiles( '.distinclude' );
-	}
-
-	/**
-	 * Get the .gitattributes files.
-	 *
-	 * @return array<int, string>
-	 */
-	protected function getGitattributesFiles(): array {
-		return $this->getSyncFiles( '.gitattributes' );
+		SyncFiles::get( '.distfiles' , $source )->writePup();
+		SyncFiles::get( '.distinclude', $source )->writePup();
+		SyncFiles::get( '.distignore', $source )->writePup();
+		SyncFiles::get( '.gitattributes', $source )->writePup();
 	}
 
 	/**

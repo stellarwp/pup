@@ -16,6 +16,11 @@ class AbstractFile {
 	/**
 	 * @var string
 	 */
+	protected $pup_filename;
+
+	/**
+	 * @var string
+	 */
 	protected $root;
 
 	/**
@@ -43,6 +48,36 @@ class AbstractFile {
 	 */
 	protected function alterContents( string $contents ): string {
 		return $contents;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getFilename(): string {
+		return $this->filename;
+	}
+
+	/**
+	 * Gets the paths of all files of this type.
+	 *
+	 * @return array<int, string>
+	 */
+	public function getPaths(): array {
+		return $this->paths;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPupFilename(): string {
+		return $this->pup_filename;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRoot(): string {
+		return $this->root;
 	}
 
 	/**
@@ -101,25 +136,11 @@ class AbstractFile {
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getFilename(): string {
-		return $this->filename;
-	}
-
-	/**
-	 * Gets the paths of all files of this type.
+	 * Writes the file.
 	 *
-	 * @return array<int, string>
-	 */
-	public function getPaths(): array {
-		return $this->paths;
-	}
-
-	/**
 	 * @return string
 	 */
-	public function getRoot(): string {
-		return $this->root;
+	public function writePup() {
+		return $this->writeContents( $this->getPupFilename() );
 	}
 }
