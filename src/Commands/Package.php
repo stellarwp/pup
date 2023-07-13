@@ -4,6 +4,7 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions;
+use StellarWP\Pup\Filesystem\SyncFiles\SyncFiles;
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;;
 use stdClass;
 use StellarWP\Pup\Command\Command;
@@ -252,97 +253,10 @@ class Package extends Command {
 	 * @return void
 	 */
 	protected function buildSyncFiles( string $source ) {
-		$this->buildSyncFile( $source, '.distfiles', $this->getDistfilesFiles() );
-		$this->buildSyncFile( $source, '.distinclude', $this->getDistincludeFiles() );
-		$this->buildSyncFile( $source, '.distignore', $this->getDistignoreFiles() );
-		$this->buildSyncFile( $source, '.gitattributes', $this->getGitattributesFiles() );
-	}
-
-	/**
-	 * Convert the contents of a .gitattributes file to a .distignore file.
-	 *
-	 * @param string $contents
-	 *
-	 * @return string
-	 */
-	protected function convertGitattributesContentsToDistignore( string $contents ): string {
-		if ( ! $contents || ! preg_match( '/\sexport-ignore/m', $contents ) ) {
-			return '';
-		}
-
-		$gitattributes_array = explode( "\n", $contents );
-		$exclude = [];
-
-		foreach ( (array) $gitattributes_array as $gitattributes_line ) {
-			$gitattributes_line = trim( (string) $gitattributes_line );
-			if ( strstr( $gitattributes_line, 'export-ignore' ) === false ) {
-				continue;
-			}
-
-			$exclude[] = preg_replace( '/\s+export-ignore/', '', $gitattributes_line );
-		}
-
-		return implode( "\n", $exclude );
-	}
-
-	/**
-	 * Builds pup-specific distfiles, distignore, and distinclude files.
-	 *
-	 * @param string $target_file Target file that we're checking for.
-	 * @param array<int, string>  $files Files provided by .puprc.
-	 *
-	 * @return void
-	 */
-	protected function buildSyncFile( string $source, string $target_file, array $files ): void {
-		if ( $target_file === '.gitattributes' ) {
-			$pup_file = '.pup-distignore';
-		} else {
-			$pup_file = '.pup-' . trim( $target_file, '.' );
-		}
-
-		$this->getIO()->writeln( 'Checking ' . $target_file . '...' );
-		$this->getIO()->writeln( '* ' . implode( "\n* ", $files ) );
-
-		foreach ( $files as $file ) {
-			if ( ! file_exists( $file ) ) {
-				continue;
-			}
-
-			$contents = file_get_contents( $source . $file );
-			if ( ! $contents ) {
-				continue;
-			}
-
-			if ( $target_file === '.gitattributes' ) {
-				$contents = $this->convertGitattributesContentsToDistignore( $contents );
-
-				if ( ! $contents ) {
-					continue;
-				}
-			}
-
-			if ( strpos( $file, '/' ) === false ) {
-				file_put_contents( $source . $pup_file, $contents . "\n", FILE_APPEND );
-				continue;
-			}
-
-			$contents = explode( "\n", $contents );
-			$contents = (array) array_filter( $contents );
-			$contents = array_map( 'trim', $contents );
-			$contents = array_unique( $contents );
-
-			$relative_path = str_replace( '/' . $target_file, '', $file );
-
-			foreach ( $contents as $line ) {
-				if ( strpos( $line, '/' ) !== 0 ) {
-					$line = $relative_path . '/' . $line;
-				} else {
-					$line = $relative_path . $line;
-				}
-
-				file_put_contents( $source . $pup_file, $line . "\n", FILE_APPEND );
-			}
-		}
+		SyncFiles::getDistFiles( $source, $this->getDistfilesFiles() )->writeContents( '.pup-distfiles' );
+		SyncFiles::getDistInclude( $source, $this->getDistincludeFiles() )->writeContents( '.pup-distinclude' );
+		SyncFiles::getDistIgnore( $source, $this->getDistignoreFiles() )->writeContents( '.pup-distignore' );
+		SyncFiles::getGitAttributes( $source, $this->getGitattributesFiles() )->writeContents( '.pup-distignore' );
 	}
 
 	/**
