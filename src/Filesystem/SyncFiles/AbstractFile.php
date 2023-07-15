@@ -2,6 +2,8 @@
 
 namespace StellarWP\Pup\Filesystem\SyncFiles;
 
+use Symfony\Component\Finder\Glob;
+
 class AbstractFile {
 	/**
 	 * @var string
@@ -115,7 +117,7 @@ class AbstractFile {
 			$contents = array_map( 'trim', $contents );
 			$contents = array_unique( $contents );
 
-			$relative_path = str_replace( '/' . $target_file, '', $file );
+			$relative_path = str_replace( '/' . $this->getFilename(), '', $file );
 
 			foreach ( $contents as $line ) {
 				if ( strpos( $line, '/' ) !== 0 ) {

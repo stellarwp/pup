@@ -14,6 +14,9 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\Finder\Glob;
 use ZipArchive;
 
 class Package extends Command {
@@ -192,17 +195,141 @@ class Package extends Command {
 
 		$this->buildSyncFiles( $source );
 
-		if ( file_exists( $source . '.pup-distfiles' ) ) {
-			$command[] = '--include-from=' . escapeshellarg( $source . '.pup-distfiles' );
-		}
+		$filesystem = new Filesystem();
+		$finder = new Finder();
+		//$finder->in( $source );
+		//$finder->ignoreDotFiles( true );
+		//$finder->ignoreUnreadableDirs( true );
+		/*
+		$finder->notName( [
+			'.puprc',
+			'.pup-*',
+		] );
+		*/
 
-		if ( file_exists( $source . '.pup-distinclude' ) ) {
-			$command[] = '--include-from=' . escapeshellarg( $source . '.pup-distinclude' );
+		$ignore = [
+			'.puprc',
+			'.pup-*',
+		];
+
+		$include = [
+		];
+
+		$filesystem->mirror( $source, $destination );
+
+		if ( $use_ignore_defaults ) {
+			$defaults_contents = file( __PUP_DIR__ . '/.distignore-defaults', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+
+			if ( $defaults_contents ) {
+				$ignore = array_merge( $ignore, $defaults_contents );
+			}
 		}
 
 		if ( file_exists( $source . '.pup-distignore' ) ) {
-			$command[] = '--exclude-from=' . escapeshellarg( $source . '.pup-distignore' );
+			$distignore = file( $source . '/.pup-distignore', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+
+			if ( $distignore ) {
+				$ignore = array_merge( $ignore, $distignore );
+			}
 		}
+
+		if ( file_exists( $source . '.pup-distinclude' ) ) {
+			$distinclude = file( $source . '/.pup-distinclude', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+
+			if ( $distinclude ) {
+				$include = array_merge( $include, $distinclude );
+			}
+		}
+
+		if ( file_exists( $source . '.pup-distfiles' ) ) {
+			$distfiles = file( $source . '.pup-distfiles', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+			if ( $distfiles ) {
+				$include = array_merge( $include, $distfiles );
+			}
+		}
+
+		try {
+			foreach ( $include as $include_item ) {
+				$finder = new Finder();
+				$finder->in( $source )->name( $include_item );
+
+				foreach ( $ignore as $ignore_item ) {
+					//$finder->notName( $ignore_item );
+				}
+
+				foreach ( $finder as $file ) {
+					$source_path      = $file->getRealPath();
+					$relative_path    = $filesystem->makePathRelative( $source_path, $source );
+					$destination_path = $destination . '/' . $relative_path;
+
+					$destination_dir = dirname( $destination_path );
+					if ( ! $filesystem->exists( $destination_dir ) ) {
+						$filesystem->mkdir( $destination_dir );
+					}
+
+					$filesystem->copy( $source_path, $destination_path );
+				}
+			}
+
+			foreach ( $ignore as $ignore_item ) {
+				$finder = new Finder();
+				$finder->in( $destination )->name( $ignore_item );
+
+				foreach ( $finder as $file ) {
+					$source_path      = $file->getRealPath();
+
+					$filesystem->remove( $source_path );
+				}
+			}
+		} catch ( \Exception $e ) {
+			$this->getIO()->writeln( $e->getMessage() );
+			return 0;
+		}
+
+
+/*
+		if ( file_exists( $source . '.pup-distfiles' ) ) {
+			$distfiles = file( $source . '.pup-distfiles', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+			if ( $distfiles ) {
+				$include = array_merge( $include, $distfiles );
+
+				foreach ( $include as $include_item ) {
+					$finder->path( $include_item );
+
+					foreach ( $ignore as $ignore_item ) {
+						$finder->notPath( $ignore_item );
+					}
+
+					foreach ( $finder as $file ) {
+						$source_path = $file->getRealPath();
+						$relative_path = $filesystem->makePathRelative( $source_path, $source );
+						$destination_path = $destination . '/' . $relative_path;
+
+						$filesystem->copy( $source_path, $destination_path, true );
+						return 0;
+					}
+				}
+			}
+		}
+
+		foreach ( $finder->files() as $file ) {
+			$source_file_path = $file->getRealPath();
+			echo $source_file_path;
+			return 0;
+
+			$destination_directory = $destination . '/' . preg_replace( '!^'. $source . '!', $destination, $file->getRelativePath() );
+			$destination_file_path = $destination . '/' . preg_replace( '!^'. $source . '!', $destination, $file->getRelativePathname() );
+
+			if ( ! is_dir( $destination_directory ) ) {
+				mkdir( $destination_directory, 0755, true );
+			}
+
+			echo $destination_file_path;
+			//$filesystem->copy( $source_file_path, $destination_file_path );
+		}
+*/
+		return 0;
+
 
 		$defaults_filename = null;
 
