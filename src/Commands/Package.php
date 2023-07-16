@@ -2,6 +2,8 @@
 
 namespace StellarWP\Pup\Commands;
 
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions;
 use StellarWP\Pup\Filesystem\SyncFiles\SyncFiles;
@@ -180,11 +182,6 @@ class Package extends Command {
 			throw new Exceptions\BaseException( 'The rsync executable cannot contain spaces or special characters.' );
 		}
 
-		$command = [
-			$rsync_executable,
-			'-arqv',
-		];
-
 		if ( $root === '.' ) {
 			$source = $working_dir;
 		} elseif ( strpos( $root, $working_dir ) === false ) {
@@ -212,18 +209,7 @@ class Package extends Command {
 			'.pup-*',
 		];
 
-		$include = [
-		];
-
-		$filesystem->mirror( $source, $destination );
-
-		if ( $use_ignore_defaults ) {
-			$defaults_contents = file( __PUP_DIR__ . '/.distignore-defaults', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-
-			if ( $defaults_contents ) {
-				$ignore = array_merge( $ignore, $defaults_contents );
-			}
-		}
+		$include = [];
 
 		if ( file_exists( $source . '.pup-distignore' ) ) {
 			$distignore = file( $source . '/.pup-distignore', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
@@ -248,128 +234,120 @@ class Package extends Command {
 			}
 		}
 
-		try {
-			foreach ( $include as $include_item ) {
-				$finder = new Finder();
-				$finder->in( $source )->name( $include_item );
+		$iterator = new RecursiveIteratorIterator(
+			new RecursiveDirectoryIterator( $source, RecursiveDirectoryIterator::SKIP_DOTS ),
+			RecursiveIteratorIterator::SELF_FIRST
+		);
 
-				foreach ( $ignore as $ignore_item ) {
-					//$finder->notName( $ignore_item );
-				}
+		foreach ( $iterator as $item ) {
+			$path = ltrim( $iterator->getSubPathName(), '/\\' );
 
-				foreach ( $finder as $file ) {
-					$source_path      = $file->getRealPath();
-					$relative_path    = $filesystem->makePathRelative( $source_path, $source );
-					$destination_path = $destination . '/' . $relative_path;
-
-					$destination_dir = dirname( $destination_path );
-					if ( ! $filesystem->exists( $destination_dir ) ) {
-						$filesystem->mkdir( $destination_dir );
-					}
-
-					$filesystem->copy( $source_path, $destination_path );
-				}
+			if ( ! $this->is_included_file( $path, $include ) ) {
+				continue;
 			}
 
-			foreach ( $ignore as $ignore_item ) {
-				$finder = new Finder();
-				$finder->in( $destination )->name( $ignore_item );
-
-				foreach ( $finder as $file ) {
-					$source_path      = $file->getRealPath();
-
-					$filesystem->remove( $source_path );
-				}
+			if ( $this->is_ignored_file( $path, $ignore ) ) {
+				continue;
 			}
-		} catch ( \Exception $e ) {
-			$this->getIO()->writeln( $e->getMessage() );
-			return 0;
+
+			if ( $item->isDir() ) {
+				$filesystem->mkdir( $destination . DIRECTORY_SEPARATOR . $path );
+				continue;
+			}
+
+			$filesystem->mkdir( $destination . DIRECTORY_SEPARATOR . dirname( $path ) );
+			$filesystem->copy( $path, $destination . DIRECTORY_SEPARATOR . $path );
 		}
 
-
-/*
-		if ( file_exists( $source . '.pup-distfiles' ) ) {
-			$distfiles = file( $source . '.pup-distfiles', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-			if ( $distfiles ) {
-				$include = array_merge( $include, $distfiles );
-
-				foreach ( $include as $include_item ) {
-					$finder->path( $include_item );
-
-					foreach ( $ignore as $ignore_item ) {
-						$finder->notPath( $ignore_item );
-					}
-
-					foreach ( $finder as $file ) {
-						$source_path = $file->getRealPath();
-						$relative_path = $filesystem->makePathRelative( $source_path, $source );
-						$destination_path = $destination . '/' . $relative_path;
-
-						$filesystem->copy( $source_path, $destination_path, true );
-						return 0;
-					}
-				}
-			}
-		}
-
-		foreach ( $finder->files() as $file ) {
-			$source_file_path = $file->getRealPath();
-			echo $source_file_path;
-			return 0;
-
-			$destination_directory = $destination . '/' . preg_replace( '!^'. $source . '!', $destination, $file->getRelativePath() );
-			$destination_file_path = $destination . '/' . preg_replace( '!^'. $source . '!', $destination, $file->getRelativePathname() );
-
-			if ( ! is_dir( $destination_directory ) ) {
-				mkdir( $destination_directory, 0755, true );
-			}
-
-			echo $destination_file_path;
-			//$filesystem->copy( $source_file_path, $destination_file_path );
-		}
-*/
 		return 0;
+	}
 
+	/**
+	 * Generate a glob regex pattern from a globstar pattern.
+	 *
+	 * @param string $original_pattern
+	 *
+	 * @return string
+	 */
+	public function globstarToRegex( string $original_pattern ): string {
+		$pattern = ltrim( $original_pattern, '/' );
 
-		$defaults_filename = null;
+		// We don't want to quote the glob pattern `**/` in regex, later we'll replace it with an appropriate regex.
+		$pattern = str_replace( '**/', '&glob;', $pattern );
 
-		if ( $use_ignore_defaults ) {
-			if ( App::isPhar() ) {
-				$defaults_contents = file_get_contents( __PUP_DIR__ . '/.distignore-defaults' );
-				$defaults_filename = $working_dir . '.pup-distignore-defaults-' . uniqid();
-				if ( $defaults_contents ) {
-					file_put_contents( $defaults_filename, $defaults_contents );
-				}
-				$command[] = '--exclude-from=' . escapeshellarg( $defaults_filename );
-			} else {
-				$command[] = '--exclude-from=' . escapeshellarg( __PUP_DIR__ . '/.distignore-defaults' );
+		// We don't want to quote `*` in regex pattern, later we'll replace it with `.*`.
+		$pattern = str_replace( '*', '&ast;', $pattern );
+		$pattern = preg_quote( $pattern, '/' );
+		$pattern = str_replace( '&glob;', '(.+\/)?', $pattern );
+		$pattern = str_replace( '&ast;', '[^\/]*', $pattern );
+
+		// If the entry is tied to the beginning of the path, add the `^` regex symbol.
+		if ( 0 === strpos( $original_pattern, '/' ) ) {
+			$pattern = '^' . $pattern;
+		} elseif ( 0 === strpos( $original_pattern, '.' ) ) {
+			$pattern = '(^|\/)' . $pattern;
+		}
+
+		return '/' . $pattern . '/';
+	}
+
+	/**
+	 * Check a file from the plugin against the list of rules.
+	 *
+	 * @param string $relative_filepath Path to the file from the plugin root.
+	 * @param string[] $rules List of rules.
+	 *
+	 * @return bool
+	 */
+	public function is_file_in_group( $relative_filepath, array $rules ) {
+
+		foreach ( array_filter( $rules ) as $entry ) {
+			// Skip comments.
+			if ( preg_match( '/^#/', $entry ) ) {
+				continue;
+			}
+
+			// Skip empty lines.
+			if ( trim( $entry ) === '' ) {
+				continue;
+			}
+
+			$pattern = $this->globstarToRegex( $entry );
+
+			if ( preg_match( $pattern, $relative_filepath ) ) {
+				return true;
 			}
 		}
 
-		$command[] = '--exclude=' . escapeshellarg( $build_dir );
-		$command[] = '--exclude=' . escapeshellarg( $zip_dir );
-		$command[] = '--exclude=\'.puprc\'';
-		$command[] = '--exclude=\'.pup-distfiles\'';
-		$command[] = '--exclude=\'.pup-distignore\'';
-		$command[] = '--exclude=\'.pup-distinclude\'';
-		//$command[] = '--exclude=\'*\'';
+		return false;
+	}
 
-		$command[] = escapeshellarg( $source );
-		$command[] = escapeshellarg( $destination . '/' );
+	/**
+	 * Check a file from the plugin against the list of ignored rules.
+	 *
+	 * @param string $relative_filepath Path to the file from the plugin root.
+	 * @param string[] $ignored List of ignore rules.
+	 *
+	 * @return bool True when the file matches a rule in the `.distignore` file.
+	 */
+	public function is_ignored_file( $relative_filepath, array $ignored ) {
+		return $this->is_file_in_group( $relative_filepath, $ignored );
+	}
 
-		$command = implode( ' ', $command );
-		$result_code = 0;
-
-		system( $command, $result_code );
-
-		// Delete empty directories
-		system( 'find ' . escapeshellarg( $destination ) . ' -type d -empty -delete' );
-
-		if ( App::isPhar() && $defaults_filename && file_exists( $defaults_filename ) ) {
-			unlink( $defaults_filename );
+	/**
+	 * Check a file from the plugin against the list of include rules.
+	 *
+	 * @param string $relative_filepath Path to the file from the plugin root.
+	 * @param string[] $include List of include rules.
+	 *
+	 * @return bool True when the file matches a rule in the `.distfiles` or `.distinclude` file.
+	 */
+	public function is_included_file( $relative_filepath, array $include ) {
+		if ( empty( $include ) ) {
+			return true;
 		}
 
-		return $result_code;
+		return $this->is_file_in_group( $relative_filepath, $include );
 	}
 
 	/**

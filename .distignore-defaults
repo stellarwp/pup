@@ -18,7 +18,6 @@ codeception.*
 
 bin
 tests
-node_modules/*
 vendor/bin
 vendor/composer/installers
 vendor/stellarwp/pup
@@ -45,6 +44,7 @@ vendor/stellarwp/pup
 .pup-distignore
 .pup-distignore-*
 .pup-distinclude
+.pup-zip
 .stylelintignore
 .stylelintrc
 .stylelintrc.json

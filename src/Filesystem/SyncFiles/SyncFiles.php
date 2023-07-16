@@ -56,7 +56,9 @@ class SyncFiles {
 	 * @return DistIgnore
 	 */
 	public static function getDistIgnore( string $root, array $paths = [] ): DistIgnore {
-		return new DistIgnore( $root, static::getSyncFiles( '.distignore' ) );
+		$files = static::getSyncFiles( '.distignore' );
+		$files[] = __PUP_DIR__ . '/.distignore-defaults';
+		return new DistIgnore( $root, $files );
 	}
 
 	/**

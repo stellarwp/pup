@@ -90,12 +90,21 @@ class AbstractFile {
 	 * @return string
 	 */
 	public function writeContents( string $target_file ): string {
+		$is_default = false;
+
 		foreach ( $this->getPaths() as $file ) {
-			if ( ! file_exists( $file ) ) {
-				continue;
+			if ( ! file_exists( $this->getRoot() . $file ) ) {
+				if ( ! file_exists( $file ) || strpos( $file, __PUP_DIR__ ) === false ) {
+					$is_default = true;
+					continue;
+				} else {
+					$path = $file;
+				}
+			} else {
+				$path = $this->getRoot() . $file;
 			}
 
-			$contents = file_get_contents( $this->getRoot() . $file );
+			$contents = file_get_contents( $path );
 
 			if ( ! $contents ) {
 				continue;
@@ -107,7 +116,7 @@ class AbstractFile {
 				continue;
 			}
 
-			if ( strpos( $file, '/' ) === false ) {
+			if ( strpos( $file, '/' ) === false || $is_default ) {
 				file_put_contents( $this->getRoot() . $target_file, $contents . "\n", FILE_APPEND );
 				continue;
 			}
