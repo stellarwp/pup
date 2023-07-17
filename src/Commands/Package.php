@@ -207,7 +207,7 @@ class Package extends Command {
 	 *
 	 * @param string $source
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	public function getIgnoreLines( string $source ): array {
 		$working_dir = App::getConfig()->getWorkingDir();
@@ -235,7 +235,7 @@ class Package extends Command {
 	 *
 	 * @param string $source
 	 *
-	 * @return array
+	 * @return array<int, string>
 	 */
 	public function getIncludeLines( string $source ): array {
 		$include       = [];
