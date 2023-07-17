@@ -272,8 +272,8 @@ class Package extends Command {
 
 		if ( $root === '.' ) {
 			$source = $working_dir;
-		} elseif ( strpos( $root, $working_dir ) === false ) {
-			$source = DirectoryUtils::trailingSlashIt( $working_dir . $root );
+		} elseif ( strpos( $root, $working_dir ) !== false ) {
+			$source = str_replace( $working_dir, '', DirectoryUtils::trailingSlashIt( $root ) );
 		} else {
 			$source = DirectoryUtils::trailingSlashIt( $root );
 		}

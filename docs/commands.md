@@ -217,11 +217,15 @@ composer -- pup zip <branch> [--dev] [--no-clone]
 ```
 
 ### Arguments
-| Argument | Description                                                                                                                               |
-|----------|-------------------------------------------------------------------------------------------------------------------------------------------|
-| `branch` | **Optional.** The branch to package.                                                                                                      |
-| `--dev`  | **Optional.** Whether or not this is a dev build. If passed, it will be added to all sub commands that `pup zip` executes                 |
-| `--no-clone` | **Optional.** Don't clone the repo. By default, the `pup zip` clones the repo into a directory where it will perform all of its commands. |
+| Argument       | Description                                                                                                                               |
+|----------------|-------------------------------------------------------------------------------------------------------------------------------------------|
+| `branch`       | **Optional.** The branch to package.                                                                                                      |
+| `--dev`        | **Optional.** Whether or not this is a dev build. If passed, it will be added to all sub commands that `pup zip` executes                 |
+| `--no-build`   | **Optional.** Don't run the `pup build` command for packaging.                                                                            |
+| `--no-check`   | **Optional.** Don't run the `pup check` command that runs all of the checks.                                                              |
+| `--no-clean`   | **Optional.** Don't run the `pup clean` command after packaging.                                                                          |
+| `--no-clone`   | **Optional.** Don't clone the repo. By default, the `pup zip` clones the repo into a directory where it will perform all of its commands. |
+| `--no-package` | **Optional.** Don't run the `pup package` command that actually packages things up.                                                       |
 
 ## `pup zip-name`
 Gets your project's zip name (sans the `.zip` extension).

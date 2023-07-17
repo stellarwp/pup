@@ -31,7 +31,11 @@ class Zip extends Command {
 		$this->setName( 'zip' )
 			->addArgument( 'branch', InputArgument::OPTIONAL, 'The branch to zip.' )
 			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Run the dev build commands.' )
+			->addOption( 'no-build', null, InputOption::VALUE_NONE, 'Whether or not to run the build.' )
+			->addOption( 'no-check', null, InputOption::VALUE_NONE, 'Whether or not to run the checks.' )
 			->addOption( 'no-clone', null, InputOption::VALUE_NONE, 'Whether or not to clone.' )
+			->addOption( 'no-clean', null, InputOption::VALUE_NONE, 'Whether or not to clean up after packaging.' )
+			->addOption( 'no-package', null, InputOption::VALUE_NONE, 'Whether or not to run the packaging.' )
 			->setDescription( 'Run through the whole pup workflow with a resulting zip at the end.' )
 			->setHelp( 'Run through the whole pup workflow with a resulting zip at the end.' );
 	}
@@ -60,32 +64,41 @@ class Zip extends Command {
 			system( 'git checkout --quiet ' . $branch );
 		}
 
-		$results = $this->runBuild();
-		if ( $results !== 0 ) {
-			$output->writeln( '<error>The build step of `pup zip` failed.</error>' );
-			$output->writeln( '<info>Note: if you have a .nvmrc file, you may need to run "nvm use" before running "pup".</info>' );
-			return $results;
-		}
-
-		$collection = App::getCheckCollection();
-		if ( $collection->count() > 0 ) {
-			$results = $this->runCheck();
+		if ( ! $this->input->getOption( 'no-build' ) ) {
+			$results = $this->runBuild();
 			if ( $results !== 0 ) {
+				$output->writeln( '<error>The build step of `pup zip` failed.</error>' );
+				$output->writeln( '<info>Note: if you have a .nvmrc file, you may need to run "nvm use" before running "pup".</info>' );
 				return $results;
 			}
 		}
 
-		$version = $this->runGetVersion();
-		$results = $this->runPackage( $version );
-		if ( $results !== 0 ) {
-			$output->writeln( '<error>The package step of `pup zip` failed.</error>' );
-			return $results;
+		if ( ! $this->input->getOption( 'no-check' ) ) {
+			$collection = App::getCheckCollection();
+			if ( $collection->count() > 0 ) {
+				$results = $this->runCheck();
+				if ( $results !== 0 ) {
+					return $results;
+				}
+			}
 		}
 
-		$results = $this->runClean();
-		if ( $results !== 0 ) {
-			$output->writeln( '<error>The clean step of `pup zip` failed.</error>' );
-			return $results;
+		$version = $this->runGetVersion();
+
+		if ( ! $this->input->getOption( 'no-package' ) ) {
+			$results = $this->runPackage( $version );
+			if ( $results !== 0 ) {
+				$output->writeln( '<error>The package step of `pup zip` failed.</error>' );
+				return $results;
+			}
+		}
+
+		if ( ! $this->input->getOption( 'no-clean' ) ) {
+			$results = $this->runClean();
+			if ( $results !== 0 ) {
+				$output->writeln( '<error>The clean step of `pup zip` failed.</error>' );
+				return $results;
+			}
 		}
 		return 0;
 	}
