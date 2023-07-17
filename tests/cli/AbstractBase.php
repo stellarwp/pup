@@ -73,7 +73,6 @@ class AbstractBase {
 					],
 				],
 			],
-			'rsync_executable' => '/usr/bin/rsync',
 			'zip_name' => 'fake-project',
 		];
 
