@@ -381,15 +381,6 @@ class Config implements \JsonSerializable {
 	}
 
 	/**
-	 * Gets the rsync executable to run.
-	 *
-	 * @return string
-	 */
-	public function getRsyncExecutable(): string {
-		return $this->config->rsync_executable;
-	}
-
-	/**
 	 * Get sync files from config.
 	 *
 	 * @return string[]
