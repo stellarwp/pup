@@ -165,9 +165,25 @@ Packages your project into a zip file with the passed in version number.
 This command uses the provided version number and builds a zip file with the appropriate name. You can adjust what files
 get included and excluded from zipping in a couple of ways by adding files to your project:
 
-* `.distinclude` - Any file pattern included here will cause files/directories matching that pattern to be included. **Note:** This file will supersede any exclusions.
+* `.distfiles` - If present, the file patterns included here dictate which files/directories matching that pattern to be included. **Note:** Exclusions in `.distignore` and `.gitattributes` supercede these patterns.
 * `.distignore` - Any file pattern included here will cause files/directories matching that pattern to be excluded.
 * `.gitattributes` - Any file pattern with `export-ignore` after it will be treated similar to files within `.distignore`.
+
+Patterns in these files support wildcard matching. Use `*` to match any number of characters and use `/**/` to match any number of directories. Examples:
+
+```bash
+# Match any file ending in .md
+*.md
+
+# Match an explicit file in the root of the project
+/license.txt
+
+# Match any .min.js file in any directory.
+/**/*.min.js
+
+# Match an CSS file in the styles directory.
+src/styles/*.css
+```
 
 By default, `pup` will use its own `.distignore-defaults` file to exclude a number of common patterns. You can turn the
 default exclusion rules off by adding `"zip_use_default_ignore": false` to your `.puprc` file.

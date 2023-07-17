@@ -56,8 +56,13 @@ class SyncFiles {
 	 * @return DistIgnore
 	 */
 	public static function getDistIgnore( string $root, array $paths = [] ): DistIgnore {
-		$files = static::getSyncFiles( '.distignore' );
-		$files[] = __PUP_DIR__ . '/.distignore-defaults';
+		$use_ignore_defaults  = App::getConfig()->getZipUseDefaultIgnore();
+		$files                = static::getSyncFiles( '.distignore' );
+
+		if ( $use_ignore_defaults ) {
+			$files[] = __PUP_DIR__ . '/.distignore-defaults';
+		}
+
 		return new DistIgnore( $root, $files );
 	}
 

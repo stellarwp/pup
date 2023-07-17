@@ -28,7 +28,6 @@
         "zip_dir": ".pup-zip"
     },
     "repo": null,
-    "rsync_executable": "rsync",
     "zip_use_default_ignore": true,
     "zip_name": null
 }
