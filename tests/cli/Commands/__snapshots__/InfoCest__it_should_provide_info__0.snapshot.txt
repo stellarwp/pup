@@ -2,13 +2,13 @@
 CLI Info
 ========
 
-pup <version> from /home/matt/git/pup/pup
+pup <version> from /Users/matt/git/pup/pup
 Using: PHP <whatever>
 
 Working Directory
 -----------------
 
-/home/matt/git/pup/tests/_data/fake-project/
+/Users/matt/git/pup/tests/_data/fake-project/
 
 File info
 ---------
@@ -51,7 +51,6 @@ Config
         "zip_dir": ".pup-zip"
     },
     "repo": null,
-    "rsync_executable": "rsync",
     "zip_use_default_ignore": true,
     "zip_name": null
 }
