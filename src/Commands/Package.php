@@ -348,9 +348,9 @@ class Package extends Command {
 	 *
 	 * @return array<string, array<int, string>>
 	 */
-	public function migrateNegatedIncludeLinesToIgnore( array $include, array $ignore ): array {
+	public function migrateNegatedLines( array $include, array $ignore ): array {
 		$final_include = [];
-		$final_ignore  = $ignore;
+		$final_ignore  = [];
 
 		foreach ( $include as $line ) {
 			if ( strpos( $line, '!' ) === 0 ) {
@@ -359,6 +359,15 @@ class Package extends Command {
 			}
 
 			$final_include[] = $line;
+		}
+
+		foreach ( $ignore as $line ) {
+			if ( strpos( $line, '!' ) === 0 ) {
+				$final_include[] = substr( $line, 1 );
+				continue;
+			}
+
+			$final_ignore[] = $line;
 		}
 
 		return [
@@ -385,7 +394,7 @@ class Package extends Command {
 
 		$include = $this->getIncludeLines( $source );
 		$ignore  = $this->getIgnoreLines( $source );
-		$results = $this->migrateNegatedIncludeLinesToIgnore( $include, $ignore );
+		$results = $this->migrateNegatedLines( $include, $ignore );
 		$include = $results['include'];
 		$ignore  = $results['ignore'];
 
