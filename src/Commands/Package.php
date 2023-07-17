@@ -420,7 +420,7 @@ class Package extends Command {
 			}
 
 			$filesystem->mkdir( $destination . DIRECTORY_SEPARATOR . dirname( $path ) );
-			$filesystem->copy( $path, $destination . DIRECTORY_SEPARATOR . $path );
+			$filesystem->copy( $source . $path, $destination . DIRECTORY_SEPARATOR . $path );
 		}
 
 		return 0;
