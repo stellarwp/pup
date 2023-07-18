@@ -265,6 +265,52 @@ class Config implements \JsonSerializable {
 	}
 
 	/**
+	 * Returns the i18n settings.
+	 *
+	 * @return array<int, mixed>
+	 */
+	public function getI18n(): array {
+		$defaults = $this->getI18nDefaults();
+		$i18n     = $this->config->i18n ? (array) $this->config->i18n : [];
+
+		if ( empty( $i18n ) ) {
+			return [];
+		}
+
+		$keys = array_keys( $i18n );
+		if ( ! is_numeric( current( $keys ) ) ) {
+			$i18n = [ $i18n ];
+		}
+
+		$i18n = array_filter( $i18n, function ( $item ) {
+			return ! empty( $item['url'] ) && ! empty( $item['textdomain'] ) && ! empty( $item['slug'] );
+		} );
+
+		if ( empty( $i18n ) ) {
+			return [];
+		}
+
+		foreach ( $i18n as &$item ) {
+			$item = array_merge( $defaults, $item );
+
+			if ( empty( $item['formats'] ) ) {
+				$item['formats'] = $defaults['formats'];
+			}
+		}
+
+		return $i18n;
+	}
+
+	/**
+	 * Returns the default i18n settings.
+	 *
+	 * @return array<int, mixed>
+	 */
+	public function getI18nDefaults(): array {
+		return $this->config->i18n_defaults ? (array) $this->config->i18n_defaults : [];
+	}
+
+	/**
 	 * Get paths from the config.
 	 *
 	 * @param string $key

@@ -35,6 +35,7 @@ class Zip extends Command {
 			->addOption( 'no-check', null, InputOption::VALUE_NONE, 'Whether or not to run the checks.' )
 			->addOption( 'no-clone', null, InputOption::VALUE_NONE, 'Whether or not to clone.' )
 			->addOption( 'no-clean', null, InputOption::VALUE_NONE, 'Whether or not to clean up after packaging.' )
+			->addOption( 'no-i18n', null, InputOption::VALUE_NONE, 'Whether or not to fetch language files.' )
 			->addOption( 'no-package', null, InputOption::VALUE_NONE, 'Whether or not to run the packaging.' )
 			->setDescription( 'Run through the whole pup workflow with a resulting zip at the end.' )
 			->setHelp( 'Run through the whole pup workflow with a resulting zip at the end.' );
@@ -80,6 +81,14 @@ class Zip extends Command {
 				if ( $results !== 0 ) {
 					return $results;
 				}
+			}
+		}
+
+		if ( ! $this->input->getOption( 'no-i18n' ) ) {
+			$results = $this->runI18n();
+			if ( $results !== 0 ) {
+				$output->writeln( '<error>The package step of `pup i18n` failed.</error>' );
+				return $results;
 			}
 		}
 
@@ -206,6 +215,30 @@ class Zip extends Command {
 
 		$command = $application->find( 'clean' );
 		$arguments = [];
+
+		$command_input = new ArrayInput( $arguments );
+		return $command->run( $command_input, $this->output );
+	}
+
+	/**
+	 * Run the i18n command.
+	 *
+	 * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+	 *
+	 * @return int
+	 */
+	protected function runI18n(): int {
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 1;
+		}
+
+		$command = $application->find( 'i18n' );
+		$arguments = [];
+
+		if ( ! $this->input->getOption( 'no-clone' ) ) {
+			$arguments['--root'] = App::getConfig()->getBuildDir();
+		}
 
 		$command_input = new ArrayInput( $arguments );
 		return $command->run( $command_input, $this->output );

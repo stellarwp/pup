@@ -17,6 +17,20 @@
         }
     },
     "clean": [],
+    "i18n": [],
+    "i18n_defaults": {
+        "path": "lang",
+        "url": "",
+        "slug": "",
+        "textdomain": "",
+        "file_format": "%textdomain%-%wp_locale%.%format%",
+        "formats": ["po", "mo"],
+        "filter": {
+            "translation_sets": false,
+            "minimum_percentage": 30,
+            "waiting_strings": false
+        }
+    },
     "paths": {
         "build_dir": ".pup-build",
         "changelog": null,
