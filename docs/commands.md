@@ -7,6 +7,7 @@
 * [`pup clean`](/docs/commands.md#pup-clean)
 * [`pup get-version`](/docs/commands.md#pup-get-version)
 * [`pup help`](/docs/commands.md#pup-help)
+* [`pup i18n`](/docs/commands.md#pup-i18n)
 * [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
 * [`pup zip`](/docs/commands.md#pup-zip)
@@ -26,8 +27,9 @@ composer -- pup build [--dev]
 
 ### Arguments
 | Argument | Description                                                                                                                                                                          |
-|--- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--dev` | **Optional.** Whether or not this is a dev build. Using this option will run the `build_dev` commands from your `.puprc` file if they exist, otherwise it will run `build` commands. |
+|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--dev`  | **Optional.** Whether or not this is a dev build. Using this option will run the `build_dev` commands from your `.puprc` file if they exist, otherwise it will run `build` commands. |
+| `--root` | **Optional.** Run the command from a different directory from the current. |
 
 ### Specifying build commands
 You can specify build commands within your `.puprc` file by adding to either the `build` or `build_dev` properties. These
@@ -59,6 +61,11 @@ pup check
 # or
 composer -- pup check
 ```
+
+### Arguments
+| Argument | Description                                                                  |
+|----------|------------------------------------------------------------------------------|
+| `--root` | **Optional.** Run the command from a different directory from the current.   |
 
 ### `pup check:tbd`
 Scans your files for `tbd` (case-insensitive) and tells you where to find them.
@@ -116,6 +123,11 @@ pup clean
 composer -- pup clean
 ```
 
+### Arguments
+| Argument | Description                                                                  |
+|----------|------------------------------------------------------------------------------|
+| `--root` | **Optional.** Run the command from a different directory from the current.   |
+
 ## `pup get-version`
 Gets your project's version number.
 
@@ -131,8 +143,9 @@ composer -- pup get-version [--dev]
 
 ### Arguments
 | Argument | Description                                                                                              |
-|--- |----------------------------------------------------------------------------------------------------------|
-| `--dev` | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
+|----------|----------------------------------------------------------------------------------------------------------|
+| `--dev`  | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
+| `--root` | **Optional.** Run the command from a different directory from the current.   |
 
 ## `pup help`
 Shows the help menu.
@@ -148,6 +161,21 @@ composer -- pup help [command]
 | Argument | Description                                                                                              |
 |--- |----------------------------------------------------------------------------------------------------------|
 | `command` | **Optional.** The command to get help for. If omitted, the general help menu will be displayed.          |
+
+## `pup i18n`
+Pulls in translations from a GlotPress instance.
+
+### Usage
+```bash
+pup i18n
+# or
+composer -- pup i18n
+```
+
+### Arguments
+| Argument | Description                                                                |
+|----------|----------------------------------------------------------------------------|
+| `--root` | **Optional.** Run the command from a different directory from the current. |
 
 ## `pup info`
 Gets `pup` details for the current project.
@@ -198,10 +226,11 @@ composer -- pup package <version> [--dev]
 ```
 
 ### Arguments
-| Argument | Description                                                                                              |
-|--- |----------------------------------------------------------------------------------------------------------|
+| Argument  | Description                                                                                              |
+|-----------|----------------------------------------------------------------------------------------------------------|
 | `version` | **Required.** The version number to use when packaging.                                                  |
-| `--dev` | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
+| `--dev`   | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
+| `--root`  | **Optional.** Run the command from a different directory from the current.   |
 
 ## `pup zip`
 Runs the full `pup` set of commands to create a zip file.
@@ -225,6 +254,7 @@ composer -- pup zip <branch> [--dev] [--no-clone]
 | `--no-check`   | **Optional.** Don't run the `pup check` command that runs all of the checks.                                                              |
 | `--no-clean`   | **Optional.** Don't run the `pup clean` command after packaging.                                                                          |
 | `--no-clone`   | **Optional.** Don't clone the repo. By default, the `pup zip` clones the repo into a directory where it will perform all of its commands. |
+| `--no-i18n`    | **Optional.** Don't run the `pup i18n` command.                                                                                           |
 | `--no-package` | **Optional.** Don't run the `pup package` command that actually packages things up.                                                       |
 
 ## `pup zip-name`
