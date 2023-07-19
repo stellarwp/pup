@@ -177,6 +177,41 @@ composer -- pup i18n
 |----------|----------------------------------------------------------------------------|
 | `--root` | **Optional.** Run the command from a different directory from the current. |
 
+### Specifying i18n options
+
+To enable fetching language files from a GlotPress instance, you must specify `i18n` options in your `.puprc` file. At
+a bare minimum, you must specify the following:
+
+```json
+"i18n": {
+    "slug": "the-slug-used-in-glotpress",
+    "textdomain": "my-textdomain",
+    "url": "https://translate.wordpress.org/api/projects/wp-plugins/{slug}/stable"
+}
+```
+
+If you wish to specify multiple `i18n` configs, being sure to override the `path` value so that the second config
+will download language files to an alternate location:
+
+```json
+"i18n": [
+    {
+        "slug": "the-slug-used-in-glotpress",
+        "textdomain": "my-textdomain",
+        "url": "https://translate.wordpress.org/api/projects/wp-plugins/{slug}/stable"
+    },
+    {
+        "path": "some-other-path/lang",
+        "slug": "the-slug-used-in-glotpress",
+        "textdomain": "my-textdomain",
+        "url": "https://translate.wordpress.org/api/projects/wp-plugins/{slug}/stable"
+    }
+]
+```
+
+By default, the config settings for `i18n` inherit defaults from the `i18n_defaults` values in the
+[`.puprc-defaults`](/.puprc-defaults) found within `pup`.
+
 ## `pup info`
 Gets `pup` details for the current project.
 
