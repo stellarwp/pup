@@ -23,6 +23,11 @@ class Config implements \JsonSerializable {
 	protected $has_invalid_puprc = false;
 
 	/**
+	 * @var array<int, I18nConfig>
+	 */
+	protected $i18n = [];
+
+	/**
 	 * @var string
 	 */
 	protected $puprc_file_path;
@@ -267,9 +272,13 @@ class Config implements \JsonSerializable {
 	/**
 	 * Returns the i18n settings.
 	 *
-	 * @return array<int, mixed>
+	 * @return array<int, I18nConfig>
 	 */
 	public function getI18n(): array {
+		if ( ! empty( $this->i18n ) ) {
+			return $this->i18n;
+		}
+
 		$defaults = $this->getI18nDefaults();
 		$i18n     = $this->config->i18n ? (array) $this->config->i18n : [];
 
@@ -298,13 +307,17 @@ class Config implements \JsonSerializable {
 			}
 		}
 
-		return $i18n;
+		foreach ( $i18n as $i18n_config ) {
+			$this->i18n[] = new I18nConfig( $i18n_config );
+		}
+
+		return $this->i18n;
 	}
 
 	/**
 	 * Returns the default i18n settings.
 	 *
-	 * @return array<int, mixed>
+	 * @return array<string, string|int|array<int, string>>
 	 */
 	public function getI18nDefaults(): array {
 		return $this->config->i18n_defaults ? (array) $this->config->i18n_defaults : [];

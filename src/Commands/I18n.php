@@ -6,6 +6,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\I18nConfig;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -49,7 +50,7 @@ class I18n extends Command {
 			if ( $results !== 0 ) {
 				$io->writeln( '<fg=red>Failed to download language files.</>' );
 				$io->writeln( '<fg=yellow>Config:</>' );
-				$io->writeln( json_encode( $i18n_config, JSON_PRETTY_PRINT ) );
+				$io->writeln( (string) json_encode( $i18n_config, JSON_PRETTY_PRINT ) );
 				return $results;
 			}
 		}
@@ -64,25 +65,25 @@ class I18n extends Command {
 	/**
 	 * Downloads language files.
 	 *
-	 * @param array<int, mixed> $i18n_config
+	 * @param I18nConfig $i18n_config
 	 *
 	 * @throws \GuzzleHttp\Exception\GuzzleException
 	 *
 	 * @return int
 	 */
-	protected function download_language_files( array $i18n_config ): int {
+	protected function download_language_files( I18nConfig $i18n_config ): int {
 		$io      = $this->getIO();
 		$options = (object) [
-			'domain_path' => $i18n_config['path'] ?? '',
-			'url'         => $i18n_config['url'] ?? '',
-			'slug'        => $i18n_config['slug'] ?? '',
-			'text_domain' => $i18n_config['textdomain'] ?? '',
-			'file_format' => $i18n_config['file_format'] ?? '',
-			'formats'     => $i18n_config['formats'] ?? [],
-			'filter'      => (object) $i18n_config['filter'] ?? [],
+			'domain_path' => $i18n_config->getPath(),
+			'url'         => $i18n_config->getUrl(),
+			'slug'        => $i18n_config->getSlug(),
+			'text_domain' => $i18n_config->getTextdomain(),
+			'file_format' => $i18n_config->getFileFormat(),
+			'formats'     => $i18n_config->getFormats(),
+			'filter'      => $i18n_config->getFilter(),
 		];
 
-		$io->writeln( "<fg=yellow>Fetching language files for {$options->text_domain} from {$options->url}</>" );
+		$io->writeln( "<fg=yellow>Fetching language files for {$options->text_domain} from {$options->url}</>" ); // @phpstan-ignore-line: Those are strings.
 
 		$client = new Client();
 
@@ -108,7 +109,7 @@ class I18n extends Command {
 			}
 
 			// Skip any translation set that doest match our min translated.
-			if ( $options->filter->minimum_percentage > $translation->percent_translated ) {
+			if ( $options->filter['minimum_percentage'] > $translation->percent_translated ) {
 				continue;
 			}
 
