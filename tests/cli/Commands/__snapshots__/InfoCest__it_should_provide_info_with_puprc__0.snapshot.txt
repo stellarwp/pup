@@ -2,13 +2,13 @@
 CLI Info
 ========
 
-pup <version> from /Users/matt/git/pup/pup
+pup <version> from /home/matt/git/pup/pup
 Using: PHP <whatever>
 
 Working Directory
 -----------------
 
-/Users/matt/git/pup/tests/_data/fake-project/
+/home/matt/git/pup/tests/_data/fake-project/
 
 File info
 ---------
@@ -42,6 +42,21 @@ Config
         }
     },
     "clean": [],
+    "i18n": [],
+    "i18n_defaults": {
+        "path": "lang",
+        "url": "",
+        "slug": "",
+        "textdomain": "",
+        "file_format": "%textdomain%-%wp_locale%.%format%",
+        "formats": [
+            "po",
+            "mo"
+        ],
+        "filter": {
+            "minimum_percentage": 30
+        }
+    },
     "paths": {
         "build_dir": ".pup-build",
         "changelog": null,

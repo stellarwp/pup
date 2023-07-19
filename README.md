@@ -13,6 +13,7 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
   * [Install globally as a git clone](/docs/installation.md#install-globally-as-a-git-clone) - another good option for your system.
 * [Configuration](/docs/configuration.md)
   * [Glob patterns](/docs/glob-patterns.md) - for your `.distfiles` and `.distignore` files.
+  * [Internationalization (i18n)](/docs/i18n.md)
 * [Commands](/docs/commands.md)
   * [`pup build`](/docs/commands.md#pup-build)
   * [`pup check`](/docs/commands.md#pup-check)
@@ -21,6 +22,7 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
   * [`pup clean`](/docs/commands.md#pup-clean)
   * [`pup get-version`](/docs/commands.md#pup-get-version)
   * [`pup help`](/docs/commands.md#pup-help)
+  * [`pup i18n`](/docs/commands.md#pup-i18n)
   * [`pup info`](/docs/commands.md#pup-info)
   * [`pup package`](/docs/commands.md#pup-package)
   * [`pup zip`](/docs/commands.md#pup-zip)
