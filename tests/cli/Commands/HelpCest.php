@@ -55,6 +55,7 @@ class HelpCest extends AbstractBase {
 			[ 'topic' => 'check:tbd' ],
 			[ 'topic' => 'check:version-conflict' ],
 			[ 'topic' => 'help' ],
+			[ 'topic' => 'i18n' ],
 			[ 'topic' => 'get-version' ],
 			[ 'topic' => 'package' ],
 			[ 'topic' => 'zip' ],
