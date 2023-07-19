@@ -23,6 +23,9 @@ flowchart TD
     package[Run pup package]
     packageZip[Package zip]
     clean[Run pup clean]
+    i18n[Run pup i18n]
+    fetchLang[Fetch language files]
+    saveLang[Save language files]
     
     
     subgraph pup zip
@@ -39,8 +42,15 @@ flowchart TD
         subgraph pup check
             checkFetch --> runChecks
         end
-        
-        runChecks --> package
+
+        runChecks --> i18n
+        i18n --> fetchLang
+
+        subgraph pup i18n
+            fetchLang --> saveLang
+        end
+
+        saveLang --> package
         package --> getVersion
 
         subgraph pup package
