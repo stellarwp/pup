@@ -86,8 +86,8 @@ composer -- pup check:tbd
 | `fail_method`     | **Optional.** How the check should fail. Defaults to `error`.                                |
 | `fail_method_dev` | **Optional.** How the check should fail when running with `--dev`. Defaults to `warn`. |
 | `dirs`                | **Optional.** An array of directories to scan. Defaults to `['src']`.                                                      |
-| `skip_directories`    | **Optional.** A pipe delimited list of directories to skip. Defaults can be seen in [`.puprc-defaults`](/.puprc-defaults). |
-| `skip_files`          | **Optional.** A pipe delimited list of files to skip. Defaults can be seen in [`.puprc-defaults`](/.puprc-defaults).       |
+| `skip_directories`    | **Optional.** A pipe delimited list of directories to skip. Defaults can be seen in [`.puprc-defaults`](https://github.com/stellarwp/pup/blob/main/.puprc-defaults). |
+| `skip_files`          | **Optional.** A pipe delimited list of files to skip. Defaults can be seen in [`.puprc-defaults`](https://github.com/stellarwp/pup/blob/main/.puprc-defaults).       |
 
 
 ### `pup check:version-conflict`
@@ -131,7 +131,7 @@ composer -- pup clean
 ## `pup get-version`
 Gets your project's version number.
 
-This command will use the first [version file](/docs/configuration.md#paths-versions) declared in your `.puprc` file to get the version number.
+This command will use the first [version file](https://github.com/stellarwp/pup/blob/main/docs/configuration.md#paths-versions) declared in your `.puprc` file to get the version number.
 If you haven't provided a version file, the version will be `unknown`.
 
 ### Usage
@@ -190,27 +190,10 @@ a bare minimum, you must specify the following:
 }
 ```
 
-If you wish to specify multiple `i18n` configs, being sure to override the `path` value so that the second config
-will download language files to an alternate location:
-
-```json
-"i18n": [
-    {
-        "slug": "the-slug-used-in-glotpress",
-        "textdomain": "my-textdomain",
-        "url": "https://translate.wordpress.org/api/projects/wp-plugins/{slug}/stable"
-    },
-    {
-        "path": "some-other-path/lang",
-        "slug": "the-slug-used-in-glotpress",
-        "textdomain": "my-textdomain",
-        "url": "https://translate.wordpress.org/api/projects/wp-plugins/{slug}/stable"
-    }
-]
-```
-
 By default, the config settings for `i18n` inherit defaults from the `i18n_defaults` values in the
-[`.puprc-defaults`](/.puprc-defaults) found within `pup`.
+[`.puprc-defaults`](https://github.com/stellarwp/pup/blob/main/.puprc-defaults) found within `pup`.
+
+For more information on the available options, see the [i18n documentation](https://github.com/stellarwp/pup/blob/main/docs/i18n.md).
 
 ## `pup info`
 Gets `pup` details for the current project.
@@ -270,7 +253,7 @@ composer -- pup package <version> [--dev]
 ## `pup zip`
 Runs the full `pup` set of commands to create a zip file.
 
-This command is a wrapper command for the whole zipping process. You can see its [flow of commands](/docs/flow.md) for 
+This command is a wrapper command for the whole zipping process. You can see its [flow of commands](https://github.com/stellarwp/pup/blob/main/docs/flow.md) for 
 more information on which commands it runs and when.
 
 ### Usage
