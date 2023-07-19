@@ -23,6 +23,7 @@ composer -- pup build [--dev]
   Argument   Description
  ---------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- --
   --dev      Optional. Whether or not this is a dev build. Using this option will run the build_dev commands from your .puprc file if they exist, otherwise it will run build commands.
+  --root     Optional. Run the command from a different directory from the current.
  ---------- ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- --
 
 
