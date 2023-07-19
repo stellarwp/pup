@@ -12,7 +12,6 @@ root of the project. This file is a JSON file that contains the configuration op
 | `checks`    | `object`       | An object of check configurations indexed by the check's slug. See the [docs for checks](/docs/checks.md) for more info.            |
 | `paths`     | `object`       | An object containing paths used by `pup`. [See below](#paths).                                                                      |
 | `repo`      | `string`/`null` | The git repo used to clone the project. If not provided, at github URL is generated based on the `name` property of `composer.json` |
-| `rsync_executable` | `string` | The executable to be used for the `rsync` command. If on Windows, this will need to be overridden.                                  |
 | `zip_use_default_ignore` | `boolean` | Whether or not additionally ignore files based on the [`.distignore-defaults`](/.distignore-defaults) file. Defaults to `true`.     |
 | `zip_name` | `string` | The name of the zip file to be generated. Defaults to the name of the project as set in `composer.json`.                            |
 

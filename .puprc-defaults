@@ -16,17 +16,18 @@
             "fail_method_dev": "warn"
         }
     },
+    "clean": [],
     "paths": {
         "build_dir": ".pup-build",
         "changelog": null,
         "css": [],
         "js": [],
+        "sync_files": [],
         "versions": [],
         "views": [],
         "zip_dir": ".pup-zip"
     },
     "repo": null,
-    "rsync_executable": "rsync",
     "zip_use_default_ignore": true,
     "zip_name": null
 }

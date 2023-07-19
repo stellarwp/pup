@@ -2,13 +2,13 @@
 CLI Info
 ========
 
-pup <version> from /home/matt/git/pup/pup
+pup <version> from /Users/matt/git/pup/pup
 Using: PHP <whatever>
 
 Working Directory
 -----------------
 
-/home/matt/git/pup/tests/_data/fake-project/
+/Users/matt/git/pup/tests/_data/fake-project/
 
 File info
 ---------
@@ -39,17 +39,18 @@ Config
             "fail_method_dev": "warn"
         }
     },
+    "clean": [],
     "paths": {
         "build_dir": ".pup-build",
         "changelog": null,
         "css": [],
         "js": [],
+        "sync_files": [],
         "versions": [],
         "views": [],
         "zip_dir": ".pup-zip"
     },
     "repo": null,
-    "rsync_executable": "rsync",
     "zip_use_default_ignore": true,
     "zip_name": null
 }

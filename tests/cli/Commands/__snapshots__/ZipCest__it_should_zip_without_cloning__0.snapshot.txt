@@ -33,3 +33,4 @@ Zip fake-project.1.0.0.1.zip created!
 Cleaning up...
 * Removing zip dir...Complete.
 * Removing build dir...Complete.
+Removing .pup-distignore...Complete.

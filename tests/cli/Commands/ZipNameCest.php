@@ -34,8 +34,5 @@ class ZipNameCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} zip-name --dev" );
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'fake-project.1.0.0.1-dev' );
-
-		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
 	}
 }

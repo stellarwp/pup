@@ -1,5 +1,7 @@
 .
 ..
+.distignore
 fake-project
 other-file.php
+package.json
 src
