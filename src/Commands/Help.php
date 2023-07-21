@@ -4,8 +4,10 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class Help extends Command {
@@ -81,6 +83,40 @@ class Help extends Command {
 				$definition = trim( $doc_line );
 				$definition = preg_replace( '/`([^`]+)`/', '<fg=cyan>$1</>', $definition );
 				$commands[ $command ] = [ $command, $definition ];
+			}
+		}
+
+		$application = $this->getApplication();
+		if ( $application ) {
+			$command = $application->find( 'list' );
+			$arguments = [];
+
+			$buffer = new BufferedOutput();
+
+			$command_input = new ArrayInput( $arguments );
+			$command->run( $command_input, $buffer );
+
+			preg_match_all( '/check:([^\s\t]+)(.*)$/m', $buffer->fetch(), $matches );
+
+			$command_parts = [];
+			if ( ! empty( $matches[1] ) ) {
+				$command_parts = $matches[1];
+			}
+
+			foreach ( $command_parts as $command_part ) {
+				if ( ! isset( $command_part ) ) {
+					continue;
+				}
+
+				$command_part = trim( $command_part );
+
+				if ( in_array( $command_part, [ 'tbd', 'version-conflict' ], true ) ) {
+					continue;
+				}
+
+				$command = '<fg=yellow>check:' . $command_part . '</>';
+
+				$commands[ $command ] = [ $command, 'Custom check' ];
 			}
 		}
 
