@@ -415,7 +415,6 @@ class Package extends Command {
 			}
 
 			if ( $item->isDir() ) {
-				$filesystem->mkdir( $destination . DIRECTORY_SEPARATOR . $path );
 				continue;
 			}
 
