@@ -15,6 +15,7 @@ codeception.*
 .storybook
 .phpstan
 .wordpress-org
+bun.lockb
 
 bin
 tests
