@@ -238,17 +238,16 @@ The zip that is generated will be placed in your project's root directory.
 
 ### Usage
 ```bash
-pup package <version> [--dev]
+pup package <version>
 # or
-composer -- pup package <version> [--dev]
+composer -- pup package <version>
 ```
 
 ### Arguments
-| Argument  | Description                                                                                              |
-|-----------|----------------------------------------------------------------------------------------------------------|
-| `version` | **Required.** The version number to use when packaging.                                                  |
-| `--dev`   | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
-| `--root`  | **Optional.** Run the command from a different directory from the current.   |
+| Argument  | Description                                                                                                                                            |
+|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `version` | **Required.** The version number to use when packaging. You can generate this using [`pup get-version`](/docs/commands.md#pup-get-version) if desired. |                                                |
+| `--root`  | **Optional.** Run the command from a different directory from the current.                                                                             |
 
 ## `pup zip`
 Runs the full `pup` set of commands to create a zip file.
