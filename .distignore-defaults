@@ -17,8 +17,6 @@ codeception.*
 .wordpress-org
 bun.lockb
 
-bin
-tests
 vendor/bin
 vendor/composer/installers
 vendor/stellarwp/pup
