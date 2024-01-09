@@ -63,9 +63,10 @@ composer -- pup check
 ```
 
 ### Arguments
-| Argument | Description                                                                  |
-|----------|------------------------------------------------------------------------------|
-| `--root` | **Optional.** Run the command from a different directory from the current.   |
+| Argument | Description                                                                                                                                        |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `--root` | **Optional.** Run the command from a different directory from the current.                                                                         |
+| `--dev`  | **Optional.** Run the command with with an alternate faliure method. This alternate method is set as `fail_method_dev` for each Check in `.puprc`. |
 
 ### `pup check:tbd`
 Scans your files for `tbd` (case-insensitive) and tells you where to find them.
