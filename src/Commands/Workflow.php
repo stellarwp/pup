@@ -5,7 +5,7 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
 use StellarWP\Pup\Command\Command;
-use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -39,8 +39,7 @@ class Workflow extends Command {
 			throw new BaseException( 'Could not run pup.' );
 		}
 
-		$collection = App::getWorkflowCollection();
-		$failures = [];
+		$collection = $config->getWorkflows();
 
 		if ( $collection->count() === 0 ) {
 			$io->writeln( '📣 The .puprc does not have any workflows configured.' );

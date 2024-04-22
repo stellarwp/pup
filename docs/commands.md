@@ -131,6 +131,24 @@ composer -- pup clean
 |----------|------------------------------------------------------------------------------|
 | `--root` | **Optional.** Run the command from a different directory from the current.   |
 
+
+## `pup do`
+Alias for `pup workflow`. See `pup help workflow` for more information.
+
+### Usage
+```bash
+pup do <workflow>
+# or
+composer -- pup do <workflow>
+```
+
+### Arguments
+| Argument | Description                                                                                                                                        |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `workflow` | **Required.** The workflow you would like to run.                                                                                                 |
+| `--root` | **Optional.** Run the command from a different directory from the current.                                                                         |
+
+
 ## `pup get-version`
 Gets your project's version number.
 

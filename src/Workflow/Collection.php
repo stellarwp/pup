@@ -39,6 +39,14 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	 * @inheritDoc
 	 */
 	#[\ReturnTypeWillChange]
+	public function get( $offset ) {
+		return $this->offsetGet( $offset );
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	#[\ReturnTypeWillChange]
 	public function key() {
 		return key( $this->workflows );
 	}

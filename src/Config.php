@@ -72,10 +72,6 @@ class Config implements \JsonSerializable {
 	 * @return void
 	 */
 	public function buildWorkflows() {
-		if ( empty( $this->config->workflows ) ) {
-			return;
-		}
-
 		$collection = new Workflow\Collection();
 
 		if ( empty( $this->config->workflows->build ) && ! empty( $this->config->build ) ) {
@@ -86,8 +82,10 @@ class Config implements \JsonSerializable {
 			$collection->add( new Workflow\Workflow( 'build_dev', $this->config->build_dev ) );
 		}
 
-		foreach ( $this->config->workflows as $slug => $commands ) {
-			$collection->add( new Workflow\Workflow( $slug, $commands ) );
+		if ( ! empty( $this->config->workflows ) ) {
+			foreach ( $this->config->workflows as $slug => $commands ) {
+				$collection->add( new Workflow\Workflow( $slug, $commands ) );
+			}
 		}
 
 		$this->config->workflows = $collection;
@@ -509,9 +507,9 @@ class Config implements \JsonSerializable {
 	/**
 	 * Get the workflows from the config.
 	 *
-	 * @return array<string, Workflow>
+	 * @return Workflow\Collection
 	 */
-	public function getWorkflows(): array {
+	public function getWorkflows(): Workflow\Collection {
 		return $this->config->workflows;
 	}
 
