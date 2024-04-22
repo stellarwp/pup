@@ -198,6 +198,19 @@ class App extends Symfony_Application {
 	}
 
 	/**
+	 * Get the workflow collection.
+	 *
+	 * @return Workflow\Collection
+	 */
+	public static function getWorkflowCollection(): Workflow\Collection {
+		if ( ! isset( static::$workflow_collection ) ) {
+			static::$workflow_collection = new Workflow\Collection();
+		}
+
+		return static::$workflow_collection;
+	}
+
+	/**
 	 * Sets whether the app is running from a phar.
 	 *
 	 * @return bool

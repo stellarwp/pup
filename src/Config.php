@@ -60,9 +60,37 @@ class Config implements \JsonSerializable {
 		$this->puprc_file_path = $this->working_dir . '.puprc';
 
 		$this->mergeConfigWithDefaults();
+		$this->buildWorkflows();
 		$this->parseCheckConfig();
 		$this->parseVersionFiles();
 		$this->validateConfig();
+	}
+
+	/**
+	 * Builds the workflows from the config.
+	 *
+	 * @return void
+	 */
+	public function buildWorkflows() {
+		if ( empty( $this->config->workflows ) ) {
+			return;
+		}
+
+		$collection = new Workflow\Collection();
+
+		if ( empty( $this->config->workflows->build ) && ! empty( $this->config->build ) ) {
+			$collection->add( new Workflow\Workflow( 'build', $this->config->build ) );
+		}
+
+		if ( empty( $this->config->workflows->build_dev ) && ! empty( $this->config->build_dev ) ) {
+			$collection->add( new Workflow\Workflow( 'build_dev', $this->config->build_dev ) );
+		}
+
+		foreach ( $this->config->workflows as $slug => $commands ) {
+			$collection->add( new Workflow\Workflow( $slug, $commands ) );
+		}
+
+		$this->config->workflows = $collection;
 	}
 
 	/**
@@ -476,6 +504,15 @@ class Config implements \JsonSerializable {
 		}
 
 		return $this->config->paths['versions'];
+	}
+
+	/**
+	 * Get the workflows from the config.
+	 *
+	 * @return array<string, Workflow>
+	 */
+	public function getWorkflows(): array {
+		return $this->config->workflows;
 	}
 
 	/**
