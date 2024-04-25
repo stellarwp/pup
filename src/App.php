@@ -61,6 +61,7 @@ class App extends Symfony_Application {
 		$this->add( new Commands\I18n() );
 		$this->add( new Commands\Info() );
 		$this->add( new Commands\Package() );
+		$this->add( new Commands\Workflow() );
 		$this->add( new Commands\Zip() );
 		$this->add( new Commands\ZipName() );
 

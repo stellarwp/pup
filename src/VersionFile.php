@@ -49,6 +49,7 @@ class VersionFile implements \JsonSerializable {
 	/**
 	 * @inheritdoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		return [
 			'file'  => $this->getPath(),

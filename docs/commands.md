@@ -5,11 +5,13 @@
   * [`pup check:tbd`](/docs/commands.md#pup-checktbd)
   * [`pup check:version-conflict`](/docs/commands.md#pup-checkversion-conflict)
 * [`pup clean`](/docs/commands.md#pup-clean)
+* [`pup do`](/docs/commands.md#pup-do)
 * [`pup get-version`](/docs/commands.md#pup-get-version)
 * [`pup help`](/docs/commands.md#pup-help)
 * [`pup i18n`](/docs/commands.md#pup-i18n)
 * [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
+* [`pup workflow`](/docs/commands.md#pup-workflow)
 * [`pup zip`](/docs/commands.md#pup-zip)
 * [`pup zip-name`](/docs/commands.md#pup-zip-name)
 
@@ -128,6 +130,24 @@ composer -- pup clean
 | Argument | Description                                                                  |
 |----------|------------------------------------------------------------------------------|
 | `--root` | **Optional.** Run the command from a different directory from the current.   |
+
+
+## `pup do`
+Alias for `pup workflow`. See `pup help workflow` for more information.
+
+### Usage
+```bash
+pup do <workflow>
+# or
+composer -- pup do <workflow>
+```
+
+### Arguments
+| Argument | Description                                                                                                                                        |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `workflow` | **Required.** The workflow you would like to run.                                                                                                 |
+| `--root` | **Optional.** Run the command from a different directory from the current.                                                                         |
+
 
 ## `pup get-version`
 Gets your project's version number.
@@ -249,6 +269,54 @@ composer -- pup package <version>
 |-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `version` | **Required.** The version number to use when packaging. You can generate this using [`pup get-version`](/docs/commands.md#pup-get-version) if desired. |                                                |
 | `--root`  | **Optional.** Run the command from a different directory from the current.                                                                             |
+
+
+## `pup workflow`
+Run a command workflow.
+
+An example workflow might look like this:
+
+```json
+{
+    "workflow": {
+        "my-workflow": [
+            "npm ci",
+            "npm run build",
+            "@composer run some-script"
+        ]
+    }
+}
+```
+
+Executing this workflow would work like this:
+
+```bash
+pup workflow my-workflow
+# OR
+pup do my-workflow
+# OR
+composer -- pup workflow my-workflow
+# OR
+composer -- pup do my-workflow
+```
+
+### Usage
+```bash
+pup workflow <workflow>
+# or
+pup do <workflow>
+# or
+composer -- pup workflow <workflow>
+# or
+composer -- pup do <workflow>
+```
+
+### Arguments
+| Argument | Description                                                                                                                                        |
+|----------|----------------------------------------------------------------------------------------------------------------------------------------------------|
+| `workflow` | **Required.** The workflow you would like to run.                                                                                                 |
+| `--root` | **Optional.** Run the command from a different directory from the current.                                                                         |
+
 
 ## `pup zip`
 Runs the full `pup` set of commands to create a zip file.
