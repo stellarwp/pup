@@ -36,7 +36,11 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	}
 
 	/**
-	 * @inheritDoc
+	 * Grabs a workflow from the collection.
+	 *
+	 * @param string $offset Workflow slug.
+	 *
+	 * @return Workflow|null
 	 */
 	#[\ReturnTypeWillChange]
 	public function get( $offset ) {
