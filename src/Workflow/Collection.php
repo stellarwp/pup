@@ -71,6 +71,9 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	 */
 	#[\ReturnTypeWillChange]
 	public function offsetGet( $offset ) {
+		if ( ! isset( $this->workflows[ $offset ] ) ) {
+			return null;
+		}
 		return $this->workflows[ $offset ];
 	}
 

@@ -57,7 +57,7 @@ class Workflow extends Command {
 
 		$workflow = $collection->get( $workflow_slug );
 		if ( ! $workflow ) {
-			$io->writeln( "<error>The workflow '{$workflow_slug}'  does not exist.</error>" );
+			$io->writeln( "<error>The workflow '{$workflow_slug}' does not exist.</error>" );
 			return 1;
 		}
 

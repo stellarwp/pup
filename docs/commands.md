@@ -274,6 +274,32 @@ composer -- pup package <version>
 ## `pup workflow`
 Run a command workflow.
 
+An example workflow might look like this:
+
+```json
+{
+    "workflow": {
+        "my-workflow": [
+            "npm ci",
+            "npm run build",
+            "@composer run some-script"
+        ]
+    }
+}
+```
+
+Executing this workflow would work like this:
+
+```bash
+pup workflow my-workflow
+# OR
+pup do my-workflow
+# OR
+composer -- pup workflow my-workflow
+# OR
+composer -- pup do my-workflow
+```
+
 ### Usage
 ```bash
 pup workflow <workflow>
