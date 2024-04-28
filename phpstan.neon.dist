@@ -23,4 +23,4 @@ parameters:
 
 	ignoreErrors:
 		- '#^Constant __PUP_DIR__ not found\.$#'
-		- '#^Constant PUP_VERSION not found\.$#'
+		- '#^Constant (.*)PUP_VERSION not found\.$#'
