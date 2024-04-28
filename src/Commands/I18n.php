@@ -5,6 +5,7 @@ namespace StellarWP\Pup\Commands;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use StellarWP\Pup\App;
+use StellarWP\Pup;
 use StellarWP\Pup\Command\Command;
 use StellarWP\Pup\I18nConfig;
 use Symfony\Component\Console\Input\InputInterface;
@@ -68,7 +69,7 @@ class I18n extends Command {
 	 * @return array<string, array<string, string>>
 	 */
 	protected function get_default_client_options() {
-		$version = \StellarWP\Pup\PUP_VERSION;
+		$version = Pup\PUP_VERSION;
 		return [
 			'headers' => [
 				'User-Agent' => "StellarWP PUP/{$version}",
