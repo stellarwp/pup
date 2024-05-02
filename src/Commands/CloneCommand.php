@@ -45,7 +45,7 @@ class CloneCommand extends Command {
 			$build_dir_basename = basename( $build_dir );
 			$output->writeln( "The {$build_dir_basename} already exists." );
 			$output->write( "Removing build dir..." );
-			if ( file_exists( $build_dir ) && DirectoryUtils::rmdir( $build_dir ) !== 0 ) {
+			if ( DirectoryUtils::rmdir( $build_dir ) !== 0 ) {
 				throw new \Exception( "Could not remove {$build_dir}." );
 			}
 			$output->write( 'Complete.' . PHP_EOL );
