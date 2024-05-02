@@ -16,4 +16,4 @@ src
 
 fake project, yo
 
-Build complete.
+✓ Build complete.

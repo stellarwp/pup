@@ -51,16 +51,11 @@ class Zip extends Command {
 		$branch = $this->input->getArgument( 'branch' );
 
 		if ( ! $this->input->getOption( 'no-clone' ) ) {
-			$branch_arg = '';
-			if ( $branch ) {
-				$branch_arg = "-b {$branch}";
+			$results = $this->runClone();
+			if ( $results !== 0 ) {
+				$output->writeln( '<error>The clone step of `pup zip` failed.</error>' );
+				return $results;
 			}
-
-			$repo = App::getConfig()->getRepo();
-
-			$output->writeln( '<comment>Cloning the ' . $repo . ' repo into ' . App::getConfig()->getBuildDir( false ) . '...</comment>' );
-			system( 'git clone --quiet --recurse-submodules -j8 --shallow-submodules --depth 1 ' . $branch_arg . ' ' . $repo . ' ' . App::getConfig()->getBuildDir( false ) );
-			$output->writeln( 'Clone complete.' );
 		} elseif ( $branch ) {
 			system( 'git checkout --quiet ' . $branch );
 		}
@@ -158,6 +153,32 @@ class Zip extends Command {
 
 		if ( ! $this->input->getOption( 'no-clone' ) ) {
 			$arguments['--root'] = App::getConfig()->getBuildDir();
+		}
+
+		$command_input = new ArrayInput( $arguments );
+		return $command->run( $command_input, $this->output );
+	}
+
+	/**
+	 * Run the clone command.
+	 *
+	 * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+	 *
+	 * @return int
+	 */
+	protected function runClone(): int {
+		$application = $this->getApplication();
+		if ( ! $application ) {
+			return 1;
+		}
+
+		$command = $application->find( 'clone' );
+		$arguments = [];
+
+		$branch = $this->input->getArgument( 'branch' );
+
+		if ( $branch ) {
+			$arguments['--branch'] = $this->input->getArgument( 'branch' );
 		}
 
 		$command_input = new ArrayInput( $arguments );

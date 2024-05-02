@@ -89,7 +89,7 @@ class Workflow extends Command {
 				chdir( $config->getWorkingDir() );
 			}
 
-			$io->writeln( '<info>Workflow complete.</info>' );
+			$io->writeln( '<success>Workflow complete.</success>' );
 		}
 
 		return 0;
