@@ -19,8 +19,6 @@ class Check extends Command {
 	protected function configure() {
 		$this->setName( 'check' )
 			->setAliases( [ 'check:dev' ] )
-			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run checks against codebase.' )
 			->setHelp( 'Run checks against codebase.' );
 	}

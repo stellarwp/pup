@@ -26,7 +26,6 @@ class I18n extends Command {
 	protected function configure() {
 		$this->setName( 'i18n' )
 			->addOption( 'retries', null, InputOption::VALUE_REQUIRED, 'How many retries we do for each file.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Fetches language files for the project.' )
 			->setHelp( 'Fetches language files for the project.' );
 	}

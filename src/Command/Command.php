@@ -25,6 +25,8 @@ abstract class Command extends SymfonyCommand {
 
 		// Declare options that we want to be able to use globally in workflows without declaring it in each command.
 		$this->addOption( 'branch', null, InputOption::VALUE_REQUIRED, 'The branch to use.' );
+		$this->addOption( 'dev', null, InputOption::VALUE_NONE, 'Run the command in dev mode.' );
+		$this->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' );
 	}
 
 	/**

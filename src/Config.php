@@ -289,7 +289,7 @@ class Config implements \JsonSerializable {
 	 * @return array<int, string>
 	 */
 	public function getCleanCommands() : array {
-		return $this->config->clean ? (array) $this->config->clean : [];
+		return isset( $this->config->clean ) ? (array) $this->config->clean : [];
 	}
 
 	/**
@@ -370,7 +370,7 @@ class Config implements \JsonSerializable {
 	 * @return array<string, string|int|array<int, string>>
 	 */
 	public function getI18nDefaults(): array {
-		return $this->config->i18n_defaults ? (array) $this->config->i18n_defaults : [];
+		return isset( $this->config->i18n_defaults ) ? (array) $this->config->i18n_defaults : [];
 	}
 
 	/**

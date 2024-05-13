@@ -20,8 +20,6 @@ class ZipName extends Command {
 	protected function configure() {
 		$this->setName( 'zip-name' )
 			->addArgument( 'version', InputArgument::OPTIONAL, 'Version of project - if not passed, pup get-version is called.' )
-			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Get the dev version.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Gets the version for the product.' )
 			->setHelp( 'Gets the version for the product.' );
 	}

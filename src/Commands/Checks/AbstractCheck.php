@@ -61,8 +61,6 @@ abstract class AbstractCheck extends Command {
 		}
 
 		$this->addOption( 'prefix-output', null, InputOption::VALUE_NONE, 'Should output be prefixed by the slug?' );
-		$this->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' );
-		$this->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' );
 
 		$config        = App::getConfig();
 		$check_configs = $config->getChecks();

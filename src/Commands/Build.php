@@ -19,8 +19,6 @@ class Build extends Command {
 	protected function configure() {
 		$this->setName( 'build' )
 			->setAliases( [ 'build:dev' ] )
-			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Run the dev build commands.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run the build commands.' )
 			->setHelp( 'Run the build commands.' );
 	}

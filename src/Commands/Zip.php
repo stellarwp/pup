@@ -30,7 +30,6 @@ class Zip extends Command {
 	protected function configure() {
 		$this->setName( 'zip' )
 			->addArgument( 'branch', InputArgument::OPTIONAL, 'The branch to zip.' )
-			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Run the dev build commands.' )
 			->addOption( 'no-build', null, InputOption::VALUE_NONE, 'Whether or not to run the build.' )
 			->addOption( 'no-check', null, InputOption::VALUE_NONE, 'Whether or not to run the checks.' )
 			->addOption( 'no-clone', null, InputOption::VALUE_NONE, 'Whether or not to clone.' )

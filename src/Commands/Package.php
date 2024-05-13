@@ -49,7 +49,6 @@ class Package extends Command {
 	protected function configure() {
 		$this->setName( 'package' )
 			->addArgument( 'version', InputArgument::REQUIRED, 'Version being packaged.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Packages the project for distribution.' )
 			->setHelp( 'This command allows you to package the project for distribution.' );
 	}

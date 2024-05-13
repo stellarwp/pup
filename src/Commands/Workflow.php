@@ -20,7 +20,6 @@ class Workflow extends Command {
 		$this->setName( 'workflow' )
 			->setAliases( [ 'do' ] )
 			->addArgument( 'workflow', InputArgument::REQUIRED, 'The workflow you would like to run.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run a command workflow.' )
 			->setHelp( 'Run a command workflow.' );
 	}
@@ -32,6 +31,7 @@ class Workflow extends Command {
 		parent::execute( $input, $output );
 		$config        = App::getConfig();
 		$root          = $input->getOption( 'root' );
+		$is_dev        = $input->getOption( 'dev' );
 		$workflow_slug = $input->getArgument( 'workflow' );
 		$io            = $this->getIO();
 		$application   = $this->getApplication();
@@ -54,7 +54,6 @@ class Workflow extends Command {
 		}
 
 		$original_workflow_slug = $workflow_slug;
-		$is_dev                 = false;
 
 		// Support workflows with :dev as a suffix and convert it to <slug>_dev. If :dev is provided and there isn't a <slug>_dev, use <slug>.
 		$workflow_slug_parts = explode( ':', $workflow_slug );
@@ -89,6 +88,12 @@ class Workflow extends Command {
 
 			$io->section( "> <fg=cyan>{$step}</>" );
 
+			$is_pup_command = false;
+			if ( strpos( $step, 'pup' ) === 0 ) {
+				$is_pup_command = true;
+			}
+
+			// If we are executing checks, ensure that the check configurations for bailing/continuing on failure are observed.
 			if ( $bail_on_failure && preg_match( '/^pup check:([^ ]+)/', $step, $matches ) ) {
 				$check  = $matches[1];
 				$checks = $config->getChecks();
@@ -104,6 +109,17 @@ class Workflow extends Command {
 				$step = preg_replace( '/^pup/', 'composer run -- pup', $step );
 			} elseif ( App::isPhar() && strpos( $step, 'pup ' ) === 0 ) {
 				$step = str_replace( 'pup', \Phar::running( false ), $step );
+			}
+
+			// Pass on relevant options to pup commands.
+			if ( $is_pup_command ) {
+				if ( ! empty( $root ) ) {
+					$step .= " --root='{$root}'";
+				}
+
+				if ( $is_dev ) {
+					$step .= " --dev";
+				}
 			}
 
 			system( $step, $result );

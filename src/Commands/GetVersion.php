@@ -17,8 +17,6 @@ class GetVersion extends Command {
 	 */
 	protected function configure() {
 		$this->setName( 'get-version' )
-			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Get the dev version.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Gets the version for the product.' )
 			->setHelp( 'Gets the version for the product.' );
 	}
