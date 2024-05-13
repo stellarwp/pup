@@ -13,7 +13,7 @@ Working Directory
 File info
 ---------
 
-❌ .puprc - exists but could not be parsed: Syntax error
+✅ .puprc - exists
 ⚫ .distignore - does not exist
 ⚫ .distinclude - does not exist
 ⚫ .gitattributes - does not exist
@@ -21,71 +21,61 @@ File info
 Config
 ------
 
-{
-    "build": [
-        "ls -a"
-    ],
-    "build_dev": [],
-    "workflows": {},
-    "checks": {
-        "tbd": {
-            "fail_method": "error",
-            "fail_method_dev": "warn",
-            "skip_directories": "bin|build|vendor|node_modules|.git|.github|tests",
-            "skip_files": ".min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico",
-            "dirs": [
-                "src"
-            ]
-        },
-        "version-conflict": {
-            "fail_method": "error",
-            "fail_method_dev": "warn"
-        }
-    },
-    "clean": [],
-    "i18n": [],
-    "i18n_defaults": {
-        "path": "lang",
-        "url": "",
-        "slug": "",
-        "textdomain": "",
-        "file_format": "%textdomain%-%wp_locale%.%format%",
-        "formats": [
-            "po",
-            "mo"
-        ],
-        "filter": {
-            "minimum_percentage": 30
-        }
-    },
-    "paths": {
-        "build_dir": ".pup-build",
-        "changelog": null,
-        "css": [],
-        "js": [],
-        "sync_files": [],
-        "versions": [
-            {
-                "file": "bootstrap.php",
-                "regex": "(define\\( +['\"]FAKE_PROJECT_VERSION['\"], +['\"])([^'\"]+)"
-            },
-            {
-                "file": "bootstrap.php",
-                "regex": "(Version: )(.+)"
-            },
-            {
-                "file": "src\/Plugin.php",
-                "regex": "(const VERSION = ['\"])([^'\"]+)"
-            },
-            {
-                "file": "package.json",
-                "regex": "(\"version\": \")([^\"]+)"
-            }
-        ],
-        "views": [],
-        "zip_dir": ".pup-zip"
-    },
-    "repo": null,
-    "zip_use_default_ignore": true,
-    "zip_name": "fake-project"
-}
+repo: null
+zip_name: fake-project
+zip_use_default_ignore: true
+checks:
+    tbd:
+        fail_method: error
+        fail_method_dev: warn
+        skip_directories: bin|build|vendor|node_modules|.git|.github|tests
+        skip_files: .min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico
+        dirs:
+            - src
+    version-conflict:
+        fail_method: error
+        fail_method_dev: warn
+i18n:
+    path: lang
+    url: ''
+    slug: ''
+    textdomain: ''
+    file_format: '%textdomain%-%wp_locale%.%format%'
+    formats:
+        - po
+        - mo
+    filter:
+        minimum_percentage: 30
+paths:
+    build_dir: .pup-build
+    sync_files: {  }
+    versions:
+        -
+            file: bootstrap.php
+            regex: '(define\( +[''"]FAKE_PROJECT_VERSION[''"], +[''"])([^''"]+)'
+        -
+            file: bootstrap.php
+            regex: '(Version: )(.+)'
+        -
+            file: src/Plugin.php
+            regex: '(const VERSION = [''"])([^''"]+)'
+        -
+            file: package.json
+            regex: '("version": ")([^"]+)'
+    zip_dir: .pup-zip
+workflows:
+    build:
+        - 'ls -a'
+    build_dev: null
+    checks:
+        - 'pup check:tbd'
+        - 'pup check:version-conflict'
+    checks_dev:
+        - '@pup check:tbd'
+        - '@pup check:version-conflict'
+    zip:
+        - 'pup clone'
+        - 'pup build'
+        - 'pup i18n'
+        - 'pup package'
+        - 'pup clean'

@@ -5,4 +5,6 @@ Running bork workflow steps...
 
 fake project, yo
 
+[✓] echo "fake project, yo" completed successfully.
+
 Workflow complete.

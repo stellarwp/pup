@@ -1,4 +1,4 @@
-Running build steps...
+Running build workflow steps...
 
 > ls -a
 -------
@@ -11,9 +11,13 @@ other-file.php
 package.json
 src
 
+[✓] ls -a completed successfully.
+
 > echo "fake project, yo"
 -------------------------
 
 fake project, yo
 
-✓ Build complete.
+[✓] echo "fake project, yo" completed successfully.
+
+Workflow complete.

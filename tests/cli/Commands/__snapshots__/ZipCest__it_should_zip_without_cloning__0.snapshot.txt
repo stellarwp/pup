@@ -1,4 +1,4 @@
-Running build steps...
+Running build workflow steps...
 
 > ls -a
 -------
@@ -11,20 +11,37 @@ other-file.php
 package.json
 src
 
-✓ Build complete.
+[✓] ls -a completed successfully.
 
-[tbd] Checking for TBDs...
-[tbd] --------------------
+Workflow complete.
+Running checks workflow steps...
 
-[tbd] No TBDs found!
-[tbd]
-[tbd]
-[tbd] Success! No TBDs found.
+> pup check:tbd
+---------------
 
-[version-conflict] Checking for version conflicts...
-[version-conflict] ---------------------------------
 
-[version-conflict] No version conflicts found.
+Checking for TBDs...
+--------------------
+
+No TBDs found!
+
+
+Success! No TBDs found.
+
+[✓] pup check:tbd completed successfully.
+
+> pup check:version-conflict
+----------------------------
+
+
+Checking for version conflicts...
+---------------------------------
+
+No version conflicts found.
+
+[✓] pup check:version-conflict completed successfully.
+
+Workflow complete.
 
 Packaging zip...
 ----------------

@@ -11,11 +11,13 @@ other-file.php
 package.json
 src
 
-Workflow complete.
+[✓] ls -a completed successfully.
 
 > echo "fake project, yo"
 -------------------------
 
 fake project, yo
+
+[✓] echo "fake project, yo" completed successfully.
 
 Workflow complete.

@@ -1,4 +1,4 @@
-Running build steps...
+Running build workflow steps...
 
 > ls -a
 -------
@@ -11,7 +11,9 @@ other-file.php
 package.json
 src
 
-✓ Build complete.
+[✓] ls -a completed successfully.
+
+Workflow complete.
 
 Packaging zip...
 ----------------

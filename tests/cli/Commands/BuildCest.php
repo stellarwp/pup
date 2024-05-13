@@ -42,7 +42,7 @@ class BuildCest extends AbstractBase {
 
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
-		$I->seeInShellOutput( 'Build complete.' );
+		$I->seeInShellOutput( 'Workflow complete.' );
 		$I->dontSeeInShellOutput( '.puprc' );
 		$I->dontSeeInShellOutput( 'bootstrap.php' );
 		$I->dontSeeInShellOutput( 'fake project, yo' );
@@ -58,7 +58,8 @@ class BuildCest extends AbstractBase {
 		chdir( $this->tests_root . '/_data/fake-project' );
 		$I->runShellCommand( "php {$this->pup} build" );
 		$I->seeResultCodeIs( 0 );
-		$I->seeInShellOutput( 'Build complete.' );
+		$I->seeInShellOutput( 'Workflow complete.' );
+		$I->seeInShellOutput( "Running build workflow steps...\nWorkflow complete." );
 		$I->dontSeeInShellOutput( '.puprc' );
 		$I->dontSeeInShellOutput( 'bootstrap.php' );
 		$I->dontSeeInShellOutput( 'fake project, yo' );
