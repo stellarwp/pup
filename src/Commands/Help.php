@@ -96,7 +96,7 @@ class Help extends Command {
 			$command_input = new ArrayInput( $arguments );
 			$command->run( $command_input, $buffer );
 
-			preg_match_all( '/check:([^\s\t]+)(.*)$/m', $buffer->fetch(), $matches );
+			preg_match_all( '/(?<!\[)check:([^\s\t]+)(.*)$/m', $buffer->fetch(), $matches );
 
 			$command_parts = [];
 			if ( ! empty( $matches[1] ) ) {
