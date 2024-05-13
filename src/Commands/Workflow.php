@@ -75,6 +75,8 @@ class Workflow extends Command {
 			chdir( $root );
 		}
 
+		$failures = [];
+
 		$io->writeln( "<comment>Running {$workflow_slug} workflow steps...</comment>" );
 		foreach ( $workflow->getCommands() as $step ) {
 			$bail_on_failure = true;
@@ -96,20 +98,33 @@ class Workflow extends Command {
 			$io->newLine();
 
 			if ( $result ) {
-				$io->writeln( "[FAIL] Workflow step failed: {$step}" );
+				$io->writeln( "<fg=red>[✗] {$step} failed.</>" );
+				$failures[] = $step;
 
 				if ( $bail_on_failure ) {
 					$io->writeln( "<fg=red>Exiting...</>" );
 					return $result;
 				}
+
+				continue;
 			}
+
+			$io->writeln( "<success>[✓]</success> {$step} completed successfully.\n" );
 		}
 
 		if ( $root ) {
 			chdir( $config->getWorkingDir() );
 		}
 
-		$io->writeln( '<success>Workflow complete.</success>' );
+		if ( empty( $failures ) ) {
+			$io->writeln( '<success>Workflow complete.</success>' );
+		} else {
+			$io->writeln( '<fg=yellow>Workflow complete with failures.</>' );
+
+			if ( ! empty( $failures ) ) {
+				$io->writeln( "\nThe following checks failed: \n* " . implode( "\n* ", $failures ) );
+			}
+		}
 
 		return 0;
 	}

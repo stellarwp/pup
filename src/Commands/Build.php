@@ -4,6 +4,7 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\Exceptions\BaseException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -37,7 +38,7 @@ class Build extends Command {
 		$application = $this->getApplication();
 
 		if ( ! $application ) {
-			return 1;
+			throw new BaseException( 'Could not run pup.' );
 		}
 
 		$command = $application->find( 'workflow' );

@@ -36,11 +36,14 @@ workflows:
     build:
     build_dev:
     checks:
-        - pup check tbd
-        - pup check version-conflict
+        - 'pup check:tbd'
+        - 'pup check:version-conflict'
+    checks_dev:
+        - '@pup check:tbd'
+        - '@pup check:version-conflict'
     zip:
-        - pup clone
-        - pup build
-        - pup i18n
-        - pup package
-        - pup clean
+        - 'pup clone'
+        - 'pup build'
+        - 'pup i18n'
+        - 'pup package'
+        - 'pup clean'

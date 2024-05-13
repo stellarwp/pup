@@ -33,7 +33,7 @@ class Workflow implements \JsonSerializable {
 	 * @return array<int, string>
 	 */
 	public function getCommands(): array {
-		return $this->commands;
+		return $this->commands ?? [];
 	}
 
 	/**

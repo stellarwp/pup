@@ -18,6 +18,7 @@ class Check extends Command {
 	 */
 	protected function configure() {
 		$this->setName( 'check' )
+			->setAliases( [ 'check:dev' ] )
 			->addOption( 'dev', null, InputOption::VALUE_NONE, 'Is this a dev build?' )
 			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
 			->setDescription( 'Run checks against codebase.' )
@@ -29,52 +30,28 @@ class Check extends Command {
 	 */
 	protected function execute( InputInterface $input, OutputInterface $output ) {
 		parent::execute( $input, $output );
-		$io = $this->getIO();
+
+		$command     = $input->getFirstArgument();
+		$aliases     = $this->getAliases();
+		$root        = $input->getOption( 'root' );
+		$is_dev      = $input->getOption( 'dev' ) || in_array( $command, $aliases );
 		$application = $this->getApplication();
+
 		if ( ! $application ) {
 			throw new BaseException( 'Could not run pup.' );
 		}
 
-		$collection = App::getCheckCollection();
-		$failures = [];
+		$command = $application->find( 'workflow' );
+		$arguments = [
+			'workflow' => $is_dev ? 'checks:dev' : 'checks',
+		];
 
-		if ( $collection->count() === 0 ) {
-			$io->writeln( '📣 The .puprc does not have any checks configured.' );
-			$io->writeln( '💡 If you would like to use the defaults, simply remove the "<comment>checks</comment>" property in <comment>.puprc</comment>.' );
-
-			$io->writeln( '' );
-			$io->writeln( 'If you would like to use one of the default checks, add one or more of the following to the "<comment>checks</comment>" property in your <comment>.puprc</comment>:' );
-			$io->writeln( '      "tbd": {}' );
-			$io->writeln( '      "version-conflict": {}' );
-
-			$io->writeln( '' );
-			$io->writeln( 'If you would like to create your own check, take a look at the pup docs to learn how:' );
-			$io->writeln( '      https://github.com/stellarwp/pup' );
-			return 0;
+		if ( $root ) {
+			$arguments['--root'] = $root;
 		}
 
-		foreach ( $collection as $check ) {
-			$command = $application->find( 'check:' . $check->getSlug() );
-			$args    = $check->getArgs();
-
-			if ( $input->getOption( 'root' ) ) {
-				$args['--root'] = $input->getOption( 'root' );
-			}
-
-			$args['--prefix-output'] = true;
-
-			$results = $command->run( new ArrayInput( $args ), $output );
-			if ( $results !== 0 ) {
-				$failures[] = $check->getSlug();
-
-				$should_bail_on_failure = $input->getOption( 'dev' ) ? $check->shouldBailOnFailureDev() : $check->shouldBailOnFailure();
-				if ( $should_bail_on_failure ) {
-
-					$io->writeln( "<fg=yellow>{$check->getSlug()}'s fail_method in <fg=cyan>.puprc</> is set to \"<fg=red>error</>\". Exiting...</>" );
-					return $results;
-				}
-			}
-		}
+		$command_input = new ArrayInput( $arguments );
+		return $command->run( $command_input, $output );
 
 		if ( ! empty( $failures ) ) {
 			$io->writeln( "\n<error>The following checks failed:</error> \n* " . implode( "\n* ", $failures ) );
