@@ -32,6 +32,7 @@ try {
 	App::getConfig();
 	$app = App::instance();
 	$app->setIsPhar( \Phar::running() );
+	$app->setIsComposer( (bool) getenv( 'COMPOSER_BINARY' ) );
 	$app->run();
 } catch ( \Exception $e ) {
 	echo 'ERROR: ' . $e->getMessage() . PHP_EOL;

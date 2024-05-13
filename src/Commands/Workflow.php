@@ -45,19 +45,29 @@ class Workflow extends Command {
 			$io->writeln( '📣 The .puprc does not have any workflows configured.' );
 			$io->writeln( '💡 If you would like to use workflows, simply add a "<comment>workflows</comment>" property in <comment>.puprc</comment> similar to:' );
 			$io->writeln( '' );
-			$io->writeln( '"workflows": {' );
-			$io->writeln( '    "my-workflow": [' );
-			$io->writeln( '        "composer install",' );
-			$io->writeln( '        "npm run build"' );
-			$io->writeln( '    ]' );
-			$io->writeln( '}' );
+			$io->writeln( 'workflows:' );
+			$io->writeln( '    my-workflow:' );
+			$io->writeln( '        - composer install' );
+			$io->writeln( '        - npm run build' );
 			$io->writeln( '' );
 			return 0;
 		}
 
+		$original_workflow_slug = $workflow_slug;
+
+		// Support workflows with :dev as a suffix and convert it to <slug>_dev. If :dev is provided and there isn't a <slug>_dev, use <slug>.
+		$workflow_slug_parts = explode( ':', $workflow_slug );
+		if ( ! empty( $workflow_slug_parts[1] ) && $workflow_slug_parts[1] === 'dev' ) {
+			if ( $collection->has( $workflow_slug_parts[0] . '_dev' ) ) {
+				$workflow_slug = $workflow_slug_parts[0] . '_dev';
+			} else {
+				$workflow_slug = $workflow_slug_parts[0];
+			}
+		}
+
 		$workflow = $collection->get( $workflow_slug );
 		if ( ! $workflow ) {
-			$io->writeln( "<error>The workflow '{$workflow_slug}' does not exist.</error>" );
+			$io->writeln( "<error>The workflow '{$original_workflow_slug}' does not exist.</error>" );
 			return 1;
 		}
 
@@ -72,7 +82,16 @@ class Workflow extends Command {
 				$bail_on_failure = false;
 				$step = substr( $step, 1 );
 			}
+
 			$io->section( "> <fg=cyan>{$step}</>" );
+
+			// If we are executing from within a composer command, ensure that pup sub commands are run with composer.
+			if ( App::isComposer() && strpos( $step, 'pup ' ) === 0 ) {
+				$step = preg_replace( '/^pup/', 'composer run -- pup', $step );
+			} elseif ( App::isPhar() && strpos( $step, 'pup ' ) === 0 ) {
+				$step = str_replace( 'pup', \Phar::running( false ), $step );
+			}
+
 			system( $step, $result );
 			$io->newLine();
 
@@ -84,13 +103,13 @@ class Workflow extends Command {
 					return $result;
 				}
 			}
-
-			if ( $root ) {
-				chdir( $config->getWorkingDir() );
-			}
-
-			$io->writeln( '<success>Workflow complete.</success>' );
 		}
+
+		if ( $root ) {
+			chdir( $config->getWorkingDir() );
+		}
+
+		$io->writeln( '<success>Workflow complete.</success>' );
 
 		return 0;
 	}

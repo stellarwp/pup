@@ -30,6 +30,11 @@ class App extends Symfony_Application {
 	/**
 	 * @var bool
 	 */
+	public static $is_composer = false;
+
+	/**
+	 * @var bool
+	 */
 	public static $is_phar = false;
 
 	/**
@@ -200,12 +205,32 @@ class App extends Symfony_Application {
 	}
 
 	/**
+	 * Sets whether the app is running from composer.
+	 *
+	 * @return bool
+	 */
+	public static function isComposer(): bool {
+		return static::$is_composer;
+	}
+
+	/**
 	 * Sets whether the app is running from a phar.
 	 *
 	 * @return bool
 	 */
 	public static function isPhar(): bool {
 		return static::$is_phar;
+	}
+
+	/**
+	 * Sets whether the app is running from composer.
+	 *
+	 * @param bool $is_composer
+	 *
+	 * @return void
+	 */
+	public static function setIsComposer( bool $is_composer ): void {
+		static::$is_composer = $is_composer;
 	}
 
 	/**
