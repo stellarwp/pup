@@ -103,7 +103,7 @@ class Config implements \JsonSerializable {
 
 			if ( empty( $this->puprc ) ) {
 				try {
-					$this->puprc = Yaml::parse( $puprc_file_contents );
+					$this->puprc = (array) Yaml::parse( $puprc_file_contents );
 				} catch ( ParseException $e ) {
 					$this->puprc_parse_error = 'Syntax error. .puprc is not valid YAML or JSON.';
 				}
@@ -733,6 +733,10 @@ class Config implements \JsonSerializable {
 	 * @return void
 	 */
 	protected function validateConfig() {
+		if ( ! empty( $this->puprc_parse_error ) ) {
+
+		}
+
 		$this->validateVersionPaths();
 		$this->validateCssPaths();
 		$this->validateJsPaths();
