@@ -40,11 +40,10 @@ workflows:
     checks:
         - 'pup check:tbd --prefix-output'
         - 'pup check:version-conflict --prefix-output'
-    checks_dev:
-        - '@pup check:tbd --prefix-output'
-        - '@pup check:version-conflict --prefix-output'
+    clean:
     zip:
         - 'pup clone'
+        - 'pup check'
         - 'pup build'
         - 'pup i18n'
         - 'pup package'
