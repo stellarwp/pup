@@ -2,7 +2,7 @@
 
 namespace StellarWP\Pup\Workflow;
 
-class Workflow {
+class Workflow implements \JsonSerializable {
 	/**
 	 * @var string
 	 */
@@ -33,6 +33,14 @@ class Workflow {
 	 * @return array<int, string>
 	 */
 	public function getCommands(): array {
+		return $this->commands;
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	#[\ReturnTypeWillChange]
+	public function jsonSerialize() {
 		return $this->commands;
 	}
 }

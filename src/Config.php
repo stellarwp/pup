@@ -5,6 +5,8 @@ namespace StellarWP\Pup;
 use Exception;
 use stdClass;
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 
 class Config implements \JsonSerializable {
 	/**
@@ -74,14 +76,6 @@ class Config implements \JsonSerializable {
 	public function buildWorkflows() {
 		$collection = new Workflow\Collection();
 
-		if ( empty( $this->config->workflows->build ) && ! empty( $this->config->build ) ) {
-			$collection->add( new Workflow\Workflow( 'build', $this->config->build ) );
-		}
-
-		if ( empty( $this->config->workflows->build_dev ) && ! empty( $this->config->build_dev ) ) {
-			$collection->add( new Workflow\Workflow( 'build_dev', $this->config->build_dev ) );
-		}
-
 		if ( ! empty( $this->config->workflows ) ) {
 			foreach ( $this->config->workflows as $slug => $commands ) {
 				$collection->add( new Workflow\Workflow( $slug, $commands ) );
@@ -107,9 +101,16 @@ class Config implements \JsonSerializable {
 
 			$this->puprc = json_decode( $puprc_file_contents, true );
 
+			if ( empty( $this->puprc ) ) {
+				try {
+					$this->puprc = Yaml::parse( $puprc_file_contents );
+				} catch ( ParseException $e ) {
+					$this->puprc_parse_error = 'Syntax error. .puprc is not valid YAML or JSON.';
+				}
+			}
+
 			if ( ! $this->puprc ) {
 				$this->has_invalid_puprc = true;
-				$this->puprc_parse_error = json_last_error_msg();
 				$this->puprc = [];
 			}
 		}
@@ -125,7 +126,7 @@ class Config implements \JsonSerializable {
 				continue;
 			}
 
-			if ( $key === 'checks' && is_array( $value ) ) {
+			if ( in_array( $key, [ 'checks', 'workflows' ] ) && is_array( $value ) ) {
 				$default_checks     = $this->config->$key;
 				$this->config->$key = $value;
 
@@ -140,6 +141,19 @@ class Config implements \JsonSerializable {
 			}
 
 			$this->config->$key = $this->mergeConfigValue( $this->config->$key, $value );
+		}
+
+		/**
+		 * Backwards compatibility of build and build_dev.
+		 */
+		if ( isset( $this->config->build ) ) {
+			$this->config->workflows['build'] = $this->config->build;
+			unset( $this->config->build );
+		}
+
+		if ( isset( $this->config->build_dev ) ) {
+			$this->config->workflows['build_dev'] = $this->config->build_dev;
+			unset( $this->config->build_dev );
 		}
 	}
 
@@ -287,6 +301,12 @@ class Config implements \JsonSerializable {
 		}
 
 		$defaults_decoded = json_decode( $defaults, true );
+		if ( empty( $defaults_decoded ) ) {
+			try {
+				$defaults_decoded = Yaml::parse( $defaults );
+			} catch ( ParseException $e ) {
+			}
+		}
 
 		if ( ! $defaults_decoded ) {
 			throw new Exceptions\ConfigException( 'Could not parse the ' . __PUP_DIR__ . DIRECTORY_SEPARATOR . '.puprc-defaults file!' );
@@ -596,9 +616,14 @@ class Config implements \JsonSerializable {
 	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		$config = $this->config;
+
 		if ( isset( $config->checks ) ) {
-			$config->checks = array_map( function ( Check\Config $check ) {
-				return $check->jsonSerialize();
+			$config->checks = array_map( function ( $check ) {
+				if ( $check instanceof Check\Config ) {
+					return $check->jsonSerialize();
+				}
+
+				return $check;
 			}, $config->checks );
 		}
 
@@ -606,6 +631,16 @@ class Config implements \JsonSerializable {
 			$config->paths['versions'] = array_map( function ( VersionFile $file ) {
 				return $file->jsonSerialize();
 			}, $config->paths['versions'] );
+		}
+
+		if ( isset( $config->workflows ) ) {
+			$config->workflows = array_map( function ( $workflow ) {
+				if ( $workflow instanceof Workflow\Workflow ) {
+					return $workflow->jsonSerialize();
+				}
+
+				return $workflow;
+			}, iterator_to_array( $config->workflows ) );
 		}
 
 		return $config;

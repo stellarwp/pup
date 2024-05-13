@@ -3,11 +3,10 @@
 namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
-use StellarWP\Pup\Utils\Directory as DirectoryUtils;;
 use StellarWP\Pup\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Yaml\Yaml;
 
 class Info extends Command {
 	/**
@@ -48,15 +47,35 @@ class Info extends Command {
 
 		foreach ( $files as $file ) {
 			$exists = file_exists( $file );
+			$contents = '';
+
+			if ( $exists ) {
+				$contents = file_get_contents( $file );
+			}
 
 			$file_styled = '<fg=cyan>' . $file . '</>';
 			$prefix = '⚫';
 			$suffix = 'does not exist';
 			$array_to_populate = 'files_absent';
+			$yaml_parseable = $exists;
+			$json_parseable = $exists;
 
-			if ( $exists && $file === '.puprc' && ! json_decode( $file ) ) {
+			if ( $exists ) {
+				try {
+					$yaml_parseable = Yaml::parse( $contents );
+				} catch ( \Exception $e ) {
+					$yaml_parseable = false;
+				}
+
+				$json = json_decode( $contents );
+				if ( ! $json ) {
+					$json_parseable = false;
+				}
+			}
+
+			if ( $exists && $file === '.puprc' && ! $json_parseable && ! $yaml_parseable) {
 				$prefix = '❌';
-				$suffix = '<fg=green>exists</> but could not be parsed: ' . json_last_error_msg();
+				$suffix = '<fg=green>exists</> but could not be parsed. Make sure it is valid YAML or JSON.';
 				$array_to_populate = 'files_error';
 			} elseif ( $exists ) {
 				$prefix = '✅';
@@ -80,7 +99,7 @@ class Info extends Command {
 		}
 
 		$io->section( 'Config' );
-		$io->writeln( (string) json_encode( $config, JSON_PRETTY_PRINT ) );
+		$io->writeln( Yaml::dump( (array) $config->jsonSerialize(), 5, 4 ) );
 
 		return 0;
 	}
