@@ -30,7 +30,7 @@ Running checks workflow steps...
 [tbd]
 [tbd] Success! No TBDs found.
 
-[✓] pup check:tbd --prefix-output completed successfully.
+[✓] pup check:tbd --prefix-output --root='/home/matt/git/pup/tests/_data/fake-project-git-repo/.pup-build' completed successfully.
 
 > pup check:version-conflict --prefix-output
 --------------------------------------------
@@ -41,7 +41,7 @@ Running checks workflow steps...
 
 [version-conflict] Skipping! There are no .paths.versions set in .puprc.
 
-[✓] pup check:version-conflict --prefix-output completed successfully.
+[✓] pup check:version-conflict --prefix-output --root='/home/matt/git/pup/tests/_data/fake-project-git-repo/.pup-build' completed successfully.
 
 Workflow complete.
 
@@ -63,3 +63,5 @@ Cleaning up...
 
 ✓ Removing zip dir...Complete.
 ✓ Removing build dir...Complete.
+Running clean workflow steps...
+Workflow complete.

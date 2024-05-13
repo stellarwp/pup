@@ -35,7 +35,7 @@ checks:
     version-conflict:
         fail_method: error
         fail_method_dev: warn
-i18n:
+i18n_defaults:
     path: lang
     url: ''
     slug: ''
@@ -46,6 +46,7 @@ i18n:
         - mo
     filter:
         minimum_percentage: 30
+i18n: {  }
 paths:
     build_dir: .pup-build
     sync_files: {  }
@@ -70,11 +71,10 @@ workflows:
     checks:
         - 'pup check:tbd --prefix-output'
         - 'pup check:version-conflict --prefix-output'
-    checks_dev:
-        - '@pup check:tbd --prefix-output'
-        - '@pup check:version-conflict --prefix-output'
+    clean: null
     zip:
         - 'pup clone'
+        - 'pup check'
         - 'pup build'
         - 'pup i18n'
         - 'pup package'
