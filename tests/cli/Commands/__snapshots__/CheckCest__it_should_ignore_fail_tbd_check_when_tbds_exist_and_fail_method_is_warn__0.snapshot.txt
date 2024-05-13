@@ -1,3 +1,8 @@
+Running checks workflow steps...
+
+> pup check:tbd --prefix-output
+-------------------------------
+
 
 [tbd] Checking for TBDs...
 [tbd] --------------------
@@ -17,10 +22,20 @@
 [tbd]
 [tbd] TBDs have been found!
 
+[✗] pup check:tbd --prefix-output failed.
+
+> pup check:version-conflict --prefix-output
+--------------------------------------------
+
+
 [version-conflict] Checking for version conflicts...
 [version-conflict] ---------------------------------
 
 [version-conflict] No version conflicts found.
 
+[✓] pup check:version-conflict --prefix-output completed successfully.
+
+Workflow complete with failures.
+
 The following checks failed:
-* tbd
+* pup check:tbd --prefix-output

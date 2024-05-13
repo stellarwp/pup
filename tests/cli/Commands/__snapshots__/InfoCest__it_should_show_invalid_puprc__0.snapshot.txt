@@ -68,11 +68,11 @@ workflows:
         - 'ls -a'
     build_dev: null
     checks:
-        - 'pup check:tbd'
-        - 'pup check:version-conflict'
+        - 'pup check:tbd --prefix-output'
+        - 'pup check:version-conflict --prefix-output'
     checks_dev:
-        - '@pup check:tbd'
-        - '@pup check:version-conflict'
+        - '@pup check:tbd --prefix-output'
+        - '@pup check:version-conflict --prefix-output'
     zip:
         - 'pup clone'
         - 'pup build'

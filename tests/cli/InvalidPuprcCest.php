@@ -12,7 +12,7 @@ class InvalidPuprcCest extends AbstractBase {
 	public function it_should_show_puprc_error_if_invalid( CliTester $I ) {
 		$this->write_default_puprc();
 
-		file_put_contents( $this->tests_root . '/_data/fake-project/.puprc', 'asldjfakjfdasdf,asdlfajsfasfm', FILE_APPEND );
+		file_put_contents( $this->tests_root . '/_data/fake-project/.puprc', "asdf: asdfdf\nasldjfakjfdasdf,asdlfajsfasfm", FILE_APPEND );
 
 		chdir( $this->tests_root . '/_data/fake-project' );
 
@@ -27,7 +27,7 @@ class InvalidPuprcCest extends AbstractBase {
 	public function it_should_not_show_puprc_error_if_invalid_while_running_info( CliTester $I ) {
 		$this->write_default_puprc();
 
-		file_put_contents( $this->tests_root . '/_data/fake-project/.puprc', 'asldjfakjfdasdf,asdlfajsfasfm', FILE_APPEND );
+		file_put_contents( $this->tests_root . '/_data/fake-project/.puprc', "asdf: asdfdf\nasldjfakjfdasdf,asdlfajsfasfm", FILE_APPEND );
 
 		chdir( $this->tests_root . '/_data/fake-project' );
 

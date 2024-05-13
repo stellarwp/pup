@@ -101,16 +101,16 @@ class Config implements \JsonSerializable {
 
 			$this->puprc = json_decode( $puprc_file_contents, true );
 
-			if ( empty( $this->puprc ) ) {
+			if ( json_last_error() !== JSON_ERROR_NONE ) {
 				try {
 					$this->puprc = (array) Yaml::parse( $puprc_file_contents );
 				} catch ( ParseException $e ) {
+					$this->has_invalid_puprc = true;
 					$this->puprc_parse_error = 'Syntax error. .puprc is not valid YAML or JSON.';
 				}
 			}
 
 			if ( ! $this->puprc ) {
-				$this->has_invalid_puprc = true;
 				$this->puprc = [];
 			}
 		}

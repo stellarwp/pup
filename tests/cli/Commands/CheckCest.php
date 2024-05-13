@@ -43,12 +43,14 @@ class CheckCest extends AbstractBase {
 			$I->runShellCommand( "php {$this->pup} check" );
 		} catch ( \Exception $e ) {}
 
+		$output = $I->grabShellOutput();
+		codecept_debug( $output );
+
 		$I->seeResultCodeIs( 0 );
 		$I->seeInShellOutput( 'TBDs have been found!' );
 		$I->seeInShellOutput( '[tbd]' );
 		$I->seeInShellOutput( '[version-conflict] No version conflicts found.' );
 
-		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 	}
 }

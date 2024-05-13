@@ -54,10 +54,12 @@ class Workflow extends Command {
 		}
 
 		$original_workflow_slug = $workflow_slug;
+		$is_dev                 = false;
 
 		// Support workflows with :dev as a suffix and convert it to <slug>_dev. If :dev is provided and there isn't a <slug>_dev, use <slug>.
 		$workflow_slug_parts = explode( ':', $workflow_slug );
 		if ( ! empty( $workflow_slug_parts[1] ) && $workflow_slug_parts[1] === 'dev' ) {
+			$is_dev = true;
 			if ( $collection->has( $workflow_slug_parts[0] . '_dev' ) ) {
 				$workflow_slug = $workflow_slug_parts[0] . '_dev';
 			} else {
@@ -86,6 +88,16 @@ class Workflow extends Command {
 			}
 
 			$io->section( "> <fg=cyan>{$step}</>" );
+
+			if ( $bail_on_failure && preg_match( '/^pup check:([^ ]+)/', $step, $matches ) ) {
+				$check  = $matches[1];
+				$checks = $config->getChecks();
+				if ( ! empty( $checks[ $check ] ) ) {
+					$check_config = $checks[ $check ];
+
+					$bail_on_failure = $is_dev ? $check_config->shouldBailOnFailureDev() : $check_config->shouldBailOnFailure();
+				}
+			}
 
 			// If we are executing from within a composer command, ensure that pup sub commands are run with composer.
 			if ( App::isComposer() && strpos( $step, 'pup ' ) === 0 ) {

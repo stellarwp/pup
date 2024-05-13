@@ -18,30 +18,30 @@ src
 Workflow complete.
 Running checks workflow steps...
 
-> pup check:tbd
----------------
+> pup check:tbd --prefix-output
+-------------------------------
 
 
-Checking for TBDs...
---------------------
+[tbd] Checking for TBDs...
+[tbd] --------------------
 
-No TBDs found!
+[tbd] No TBDs found!
+[tbd]
+[tbd]
+[tbd] Success! No TBDs found.
+
+[✓] pup check:tbd --prefix-output completed successfully.
+
+> pup check:version-conflict --prefix-output
+--------------------------------------------
 
 
-Success! No TBDs found.
+[version-conflict] Checking for version conflicts...
+[version-conflict] ---------------------------------
 
-[✓] pup check:tbd completed successfully.
+[version-conflict] Skipping! There are no .paths.versions set in .puprc.
 
-> pup check:version-conflict
-----------------------------
-
-
-Checking for version conflicts...
----------------------------------
-
-Skipping! There are no .paths.versions set in .puprc.
-
-[✓] pup check:version-conflict completed successfully.
+[✓] pup check:version-conflict --prefix-output completed successfully.
 
 Workflow complete.
 

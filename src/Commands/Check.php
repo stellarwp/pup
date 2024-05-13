@@ -52,11 +52,5 @@ class Check extends Command {
 
 		$command_input = new ArrayInput( $arguments );
 		return $command->run( $command_input, $output );
-
-		if ( ! empty( $failures ) ) {
-			$io->writeln( "\n<error>The following checks failed:</error> \n* " . implode( "\n* ", $failures ) );
-		}
-
-		return 0;
 	}
 }
