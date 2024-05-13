@@ -48,6 +48,17 @@ class Collection implements \ArrayAccess, \Iterator, \Countable {
 	}
 
 	/**
+	 * Checks if a workflow exists in the collection.
+	 *
+	 * @param string $offset Workflow slug.
+	 *
+	 * @return bool
+	 */
+	public function has( $offset ): bool {
+		return $this->offsetExists( $offset );
+	}
+
+	/**
 	 * @inheritDoc
 	 */
 	#[\ReturnTypeWillChange]

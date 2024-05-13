@@ -251,11 +251,15 @@ class Config implements \JsonSerializable {
 	 * @return array<int, string>
 	 */
 	public function getBuildCommands( $is_dev = false ) : array {
-		if ( $is_dev && ! empty( $this->config->build_dev ) ) {
-			return (array) $this->config->build_dev;
+		if ( $is_dev && $this->config->workflows->has( 'build_dev' ) ) {
+			return (array) $this->config->workflows->get( 'build_dev' )->jsonSerialize();
 		}
 
-		return $this->config->build ? (array) $this->config->build : [];
+		if ( ! $this->config->workflows->has( 'build' ) ) {
+			return [];
+		}
+
+		return (array) $this->config->workflows->get( 'build' )->jsonSerialize();
 	}
 
 	/**
