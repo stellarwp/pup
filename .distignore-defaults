@@ -62,7 +62,6 @@ CONTRIBUTING.md
 README.md
 babel.config.json
 bower.json
-composer.json
 composer.lock
 contributing.md
 docker-compose.yml
