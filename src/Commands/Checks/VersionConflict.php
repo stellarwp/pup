@@ -112,7 +112,7 @@ class VersionConflict extends AbstractCheck {
 			return 1;
 		}
 
-		$output->writeln( '<info>No version conflicts found.</info>' );
+		$output->writeln( '<success>No version conflicts found.</success>' );
 		return 0;
 	}
 }

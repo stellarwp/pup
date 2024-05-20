@@ -66,7 +66,7 @@ class Package extends Command {
 		$config   = App::getConfig();
 		$zip_name = $config->getZipName();
 
-		$output->writeln( '<comment>Packaging zip...</comment>' );
+		$this->io->section( '<comment>Packaging zip...</comment>' );
 
 		$buffer = new BufferedOutput();
 		$application = $this->getApplication();
@@ -77,13 +77,13 @@ class Package extends Command {
 
 		$zip_filename = "{$full_zip_name}.zip";
 
-		$output->write( '* Updating version files...' );
+		$output->writeln( '<fg=gray>- Updating version files...</>' );
 		if ( $version !== 'unknown' ) {
 			$this->updateVersionsInFiles( $version );
 		}
-		$output->write( 'Complete.' . PHP_EOL );
+		$output->writeln( '<fg=green>✓</> Updating version files...Complete.' );
 
-		$output->write( '* Synchronizing files to zip directory...' );
+		$output->writeln( '<fg=gray>- Synchronizing files to zip directory...</>' );
 		$pup_zip_dir  = $config->getZipDir();
 
 		DirectoryUtils::rmdir( $pup_zip_dir );
@@ -91,25 +91,25 @@ class Package extends Command {
 		mkdir( $pup_zip_dir );
 
 		$results = $this->syncFiles( $root, $pup_zip_dir );
-		$output->write( 'Complete.' . PHP_EOL );
+		$output->writeln( '<fg=green>✓</> Synchronizing files to zip directory...Complete.' );
 
 		if ( $results !== 0 ) {
 			$this->undoChanges();
 			return $results;
 		}
 
-		$output->write( '* Zipping...' );
+		$output->writeln( '<fg=gray>- Zipping...</>' );
 		$results = $this->createZip( $pup_zip_dir, $zip_filename, $zip_name );
 
 		if ( $results !== 0 ) {
 			$this->undoChanges();
 			return $results;
 		}
-		$output->write( 'Complete.' . PHP_EOL );
+		$output->writeln( '<fg=green>✓</> Zipping...Complete.' );
 
 		$this->undoChanges();
 
-		$this->output->writeln( "<info>Zip {$zip_filename} created!</info>" );
+		$this->output->writeln( PHP_EOL . "<fg=green>✓</> <success>Zip {$zip_filename} created!</success>" . PHP_EOL );
 
 		return 0;
 	}

@@ -24,6 +24,7 @@ Config
 {
     "build": [],
     "build_dev": [],
+    "workflows": {},
     "checks": {
         "tbd": {
             "fail_method": "error",

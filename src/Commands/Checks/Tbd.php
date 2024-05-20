@@ -81,7 +81,7 @@ class Tbd extends AbstractCheck {
 				$output->writeln( '' );
 			}
 		} else {
-			$output->writeln( '<info>No TBDs found!</info>' );
+			$output->writeln( '<success>No TBDs found!</success>' );
 			$output->writeln( '' );
 		}
 		$output->writeln( '' );
@@ -89,7 +89,7 @@ class Tbd extends AbstractCheck {
 		if ( $found_tbds ) {
 			$output->writeln( "<fg=red>TBDs have been found!</>" );
 		} else {
-			$output->writeln( '<info>Success! No TBDs found.</info>' );
+			$output->writeln( '<success>Success! No TBDs found.</success>' );
 		}
 
 		return $found_tbds ? 1 : 0;

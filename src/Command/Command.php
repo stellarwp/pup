@@ -5,7 +5,9 @@ namespace StellarWP\Pup\Command;
 use StellarWP\Pup\App;
 use Symfony\Component\Console\Command\Command as SymfonyCommand;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Formatter\OutputFormatterStyle;
 
 abstract class Command extends SymfonyCommand {
 	/**
@@ -17,6 +19,13 @@ abstract class Command extends SymfonyCommand {
 	 * @var bool
 	 */
 	protected $should_validate_puprc = true;
+
+	public function __construct( string $name = null ) {
+		parent::__construct( $name );
+
+		// Declare options that we want to be able to use globally in workflows without declaring it in each command.
+		$this->addOption( 'branch', null, InputOption::VALUE_REQUIRED, 'The branch to use.' );
+	}
 
 	/**
 	 * Runs the wrapping execute command.
@@ -47,6 +56,8 @@ abstract class Command extends SymfonyCommand {
 	 * @return void
 	 */
 	protected function initialize( InputInterface $input, OutputInterface $output ) {
+		$output->getFormatter()->setStyle( 'info', new OutputFormatterStyle( 'blue' ) );
+		$output->getFormatter()->setStyle( 'success', new OutputFormatterStyle( 'green' ) );
 		$this->io = new Io( $input, $output );
 	}
 

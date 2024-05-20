@@ -5,6 +5,7 @@ namespace StellarWP\Pup\Commands;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\Request;
 use StellarWP\Pup\App;
+use StellarWP\Pup;
 use StellarWP\Pup\Command\Command;
 use StellarWP\Pup\I18nConfig;
 use Symfony\Component\Console\Input\InputInterface;
@@ -63,6 +64,20 @@ class I18n extends Command {
 	}
 
 	/**
+	 * Returns default client options.
+	 *
+	 * @return array<string, array<string, string>>
+	 */
+	protected function get_default_client_options() {
+		$version = Pup\PUP_VERSION;
+		return [
+			'headers' => [
+				'User-Agent' => "StellarWP PUP/{$version}",
+			],
+		];
+	}
+
+	/**
 	 * Downloads language files.
 	 *
 	 * @param I18nConfig $i18n_config
@@ -85,7 +100,7 @@ class I18n extends Command {
 
 		$io->writeln( "<fg=yellow>Fetching language files for {$options->text_domain} from {$options->url}</>" ); // @phpstan-ignore-line: Those are strings.
 
-		$client = new Client();
+		$client = new Client( $this->get_default_client_options() );
 
 		$project_url = $options->url . '/api/projects/' . $options->slug;
 		$project_res = $client->request( 'GET', $project_url );
@@ -150,7 +165,7 @@ class I18n extends Command {
 
 		$tried++;
 
-		$client  = new Client();
+		$client  = new Client( $this->get_default_client_options() );
 		$request = new Request( 'GET', $translation_url );
 
 		$promise = $client->sendAsync( $request )->then( function ( $response ) use ( $translation_url, $options, $translation, $format, $project_url, $tried, $io  ) {

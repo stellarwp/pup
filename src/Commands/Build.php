@@ -62,7 +62,7 @@ class Build extends Command {
 			chdir( $config->getWorkingDir() );
 		}
 
-		$io->writeln( '<info>Build complete.</info>' );
+		$io->writeln( '<fg=green>✓</> <success>Build complete.</success>' );
 		return 0;
 	}
 }

@@ -5,15 +5,16 @@ root of the project. This file is a JSON file that contains the configuration op
 
 ## Top-level properties
 
-| Property    | Type           | Description                                                                                                                         |
-|-------------|----------------|-------------------------------------------------------------------------------------------------------------------------------------|
-| `build`     | `array`        | An array of CLI commands to execute for the build process of your project.                                                          |
-| `build_dev` | `array`        | An array of CLI commands to execute for the `--dev` build process of your project. If empty, it defaults to the value of `build`    |
-| `checks`    | `object`       | An object of check configurations indexed by the check's slug. See the [docs for checks](/docs/checks.md) for more info.            |
-| `paths`     | `object`       | An object containing paths used by `pup`. [See below](#paths).                                                                      |
-| `repo`      | `string`/`null` | The git repo used to clone the project. If not provided, at github URL is generated based on the `name` property of `composer.json` |
-| `zip_use_default_ignore` | `boolean` | Whether or not additionally ignore files based on the [`.distignore-defaults`](/.distignore-defaults) file. Defaults to `true`.     |
-| `zip_name` | `string` | The name of the zip file to be generated. Defaults to the name of the project as set in `composer.json`.                            |
+| Property    | Type            | Description                                                                                                                                                                                   |
+|-------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `build`     | `array`         | An array of CLI commands to execute for the build process of your project.                                                                                                                    |
+| `build_dev` | `array`         | An array of CLI commands to execute for the `--dev` build process of your project. If empty, it defaults to the value of `build`                                                              |
+| `checks`    | `object`        | An object of check configurations indexed by the check's slug. See the [docs for checks](/docs/checks.md) for more info.                                                                      |
+| `paths`     | `object`        | An object containing paths used by `pup`. [See below](#paths).                                                                                                                                |
+| `repo`      | `string`/`null` | The git repo used to clone the project in the format of `<org>/<repo>`. If not provided, at github URL is generated based on the `name` property of `composer.json`                           |
+| `workflows` | `object`        | An object of workflow configurations. The index is the workflow slug and the values are arrays of strings that hold commands. See the [docs for workflows](/docs/workflows.md) for more info. |
+| `zip_use_default_ignore` | `boolean`       | Whether or not additionally ignore files based on the [`.distignore-defaults`](/.distignore-defaults) file. Defaults to `true`.                                                               |
+| `zip_name` | `string`        | The name of the zip file to be generated. Defaults to the name of the project as set in `composer.json`.                                                                                      |
 
 ## Paths
 

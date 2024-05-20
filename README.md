@@ -20,11 +20,13 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
     * [`pup check:tbd`](/docs/commands.md#pup-checktbd)
     * [`pup check:version-conflict`](/docs/commands.md#pup-checkversion-conflict)
   * [`pup clean`](/docs/commands.md#pup-clean)
+  * [`pup do`](/docs/commands.md#pup-do)
   * [`pup get-version`](/docs/commands.md#pup-get-version)
   * [`pup help`](/docs/commands.md#pup-help)
   * [`pup i18n`](/docs/commands.md#pup-i18n)
   * [`pup info`](/docs/commands.md#pup-info)
   * [`pup package`](/docs/commands.md#pup-package)
+  * [`pup workflow`](/docs/commands.md#pup-workflow)
   * [`pup zip`](/docs/commands.md#pup-zip)
   * [`pup zip-name`](/docs/commands.md#pup-zip-name)
 * [Command flow for `pup zip`](/docs/flow.md)
@@ -35,5 +37,9 @@ This is a CLI utility built by [StellarWP](https://stellarwp.com) for running pr
   * [Creating custom checks](#creating-custom-checks)
     * [Simple checks](#simple-checks)
     * [Class-based checks](#class-based-checks)
+* [Workflows](/docs/workflows.md)
+  * [Defining workflows](/docs/workflows.md#defining-workflows)
+  * [Calling workflows](/docs/workflows.md#calling-workflows)
+  * [Pseudo-workflows](/docs/workflows.md#pseudo-workflows)
 * Examples
   * [GitHub Workflow: Zipping](/examples/workflows/zip.yml) - Breaks up the `pup zip` command into multiple steps so debugging is easy.

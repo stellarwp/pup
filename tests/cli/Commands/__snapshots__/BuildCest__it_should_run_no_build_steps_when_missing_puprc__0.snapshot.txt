@@ -1,2 +1,2 @@
 Running build steps...
-Build complete.
+✓ Build complete.

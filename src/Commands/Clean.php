@@ -32,24 +32,22 @@ class Clean extends Command {
 		$clean_steps = $config->getCleanCommands();
 		$io = $this->getIO();
 
-		$output->writeln( '<fg=yellow>Cleaning up...</>' );
+		$this->io->section( '<fg=yellow>Cleaning up...</>' );
 
-		$output->write( "* Removing zip dir..." );
 		if ( file_exists( $zip_dir ) && DirectoryUtils::rmdir( $zip_dir ) !== 0 ) {
 			throw new \Exception( "Could not remove {$zip_dir}." );
 		}
-		$output->write( 'Complete.' . PHP_EOL );
+		$output->writeln( "<fg=green>✓</> Removing zip dir...Complete." );
 
-		$output->write( "* Removing build dir..." );
 		if ( file_exists( $build_dir ) && DirectoryUtils::rmdir( $build_dir ) !== 0 ) {
 			throw new \Exception( "Could not remove {$build_dir}." );
 		}
-		$output->write( 'Complete.' . PHP_EOL );
+		$output->writeln( "<fg=green>✓</> Removing build dir...Complete." );
 
 		$pup_distfiles = $config->getWorkingDir() . '.pup-distfiles';
 		if ( file_exists( $pup_distfiles ) ) {
 			if ( unlink( $pup_distfiles ) ) {
-				$output->writeln( 'Removing .pup-distfiles...Complete.' );
+				$output->writeln( '<fg=green>✓</> Removing .pup-distfiles...Complete.' );
 			} else {
 				throw new \Exception( "Could not remove {$build_dir}." );
 			}
@@ -58,7 +56,7 @@ class Clean extends Command {
 		$pup_distignore = $config->getWorkingDir() . '.pup-distignore';
 		if ( file_exists( $pup_distignore ) ) {
 			if ( unlink( $pup_distignore ) ) {
-				$output->writeln( 'Removing .pup-distignore...Complete.' );
+				$output->writeln( '<fg=green>✓</> Removing .pup-distignore...Complete.' );
 			} else {
 				throw new \Exception( "Could not remove {$build_dir}." );
 			}
@@ -67,7 +65,7 @@ class Clean extends Command {
 		$pup_distinclude = $config->getWorkingDir() . '.pup-distinclude';
 		if ( file_exists( $pup_distinclude ) ) {
 			if ( unlink( $pup_distinclude ) ) {
-				$output->writeln( 'Removing .pup-distinclude...Complete.' );
+				$output->writeln( '<fg=green>✓</> Removing .pup-distinclude...Complete.' );
 			} else {
 				throw new \Exception( "Could not remove {$build_dir}." );
 			}
