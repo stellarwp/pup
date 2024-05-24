@@ -3,7 +3,7 @@
 
 namespace StellarWP\Pup;
 
-const PUP_VERSION = '1.3.2';
+const PUP_VERSION = '1.3.3';
 define( '__PUP_DIR__', __DIR__ );
 
 if ( ! \Phar::running() ) {
