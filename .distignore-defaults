@@ -12,13 +12,14 @@ codeception.*
 
 .idea
 .github
+.husky
 .storybook
 .phpstan
 .wordpress-org
 bun.lockb
+node_modules
 
 bin/
-node_modules/
 tests/
 vendor/bin
 vendor/composer/installers
@@ -34,6 +35,7 @@ vendor/stellarwp/pup
 .eslintrc
 .eslintrc.js
 .eslintrc.json
+.huskyrc.js
 .huskyrc.json
 .jscrsrc
 .jshintrc
