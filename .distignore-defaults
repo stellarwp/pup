@@ -18,6 +18,7 @@ codeception.*
 bun.lockb
 
 bin/
+node_modules/
 tests/
 vendor/bin
 vendor/composer/installers
@@ -31,6 +32,7 @@ vendor/stellarwp/pup
 .editorconfig
 .eslintignore
 .eslintrc
+.eslintrc.js
 .eslintrc.json
 .huskyrc.json
 .jscrsrc
@@ -39,6 +41,7 @@ vendor/stellarwp/pup
 .nvmrc
 .phpstorm.meta.php
 .prettierignore
+.prettierrc.js
 .prettierrc.json
 .puprc
 .pup-distfiles
@@ -48,8 +51,10 @@ vendor/stellarwp/pup
 .pup-zip
 .stylelintignore
 .stylelintrc
+.stylelintrc.js
 .stylelintrc.json
 .travis.yml
+.wp-env.json
 globals.d.ts
 jsconfig.json
 phpstan.neon
@@ -79,9 +84,11 @@ phpunit.xml
 phpunit.xml.dist
 postcss.config.js
 readme.md
+tailwind.config.js
 tests.md
 webpack.config.js
 webpack.mix.js
+wordpress.webpack.config.js
 wp-textdomain.js
 
 # GH Action files
