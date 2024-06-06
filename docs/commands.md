@@ -278,7 +278,7 @@ An example workflow might look like this:
 
 ```json
 {
-    "workflow": {
+    "workflows": {
         "my-workflow": [
             "npm ci",
             "npm run build",
