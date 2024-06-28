@@ -41,7 +41,7 @@ Now we tell `composer` to download the `pup.phar` file into the `bin/` directory
 ```json
 "scripts": {
       "pup": [
-              "test -f ./bin/pup.phar || curl -o bin/pup.phar -L -C - https://github.com/stellarwp/pup/releases/download/VERSION/pup.phar",
+              "sh -c 'test -f ./bin/pup.phar || curl -o bin/pup.phar -L -C - https://github.com/stellarwp/pup/releases/download/VERSION/pup.phar'",
               "@php ./bin/pup.phar"
       ]
 }
