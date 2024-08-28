@@ -4,6 +4,7 @@ namespace StellarWP\Pup\Commands;
 
 use StellarWP\Pup\App;
 use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\Utils\Env;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -45,7 +46,8 @@ class Build extends Command {
 				$step = substr( $step, 1 );
 			}
 			$io->section( "> <fg=cyan>{$step}</>" );
-			system( $step, $result );
+
+			system( Env::set( $step ), $result );
 			$io->newLine();
 
 			if ( $result ) {

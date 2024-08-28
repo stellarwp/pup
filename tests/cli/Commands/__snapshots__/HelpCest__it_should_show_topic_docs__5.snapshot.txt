@@ -7,6 +7,8 @@ Runs the build commands from the .puprc file.
 
 If you want your dev builds to build differently, you can add a build_dev property to your .puprc file.
 
+_Note: If you need to pass environment variables to your build steps, you can add the env var names to the env property in your .puprc file._
+
 > Usage:
 --------
 

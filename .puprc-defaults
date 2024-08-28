@@ -40,6 +40,9 @@
         "views": [],
         "zip_dir": ".pup-zip"
     },
+    "env": [
+        "NODE_AUTH_TOKEN"
+    ],
     "repo": null,
     "zip_use_default_ignore": true,
     "zip_name": null

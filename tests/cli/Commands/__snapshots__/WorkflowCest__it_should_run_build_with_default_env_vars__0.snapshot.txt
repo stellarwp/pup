@@ -1,0 +1,8 @@
+Running bork workflow steps...
+
+> echo "NODE_AUTH_TOKEN=$NODE_AUTH_TOKEN"
+-----------------------------------------
+
+NODE_AUTH_TOKEN=123
+
+Workflow complete.
