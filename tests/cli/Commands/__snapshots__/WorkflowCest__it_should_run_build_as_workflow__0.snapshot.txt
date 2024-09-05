@@ -11,8 +11,6 @@ other-file.php
 package.json
 src
 
-Workflow complete.
-
 > echo "fake project, yo"
 -------------------------
 

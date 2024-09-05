@@ -2,13 +2,13 @@
 CLI Info
 ========
 
-pup <version> from /home/matt/git/pup/pup
+pup <version> from /var/www/html/wp-content/plugins/pup/pup
 Using: PHP <whatever>
 
 Working Directory
 -----------------
 
-/home/matt/git/pup/tests/_data/fake-project/
+/var/www/html/wp-content/plugins/pup/tests/_data/fake-project/
 
 File info
 ---------
@@ -85,6 +85,9 @@ Config
         "views": [],
         "zip_dir": ".pup-zip"
     },
+    "env": [
+        "NODE_AUTH_TOKEN"
+    ],
     "repo": null,
     "zip_use_default_ignore": true,
     "zip_name": "fake-project"

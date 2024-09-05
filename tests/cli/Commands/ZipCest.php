@@ -19,6 +19,8 @@ class ZipCest extends AbstractBase {
 
 		system( 'cd ' . $project_path . ' && git init --quiet' );
 		system( 'cd ' . $project_path . ' && git add .' );
+		system( 'cd ' . $project_path . ' && git config user.email "fake@fake.fake"' );
+		system( 'cd ' . $project_path . ' && git config user.name "Fake Fake"' );
 		system( 'cd ' . $project_path . ' && git commit -m "Initial commit" --quiet' );
 
 		$puprc = $this->get_puprc();
@@ -53,6 +55,8 @@ class ZipCest extends AbstractBase {
 
 		system( 'cd ' . $project_path . ' && git init --quiet' );
 		system( 'cd ' . $project_path . ' && git add .' );
+		system( 'cd ' . $project_path . ' && git config user.email "fake@fake.fake"' );
+		system( 'cd ' . $project_path . ' && git config user.name "Fake Fake"' );
 		system( 'cd ' . $project_path . ' && git commit -m "Initial commit" --quiet' );
 
 		$puprc = $this->get_puprc();
