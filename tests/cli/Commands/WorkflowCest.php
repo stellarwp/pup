@@ -181,7 +181,7 @@ class WorkflowCest extends AbstractBase {
 		$puprc['workflows']['test-workflow'][] = codecept_data_dir( 'test-workflow-script.sh' );
 		$this->write_puprc( $puprc );
 
-		chdir( $this->tests_root . '/_data/fake-project' );
+		chdir( codecept_data_dir( 'fake-project' ) );
 
 		$I->runShellCommand( "php {$this->pup} do test-workflow -- arg1 arg2 --option-one=one --option-two=two" );
 		$I->seeResultCodeIs( 0 );
