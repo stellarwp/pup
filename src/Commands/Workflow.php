@@ -19,11 +19,13 @@ class Workflow extends Command {
 	 */
 	protected function configure() {
 		$this->setName( 'workflow' )
-			->setAliases( [ 'do' ] )
-			->addArgument( 'workflow', InputArgument::REQUIRED, 'The workflow you would like to run.' )
-			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
-			->setDescription( 'Run a command workflow.' )
-			->setHelp( 'Run a command workflow.' );
+		     ->setAliases( [ 'do' ] )
+		     ->addArgument( 'workflow', InputArgument::REQUIRED, 'The workflow you would like to run.' )
+		     ->addArgument( 'extra_args', InputArgument::IS_ARRAY, 'Additional arguments to pass to the workflow.' )
+		     ->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
+		     ->addOption( 'extra_options', null, InputOption::VALUE_IS_ARRAY | InputOption::VALUE_OPTIONAL, 'Additional options to pass to the workflow.' )
+		     ->setDescription( 'Run a command workflow.' )
+		     ->setHelp( 'Run a command workflow.' );
 	}
 
 	/**
@@ -34,6 +36,8 @@ class Workflow extends Command {
 		$config        = App::getConfig();
 		$root          = $input->getOption( 'root' );
 		$workflow_slug = $input->getArgument( 'workflow' );
+		$extra_args    = $input->getArgument( 'extra_args' );
+		$extra_options = $input->getOption( 'extra_options' );
 		$io            = $this->getIO();
 		$application   = $this->getApplication();
 		if ( ! $application ) {
@@ -73,8 +77,16 @@ class Workflow extends Command {
 				$bail_on_failure = false;
 				$step = substr( $step, 1 );
 			}
-			$io->section( "> <fg=cyan>{$step}</>" );
-			system( Env::set( $step ), $result );
+
+			// Add extra arguments and options to the command.
+			$extra_args_string    = implode( ' ', array_map( 'escapeshellarg', $extra_args ) );
+			$extra_options_string = implode( ' ', array_map( static function ( $option ) {
+				return escapeshellarg( $option );
+			}, $extra_options ) );
+			$full_command         = trim( "{$step} {$extra_args_string} {$extra_options_string}" );
+
+			$io->section( "> <fg=cyan>{$full_command}</>" );
+			system( Env::set( $full_command ), $result );
 			$io->newLine();
 
 			if ( $result ) {

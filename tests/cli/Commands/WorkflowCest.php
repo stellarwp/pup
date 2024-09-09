@@ -170,4 +170,27 @@ class WorkflowCest extends AbstractBase {
 		$output = $I->grabShellOutput();
 		$this->assertMatchesStringSnapshot( $output );
 	}
+
+	/**
+	 * @test
+	 */
+	public function it_should_pass_additional_arguments_and_options_to_workflow_script( CliTester $I ) {
+		$puprc                                 = $this->get_puprc();
+		$puprc['workflows']                    = [];
+		$puprc['workflows']['test-workflow']   = [];
+		$puprc['workflows']['test-workflow'][] = codecept_data_dir( 'test-workflow-script.sh' );
+		$this->write_puprc( $puprc );
+
+		chdir( codecept_data_dir( 'fake-project' ) );
+
+		$I->runShellCommand( "php {$this->pup} do test-workflow -- arg1 arg2 --option-one=one --option-two=two" );
+		$I->seeResultCodeIs( 0 );
+		$I->seeInShellOutput( 'Argument: arg1' );
+		$I->seeInShellOutput( 'Argument: arg2' );
+		$I->seeInShellOutput( 'Option: --option-one, Value: one' );
+		$I->seeInShellOutput( 'Option: --option-two, Value: two' );
+
+		$output = $I->grabShellOutput();
+		$this->assertMatchesStringSnapshot( $output );
+	}
 }
