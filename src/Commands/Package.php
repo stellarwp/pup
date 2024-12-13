@@ -84,6 +84,13 @@ class Package extends Command {
 		$output->writeln( '<fg=green>✓</> Updating version files...Complete.' );
 
 		$output->writeln( '<fg=gray>- Synchronizing files to zip directory...</>' );
+
+		$distfiles = $this->getDistfilesLines( $this->getSourceDir( $root ) );
+		if ( ! empty( $distfiles ) ) {
+			$distfiles_message = '>>> Your project has a <fg=yellow>.distfiles</> file, so <fg=yellow>.distignore</> and pup\'s default ignore rules will not be used.';
+			$output->writeln( "<fg=gray>{$distfiles_message}</>" );
+		}
+
 		$pup_zip_dir  = $config->getZipDir();
 
 		DirectoryUtils::rmdir( $pup_zip_dir );
@@ -202,6 +209,22 @@ class Package extends Command {
 	}
 
 	/**
+	 * Get the default things to exclude from sync.
+	 *
+	 * @return array<int, string>
+	 */
+	public function getDefaultIgnoreLines(): array {
+		$working_dir = App::getConfig()->getWorkingDir();
+		$zip_dir     = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
+
+		return [
+			'.puprc',
+			'.pup-*',
+			$zip_dir,
+		];
+	}
+
+	/**
 	 * Get the files to exclude from sync.
 	 *
 	 * @param string $source
@@ -230,32 +253,53 @@ class Package extends Command {
 	}
 
 	/**
-	 * Get the files to include in sync.
+	 * Get the distfiles lines to include in sync.
 	 *
 	 * @param string $source
 	 *
 	 * @return array<int, string>
 	 */
-	public function getIncludeLines( string $source ): array {
-		$include       = [];
-		$include_files = [
-			'.pup-distinclude',
-			'.pup-distfiles',
-		];
+	public function getDistfilesLines( string $source ): array {
+		$include      = [];
+		$include_file = '.pup-distfiles';
 
-		foreach ( $include_files as $include_file ) {
-			if ( ! file_exists( $source . $include_file ) ) {
-				continue;
-			}
-
-			$lines = file( $source . $include_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
-
-			if ( ! $lines ) {
-				continue;
-			}
-
-			$include = array_merge( $include, $lines );
+		if ( ! file_exists( $source . $include_file ) ) {
+			return [];
 		}
+
+		$lines = file( $source . $include_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+
+		if ( ! $lines ) {
+			return [];
+		}
+
+		$include = array_merge( $include, $lines );
+
+		return $include;
+	}
+
+	/**
+	 * Get the distinclude lines to include in sync.
+	 *
+	 * @param string $source
+	 *
+	 * @return array<int, string>
+	 */
+	public function getDistincludeLines( string $source ): array {
+		$include      = [];
+		$include_file = '.pup-include';
+
+		if ( ! file_exists( $source . $include_file ) ) {
+			return [];
+		}
+
+		$lines = file( $source . $include_file, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
+
+		if ( ! $lines ) {
+			return [];
+		}
+
+		$include = array_merge( $include, $lines );
 
 		return $include;
 	}
@@ -392,8 +436,17 @@ class Package extends Command {
 
 		$this->buildSyncFiles( $source );
 
-		$include = $this->getIncludeLines( $source );
-		$ignore  = $this->getIgnoreLines( $source );
+		$distfiles   = $this->getDistfilesLines( $source );
+		$distinclude = $this->getDistincludeLines( $source );
+		$include     = array_merge( $distfiles, $distinclude );
+
+		$ignore = $this->getDefaultIgnoreLines();
+
+		// We only observe .distignore if there is no .distfiles files.
+		if ( empty( $distfiles ) ) {
+			$ignore = array_merge( $ignore, $this->getIgnoreLines( $source ) );
+		}
+
 		$results = $this->migrateNegatedLines( $include, $ignore );
 		$include = $results['include'];
 		$ignore  = $results['ignore'];
