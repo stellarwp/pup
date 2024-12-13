@@ -84,6 +84,13 @@ class Package extends Command {
 		$output->writeln( '<fg=green>✓</> Updating version files...Complete.' );
 
 		$output->writeln( '<fg=gray>- Synchronizing files to zip directory...</>' );
+
+		$distfiles = $this->getDistfilesLines( $root );
+		if ( ! empty( $distfiles ) ) {
+			$distfiles_message = '>>> Your project has a <fg=yellow>.distfiles</> file, so <fg=yellow>.distignore</> and pup\'s default ignore rules will not be used.';
+			$output->writeln( "<fg=gray>{$distfiles_message}</>" );
+		}
+
 		$pup_zip_dir  = $config->getZipDir();
 
 		DirectoryUtils::rmdir( $pup_zip_dir );
