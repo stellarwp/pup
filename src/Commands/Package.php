@@ -406,11 +406,17 @@ class Package extends Command {
 		foreach ( $iterator as $item ) {
 			$path = ltrim( $iterator->getSubPathName(), '/\\' );
 
-			if ( ! $this->isIncludedFile( $path, $include ) ) {
+			if ( strpos( $path, '.pup' ) !== false ) {
 				continue;
 			}
 
-			if ( $this->isIgnoredFile( $path, $ignore ) ) {
+			$is_included_file = $this->isIncludedFile( $path, $include );
+
+			if ( ! $is_included_file ) {
+				continue;
+			}
+
+			if ( ! $is_included_file && $this->isIgnoredFile( $path, $ignore ) ) {
 				continue;
 			}
 
