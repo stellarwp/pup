@@ -48,7 +48,7 @@ jobs:
         run:  composer -- pup package ${{ env.VERSION }}
 
       - name: Upload plugin artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ZIP_NAME }}
           path: .pup-zip
