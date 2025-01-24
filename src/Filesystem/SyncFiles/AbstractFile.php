@@ -94,7 +94,7 @@ class AbstractFile {
 
 		foreach ( $this->getPaths() as $file ) {
 			if ( ! file_exists( $this->getRoot() . $file ) ) {
-				if ( ! file_exists( $file ) || strpos( $file, __PUP_DIR__ ) === false ) {
+				if ( ! file_exists( $file ) || false !== strpos( $file, __PUP_DIR__ ) === false ) {
 					$is_default = true;
 					continue;
 				} else {
