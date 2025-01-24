@@ -45,3 +45,4 @@ Cleaning up...
 
 ✓ Removing zip dir...Complete.
 ✓ Removing build dir...Complete.
+✓ Removing .pup-distignore...Complete.
