@@ -2,13 +2,13 @@
 CLI Info
 ========
 
-pup <version> from /var/www/html/wp-content/plugins/pup/pup
+pup <version> from {PUP_ROOT}/pup/pup
 Using: PHP <whatever>
 
 Working Directory
 -----------------
 
-/var/www/html/wp-content/plugins/pup/tests/_data/fake-project/
+{PUP_ROOT}/pup/tests/_data/fake-project/
 
 File info
 ---------

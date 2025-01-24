@@ -190,7 +190,6 @@ class WorkflowCest extends AbstractBase {
 		$I->seeInShellOutput( 'Option: --option-one, Value: one' );
 		$I->seeInShellOutput( 'Option: --option-two, Value: two' );
 
-		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
+		$this->assertMatchesStringSnapshot( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 	}
 }

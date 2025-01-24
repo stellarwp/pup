@@ -1,6 +1,6 @@
 Running test-workflow workflow steps...
 
-> /var/www/html/wp-content/plugins/pup/tests/_data/test-workflow-script.sh 'arg1' 'arg2' '--option-one=one' '--option-two=two'
+> {PUP_ROOT}/pup/tests/_data/test-workflow-script.sh 'arg1' 'arg2' '--option-one=one' '--option-two=two'
 ------------------------------------------------------------------------------------------------------------------------------
 
 Argument: arg1

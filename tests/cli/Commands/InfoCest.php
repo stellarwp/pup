@@ -23,7 +23,7 @@ class InfoCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} info" );
 		$I->seeResultCodeIs( 0 );
 
-		$output = $this->removeDynamicDataFromOutput( $I->grabShellOutput() );
+		$output = $this->removeDynamicDataFromOutput( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$this->assertMatchesStringSnapshot( $output );
 	}
@@ -39,7 +39,7 @@ class InfoCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} info" );
 		$I->seeResultCodeIs( 0 );
 
-		$output = $this->removeDynamicDataFromOutput( $I->grabShellOutput() );
+		$output = $this->removeDynamicDataFromOutput( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$this->assertMatchesStringSnapshot( $output );
 	}
@@ -55,7 +55,7 @@ class InfoCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} info" );
 		$I->seeResultCodeIs( 0 );
 
-		$output = $this->removeDynamicDataFromOutput( $I->grabShellOutput() );
+		$output = $this->removeDynamicDataFromOutput( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$this->assertMatchesStringSnapshot( $output );
 
@@ -73,7 +73,7 @@ class InfoCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} info" );
 		$I->seeResultCodeIs( 0 );
 
-		$output = $this->removeDynamicDataFromOutput( $I->grabShellOutput() );
+		$output = $this->removeDynamicDataFromOutput( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$this->assertMatchesStringSnapshot( $output );
 
@@ -91,7 +91,7 @@ class InfoCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} info" );
 		$I->seeResultCodeIs( 0 );
 
-		$output = $this->removeDynamicDataFromOutput( $I->grabShellOutput() );
+		$output = $this->removeDynamicDataFromOutput( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$this->assertMatchesStringSnapshot( $output );
 
@@ -111,7 +111,7 @@ class InfoCest extends AbstractBase {
 		$I->runShellCommand( "php {$this->pup} info" );
 		$I->seeResultCodeIs( 0 );
 
-		$output = $this->removeDynamicDataFromOutput( $I->grabShellOutput() );
+		$output = $this->removeDynamicDataFromOutput( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$this->assertMatchesStringSnapshot( $output );
 	}
