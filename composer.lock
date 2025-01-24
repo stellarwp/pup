@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73d426c1e23f213cb7ba8f1660879ade",
+    "content-hash": "f209922c6af8deb6a753cf87e25cb831",
     "packages": [
         {
             "name": "composer/ca-bundle",
@@ -966,12 +966,12 @@
             "version": "v5.2.13",
             "source": {
                 "type": "git",
-                "url": "https://github.com/justinrainbow/json-schema.git",
+                "url": "https://github.com/jsonrainbow/json-schema.git",
                 "reference": "fbbe7e5d79f618997bc3332a6f49246036c45793"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/justinrainbow/json-schema/zipball/fbbe7e5d79f618997bc3332a6f49246036c45793",
+                "url": "https://api.github.com/repos/jsonrainbow/json-schema/zipball/fbbe7e5d79f618997bc3332a6f49246036c45793",
                 "reference": "fbbe7e5d79f618997bc3332a6f49246036c45793",
                 "shasum": ""
             },
@@ -3327,20 +3327,20 @@
         },
         {
             "name": "lucatume/codeception-snapshot-assertions",
-            "version": "0.2.4",
+            "version": "0.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/lucatume/codeception-snapshot-assertions.git",
-                "reference": "077108237a121d3ddcf7070aa8519dea25459a6a"
+                "reference": "dd231b17a4a7f74e33a27749edab64688e3ecc2b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/lucatume/codeception-snapshot-assertions/zipball/077108237a121d3ddcf7070aa8519dea25459a6a",
-                "reference": "077108237a121d3ddcf7070aa8519dea25459a6a",
+                "url": "https://api.github.com/repos/lucatume/codeception-snapshot-assertions/zipball/dd231b17a4a7f74e33a27749edab64688e3ecc2b",
+                "reference": "dd231b17a4a7f74e33a27749edab64688e3ecc2b",
                 "shasum": ""
             },
             "require": {
-                "codeception/codeception": "^2.5 || ^3.0 || ^4.0",
+                "codeception/codeception": "^4.0",
                 "ext-dom": "*",
                 "gajus/dindent": "^2.0"
             },
@@ -3366,9 +3366,9 @@
             "description": "Snapshot assertions sugar for Codeception.",
             "support": {
                 "issues": "https://github.com/lucatume/codeception-snapshot-assertions/issues",
-                "source": "https://github.com/lucatume/codeception-snapshot-assertions/tree/master"
+                "source": "https://github.com/lucatume/codeception-snapshot-assertions/tree/0.4.0"
             },
-            "time": "2020-02-05T20:17:49+00:00"
+            "time": "2023-10-14T14:42:12+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -5599,12 +5599,12 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^7.2|^8.0"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }
