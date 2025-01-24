@@ -223,10 +223,6 @@ class PackageCest extends AbstractBase {
 
 		$output .= $I->grabShellOutput();
 
-		$I->runShellCommand( "ls -a node_modules" );
-
-		$output .= $I->grabShellOutput();
-
 		$this->assertMatchesStringSnapshot( $output );
 	}
 

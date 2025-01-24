@@ -5,6 +5,7 @@ Running build steps...
 
 .
 ..
+.pup-zip
 .puprc
 bootstrap.php
 node_modules
