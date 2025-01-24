@@ -24,6 +24,7 @@ class AbstractBase {
 	}
 
 	public function _after( CliTester $I ) {
+		$I->runShellCommand( "php {$this->pup} clean" );
 		$this->reset_data_and_location();
 	}
 
@@ -33,6 +34,7 @@ class AbstractBase {
 			'.puprc',
 			'.distignore',
 			'.distinclude',
+			'.distfiles',
 			'.gitattributes',
 			'fake-project.1.0.0.zip',
 			'fake-project.1.0.0.1.zip',
