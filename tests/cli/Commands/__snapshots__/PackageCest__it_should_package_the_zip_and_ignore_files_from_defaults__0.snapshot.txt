@@ -2,5 +2,7 @@
 ..
 bootstrap.php
 fake-project
+node_modules
 other-file.php
+package.json
 src

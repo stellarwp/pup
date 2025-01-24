@@ -7,6 +7,7 @@ Running build steps...
 ..
 .puprc
 bootstrap.php
+node_modules
 other-file.php
 package.json
 src
@@ -31,4 +32,3 @@ Cleaning up...
 
 ✓ Removing zip dir...Complete.
 ✓ Removing build dir...Complete.
-✓ Removing .pup-distignore...Complete.

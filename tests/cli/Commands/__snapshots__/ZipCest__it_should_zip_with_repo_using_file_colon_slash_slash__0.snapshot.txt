@@ -9,6 +9,7 @@ Running build steps...
 ..
 .git
 bootstrap.php
+node_modules
 other-file.php
 package.json
 src

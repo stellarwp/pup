@@ -3,5 +3,6 @@
 .distignore
 .gitattributes
 fake-project
+node_modules
 package.json
 src
