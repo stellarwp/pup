@@ -85,9 +85,10 @@ class Package extends Command {
 
 		$output->writeln( '<fg=gray>- Synchronizing files to zip directory...</>' );
 
-		$distfiles = $this->getDistfilesLines( $this->getSourceDir( $root ) );
-		if ( ! empty( $distfiles ) ) {
-			$distfiles_message = '>>> Your project has a <fg=yellow>.distfiles</> file, so <fg=yellow>.distignore</> and pup\'s default ignore rules will not be used.';
+		$distfiles    = $this->getDistfilesLines( $this->getSourceDir( $root ) );
+		$distincludes = $this->getDistincludeLines( $this->getSourceDir( $root ) );
+		if ( ! empty( $distfiles ) || ! empty( $distincludes ) ) {
+			$distfiles_message = '>>> Your project has a <fg=yellow>.distfiles</> file or a <fg=yellow>.distinclude</> file or both, so pup\'s default ignore rules will not be used.';
 			$output->writeln( "<fg=gray>{$distfiles_message}</>" );
 		}
 
@@ -206,22 +207,6 @@ class Package extends Command {
 		$zip->close();
 
 		return 0;
-	}
-
-	/**
-	 * Get the default things to exclude from sync.
-	 *
-	 * @return array<int, string>
-	 */
-	public function getDefaultIgnoreLines(): array {
-		$working_dir = App::getConfig()->getWorkingDir();
-		$zip_dir     = str_replace( $working_dir, '', App::getConfig()->getZipDir() );
-
-		return [
-			'.puprc',
-			'.pup-*',
-			$zip_dir,
-		];
 	}
 
 	/**
@@ -440,12 +425,7 @@ class Package extends Command {
 		$distinclude = $this->getDistincludeLines( $source );
 		$include     = array_merge( $distfiles, $distinclude );
 
-		$ignore = $this->getDefaultIgnoreLines();
-
-		// We only observe .distignore if there is no .distfiles files.
-		if ( empty( $distfiles ) ) {
-			$ignore = array_merge( $ignore, $this->getIgnoreLines( $source ) );
-		}
+		$ignore = $this->getIgnoreLines( $source );
 
 		$results = $this->migrateNegatedLines( $include, $ignore );
 		$include = $results['include'];

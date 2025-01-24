@@ -59,7 +59,18 @@ class SyncFiles {
 		$use_ignore_defaults  = App::getConfig()->getZipUseDefaultIgnore();
 		$files                = static::getSyncFiles( '.distignore' );
 
-		if ( $use_ignore_defaults ) {
+		$there_is_safelist = ! empty(
+			array_filter(
+				array_unique(
+					array_merge(
+						static::getSyncFiles( '.distfiles' ),
+						static::getSyncFiles( '.distinclude' )
+					)
+				)
+			)
+		);
+
+		if ( ! $there_is_safelist && $use_ignore_defaults ) {
 			$files[] = __PUP_DIR__ . '/.distignore-defaults';
 		}
 
