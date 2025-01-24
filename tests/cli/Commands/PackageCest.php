@@ -202,6 +202,37 @@ class PackageCest extends AbstractBase {
 	/**
 	 * @test
 	 */
+	public function it_should_package_the_zip_and_use_default_distignore_when_no_safelist( CliTester $I ) {
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		file_put_contents( '.distignore', "other-file.php\n" );
+
+		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
+
+		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
+
+		$I->runShellCommand( "ls -a .pup-zip" );
+
+		$output = $I->grabShellOutput();
+
+		chdir( '.pup-zip' );
+
+		$I->runShellCommand( "ls -a src" );
+
+		$output .= $I->grabShellOutput();
+
+		$I->runShellCommand( "ls -a node_modules" );
+
+		$output .= $I->grabShellOutput();
+
+		$this->assertMatchesStringSnapshot( $output );
+	}
+
+	/**
+	 * @test
+	 */
 	public function it_should_package_the_zip_and_not_include_files_in_distinclude_even_if_in_distignore_and_gitattributes( CliTester $I ) {
 		$this->write_default_puprc();
 
