@@ -272,7 +272,7 @@ class Package extends Command {
 	 */
 	public function getDistincludeLines( string $source ): array {
 		$include      = [];
-		$include_file = '.pup-include';
+		$include_file = '.pup-distinclude';
 
 		if ( ! file_exists( $source . $include_file ) ) {
 			return [];
