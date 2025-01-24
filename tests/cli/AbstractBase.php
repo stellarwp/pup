@@ -9,11 +9,13 @@ class AbstractBase {
 
 	protected $pup;
 	protected $pup_root;
+	protected $plugin_root;
 	protected $tests_root;
 
 	public function __construct() {
 		$this->tests_root = dirname( __DIR__ );
 		$this->pup_root = dirname( $this->tests_root );
+		$this->plugin_root = dirname( $this->pup_root );
 	}
 
 	public function _before( CliTester $I ) {
@@ -22,6 +24,7 @@ class AbstractBase {
 	}
 
 	public function _after( CliTester $I ) {
+		$I->runShellCommand( "php {$this->pup} clean" );
 		$this->reset_data_and_location();
 	}
 
@@ -31,6 +34,7 @@ class AbstractBase {
 			'.puprc',
 			'.distignore',
 			'.distinclude',
+			'.distfiles',
 			'.gitattributes',
 			'fake-project.1.0.0.zip',
 			'fake-project.1.0.0.1.zip',

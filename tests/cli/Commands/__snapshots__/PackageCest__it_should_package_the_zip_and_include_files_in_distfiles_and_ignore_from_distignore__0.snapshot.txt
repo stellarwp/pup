@@ -1,0 +1,11 @@
+.
+..
+bootstrap.php
+fake-project
+node_modules
+src.
+..
+OtherFileWithBadVersion.php
+Plugin.php.
+..
+a-script-i-need.js
