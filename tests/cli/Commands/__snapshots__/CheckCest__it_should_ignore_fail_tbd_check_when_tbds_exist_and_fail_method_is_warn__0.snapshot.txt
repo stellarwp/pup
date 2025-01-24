@@ -10,9 +10,9 @@
 [tbd] 19: * @version tbd
 [tbd] 28: * @deprecated TBD
 [tbd] 32: _deprecated_function( __METHOD__, 'TBD' );
+[tbd]
 [tbd] ./src/Plugin.php
 [tbd] 9: * @since TBD
-[tbd]
 [tbd]
 [tbd]
 [tbd] TBDs have been found!
