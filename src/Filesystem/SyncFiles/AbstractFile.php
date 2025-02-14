@@ -6,6 +6,16 @@ use Symfony\Component\Finder\Glob;
 
 class AbstractFile {
 	/**
+	 * An array of our default files.
+	 *
+	 * @var array<int, string>
+	 */
+	protected const DEFAULTS = [
+		'.distignore-defaults',
+		'.puprc-defaults'
+	];
+
+	/**
 	 * @var string
 	 */
 	protected $filename;
@@ -94,12 +104,15 @@ class AbstractFile {
 
 		foreach ( $this->getPaths() as $file ) {
 			if ( ! file_exists( $this->getRoot() . $file ) ) {
-				if ( ! file_exists( $file ) || strpos( $file, __PUP_DIR__ ) === false ) {
-					$is_default = true;
+				if ( ! file_exists( $file ) ) {
 					continue;
-				} else {
-					$path = $file;
 				}
+
+				if ( $this->is_default( $file ) ) {
+					$is_default = true;
+				}
+
+				$path = $file;
 			} else {
 				$path = $this->getRoot() . $file;
 			}
@@ -144,6 +157,10 @@ class AbstractFile {
 		}
 
 		return (string) file_get_contents( $this->getRoot() . $target_file );
+	}
+
+	public function is_default( string $file ): bool {
+		return in_array( $file, array_map( fn( $default_file ) => __PUP_DIR__ . '/' . $default_file, static::DEFAULTS ), true );
 	}
 
 	/**

@@ -1,7 +1,4 @@
 .
 ..
-.distignore
-.gitattributes
 fake-project
-package.json
 src

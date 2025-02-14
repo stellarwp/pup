@@ -257,6 +257,9 @@ src/styles/*.css
 By default, `pup` will use its own `.distignore-defaults` file to exclude a number of common patterns. You can turn the
 default exclusion rules off by adding `"zip_use_default_ignore": false` to your `.puprc` file.
 
+If you have a `.distfile` or `.distinclude` in your project, `pup` will NOT use its own `.distignore-defaults` regardless of the
+property's `zip_use_default_ignore` value.
+
 The zip that is generated will be placed in your project's root directory.
 
 ### Usage

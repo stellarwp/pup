@@ -2,9 +2,6 @@
 [tbd] Checking for TBDs...
 [tbd] --------------------
 
-[tbd] ./src/Plugin.php
-[tbd] 9: * @since TBD
-[tbd]
 [tbd] ./src/Thing/AnotherFile.php
 [tbd] 5: _deprecated_file( __FILE__, 'TBD' );
 [tbd] 9: * @since TBD
@@ -13,6 +10,9 @@
 [tbd] 19: * @version tbd
 [tbd] 28: * @deprecated TBD
 [tbd] 32: _deprecated_function( __METHOD__, 'TBD' );
+[tbd]
+[tbd] ./src/Plugin.php
+[tbd] 9: * @since TBD
 [tbd]
 [tbd]
 [tbd] TBDs have been found!
