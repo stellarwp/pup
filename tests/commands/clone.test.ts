@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 import fs from 'fs-extra';
 import {
   runPup,
@@ -37,7 +38,9 @@ describe('clone command', () => {
     const puprc = getPuprc({ repo: `file://${pupRoot}` });
     writePuprc(puprc, projectDir);
 
-    const result = await runPup('clone --branch main', { cwd: projectDir });
+    // Use the current branch so this works in CI where main may not exist locally
+    const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: pupRoot }).toString().trim();
+    const result = await runPup(`clone --branch ${currentBranch}`, { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Cloned');
   });
@@ -73,6 +76,11 @@ describe('clone command', () => {
 
   it('should clone a repository using shorthand format', async () => {
     // Config.getRepo() converts "stellarwp/pup" to "git@github.com:stellarwp/pup.git"
+    // In CI, SSH keys aren't available so rewrite SSH URLs to HTTPS for git
+    if (process.env.CI) {
+      execSync('git config --global url."https://github.com/".insteadOf "git@github.com:"');
+    }
+
     const puprc = getPuprc({ repo: 'stellarwp/pup' });
     writePuprc(puprc, projectDir);
 
@@ -82,6 +90,10 @@ describe('clone command', () => {
 
     const buildDir = path.join(projectDir, '.pup-build');
     expect(fs.existsSync(buildDir)).toBe(true);
+
+    if (process.env.CI) {
+      execSync('git config --global --unset url."https://github.com/".insteadOf');
+    }
   });
 
   it('should remove existing build directory before cloning', async () => {
