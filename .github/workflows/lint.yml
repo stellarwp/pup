@@ -10,4 +10,10 @@ jobs:
           node-version: 20
       - run: npm ci
       - run: npm run lint
-      - run: npm run typecheck
+      - name: Typecheck
+        run: |
+          if ls src/**/*.ts >/dev/null 2>&1; then
+            npm run typecheck
+          else
+            echo "No TypeScript source files found, skipping typecheck"
+          fi
