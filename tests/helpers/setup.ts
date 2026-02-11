@@ -1,4 +1,5 @@
 import path from 'node:path';
+import os from 'node:os';
 import { execFile } from 'node:child_process';
 import fs from 'fs-extra';
 
@@ -10,6 +11,7 @@ export const fakeProjectWithTbdsDir = path.resolve(fixturesDir, 'fake-project-wi
 export const cliPath = path.resolve(pupRoot, 'dist', 'cli.js');
 
 const tempFiles: string[] = [];
+const tempDirs: string[] = [];
 
 export function getDefaultPuprc(): Record<string, unknown> {
   return {
@@ -83,6 +85,38 @@ export function runPup(
       });
     });
   });
+}
+
+/**
+ * Creates an isolated copy of a fixture directory in a temp location.
+ *
+ * @since TBD
+ *
+ * @param {string} fixture - The fixture directory name to copy (e.g. 'fake-project').
+ *
+ * @returns {string} The path to the isolated temp directory.
+ */
+export function createTempProject(fixture = 'fake-project'): string {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), `pup-test-${fixture}-`));
+  fs.copySync(path.resolve(fixturesDir, fixture), tmpDir);
+  tempDirs.push(tmpDir);
+  return tmpDir;
+}
+
+/**
+ * Removes all temp directories created by createTempProject.
+ *
+ * @since TBD
+ *
+ * @returns {void}
+ */
+export function cleanupTempProjects(): void {
+  for (const dir of tempDirs) {
+    if (fs.existsSync(dir)) {
+      fs.removeSync(dir);
+    }
+  }
+  tempDirs.length = 0;
 }
 
 export function resetFixtures(): void {
