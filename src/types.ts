@@ -1,6 +1,8 @@
+export type BuildStep = string | string[];
+
 export interface PupConfig {
-  build: string[];
-  build_dev: string[];
+  build: BuildStep[];
+  build_dev: BuildStep[];
   workflows: Record<string, string[]>;
   checks: Record<string, CheckConfigInput>;
   clean: string[];
@@ -104,7 +106,7 @@ export interface I18nResolvedConfig {
 
 export interface Workflow {
   slug: string;
-  commands: string[];
+  commands: BuildStep[];
 }
 
 export interface RunCommandResult {

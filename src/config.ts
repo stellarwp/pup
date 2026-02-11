@@ -5,6 +5,7 @@ import { normalizeDir, trailingSlashIt } from './utils/directory.js';
 import { WorkflowCollection, createWorkflow } from './models/workflow.js';
 import type {
   PupConfig,
+  BuildStep,
   CheckConfig,
   CheckConfigInput,
   VersionFile,
@@ -217,6 +218,7 @@ export class Config {
     const rawWorkflows = this.config.workflows as unknown;
 
     // Auto-create build workflow
+    // TODO: Add parallel build step support to workflow execution.
     if (
       this.config.build?.length > 0 &&
       !(rawWorkflows as Record<string, unknown>)?.['build']
@@ -337,9 +339,9 @@ export class Config {
    *
    * @param {boolean} isDev - Whether to return dev build commands.
    *
-   * @returns {string[]} The list of build command strings.
+   * @returns {BuildStep[]} The list of build steps (strings run sequentially, sub-arrays run in parallel).
    */
-  getBuildCommands(isDev = false): string[] {
+  getBuildCommands(isDev = false): BuildStep[] {
     if (isDev && this.config.build_dev?.length > 0) {
       return this.config.build_dev;
     }

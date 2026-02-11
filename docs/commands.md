@@ -53,6 +53,29 @@ however, prepend your commands with `@` and that will tell `pup` to ignore failu
 In the above example, `npm ci` and `npm run build` will need to complete successfully for the build to succeed, but the
 `composer run some-script` is prepended by `@` so if it fails, the build will continue forward.
 
+### Parallel build steps
+You can run build steps in parallel by wrapping them in a sub-array. Commands within a sub-array run concurrently, and
+all commands in the group must complete before the next step begins. Here's an example:
+
+```json
+{
+    "build": [
+        "npm ci",
+        ["npm run build:css", "npm run build:js"],
+        "npm run postbuild"
+    ]
+}
+```
+
+In the above example:
+
+1. `npm ci` runs first and must complete before anything else.
+2. `npm run build:css` and `npm run build:js` run at the same time. Both must finish before continuing.
+3. `npm run postbuild` runs last, after the parallel group has completed.
+
+The `@` soft-fail prefix works within parallel groups as well. If a non-soft-fail command in a parallel group fails, `pup`
+will wait for all commands in the group to finish before exiting with the failure code.
+
 ## `pup check`
 Runs all registered check commands.
 
