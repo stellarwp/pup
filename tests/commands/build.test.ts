@@ -1,26 +1,28 @@
 import {
   runPup,
-  resetFixtures,
-  writeDefaultPuprc,
   writePuprc,
   getPuprc,
+  createTempProject,
+  cleanupTempProjects,
 } from '../helpers/setup.js';
 
 describe('build command', () => {
+  let projectDir: string;
+
   beforeEach(() => {
-    writeDefaultPuprc();
+    projectDir = createTempProject();
   });
 
   afterEach(() => {
-    resetFixtures();
+    cleanupTempProjects();
   });
 
   it('should run build', async () => {
     const puprc = getPuprc();
     puprc.build = ['echo "fake project, yo"'];
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('build');
+    const result = await runPup('build', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('fake project, yo');
   });
@@ -28,25 +30,25 @@ describe('build command', () => {
   it('should handle no build steps', async () => {
     const puprc = getPuprc();
     puprc.build = [];
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('build');
+    const result = await runPup('build', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
   });
 
   it('should fail without .puprc', async () => {
-    resetFixtures();
     // Run in a dir with no .puprc but a package.json
-    const result = await runPup('build');
+    const emptyDir = createTempProject();
+    const result = await runPup('build', { cwd: emptyDir });
     expect(result.exitCode).toBe(0);
   });
 
   it('should pass default env vars', async () => {
     const puprc = getPuprc();
     puprc.build = ['echo "env test"'];
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('build');
+    const result = await runPup('build', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
   });
 
@@ -54,9 +56,9 @@ describe('build command', () => {
     const puprc = getPuprc();
     puprc.build = ['echo "production build"'];
     (puprc as Record<string, unknown>).build_dev = ['echo "dev build"'];
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('build --dev');
+    const result = await runPup('build --dev', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('dev build');
   });
