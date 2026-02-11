@@ -1,5 +1,6 @@
 import { Command } from 'commander';
 import { Config, getConfig, resetConfig } from './config.js';
+import * as output from './utils/output.js';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'fs-extra';
@@ -42,6 +43,12 @@ export const PUP_VERSION = getVersion();
  */
 export function createApp(): Command {
   resetConfig();
+
+  const config = getConfig();
+  if (config.hasInvalidPuprc()) {
+    output.error('There is a .puprc file in this directory, but it could not be parsed.');
+    output.error(`JSON Error: ${config.getPuprcParseError()}`);
+  }
 
   const program = new Command();
   program
