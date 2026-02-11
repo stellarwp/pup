@@ -3,10 +3,10 @@ import path from 'node:path';
 import fs from 'fs-extra';
 import {
   runPup,
-  resetFixtures,
   writePuprc,
   getPuprc,
-  fakeProjectDir,
+  createTempProject,
+  cleanupTempProjects,
 } from '../helpers/setup.js';
 
 let server: http.Server;
@@ -74,28 +74,30 @@ afterAll((done) => {
 });
 
 describe('i18n command', () => {
+  let projectDir: string;
+
+  beforeEach(() => {
+    projectDir = createTempProject();
+  });
+
   afterEach(() => {
-    resetFixtures();
-    const langDir = path.join(fakeProjectDir, 'lang');
-    if (fs.existsSync(langDir)) {
-      fs.removeSync(langDir);
-    }
+    cleanupTempProjects();
   });
 
   it('should skip when no i18n config is set', async () => {
     const puprc = getPuprc();
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('No i18n configuration found. Skipping.');
   });
 
   it('should skip when i18n is an empty array', async () => {
     const puprc = getPuprc({ i18n: [] });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('No i18n configuration found. Skipping.');
   });
@@ -104,9 +106,9 @@ describe('i18n command', () => {
     const puprc = getPuprc({
       i18n: [{ path: 'lang' }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('No i18n configuration found. Skipping.');
   });
@@ -119,9 +121,9 @@ describe('i18n command', () => {
         slug: 'fake-project',
       },
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Fetching translations from');
   });
@@ -134,9 +136,9 @@ describe('i18n command', () => {
         slug: 'fake-project',
       }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Failed to fetch translations: HTTP 404');
   });
@@ -149,9 +151,9 @@ describe('i18n command', () => {
         slug: 'fake-project',
       }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Failed to fetch translation data');
   });
@@ -164,9 +166,9 @@ describe('i18n command', () => {
         slug: 'fake-project',
       }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Invalid translation API response');
   });
@@ -180,16 +182,16 @@ describe('i18n command', () => {
         path: 'lang',
       }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     // Default threshold is 30%, so de (80%) and fr (50%) should pass, ja (10%) should not
     expect(result.output).toContain('Found 2 translations meeting 30% threshold');
     expect(result.output).toContain('Translation downloads complete');
 
     // Verify files were downloaded
-    const langDir = path.join(fakeProjectDir, 'lang');
+    const langDir = path.join(projectDir, 'lang');
     expect(fs.existsSync(langDir)).toBe(true);
 
     const files = fs.readdirSync(langDir);
@@ -212,9 +214,9 @@ describe('i18n command', () => {
         filter: { minimum_percentage: 70 },
       }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     // Only de (80%) meets 70% threshold
     expect(result.output).toContain('Found 1 translations meeting 70% threshold');
@@ -228,9 +230,9 @@ describe('i18n command', () => {
         slug: 'fake-project',
       }],
     });
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('i18n');
+    const result = await runPup('i18n', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('Fetching translations from');
     expect(result.output).toContain('Failed to fetch translation data');
