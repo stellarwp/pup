@@ -19,7 +19,7 @@
     "build": "tsup",
     "dev": "tsup --watch",
     "test": "TS_NODE_PROJECT=tsconfig.test.json jest --passWithNoTests",
-    "lint": "eslint src/ tests/",
+    "lint": "eslint --no-error-on-unmatched-pattern src/ tests/",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
