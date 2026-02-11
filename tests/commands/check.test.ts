@@ -1,29 +1,32 @@
 import {
   runPup,
-  resetFixtures,
-  writeDefaultPuprc,
   writePuprc,
   getPuprc,
-  fakeProjectWithTbdsDir,
+  createTempProject,
+  cleanupTempProjects,
 } from '../helpers/setup.js';
 
 describe('check command', () => {
+  let projectDir: string;
+
   beforeEach(() => {
-    writeDefaultPuprc();
+    projectDir = createTempProject();
+    writePuprc(getPuprc(), projectDir);
   });
 
   afterEach(() => {
-    resetFixtures();
+    cleanupTempProjects();
   });
 
   it('should run default checks successfully', async () => {
-    const result = await runPup('check');
+    const result = await runPup('check', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('[tbd]');
     expect(result.output).toContain('[version-conflict]');
   });
 
   it('should warn on tbd when fail_method is warn', async () => {
+    const tbdDir = createTempProject('fake-project-with-tbds');
     const puprc = getPuprc();
     puprc.checks = {
       tbd: {
@@ -31,9 +34,9 @@ describe('check command', () => {
       },
       'version-conflict': {},
     };
-    writePuprc(puprc, fakeProjectWithTbdsDir);
+    writePuprc(puprc, tbdDir);
 
-    const result = await runPup('check', { cwd: fakeProjectWithTbdsDir });
+    const result = await runPup('check', { cwd: tbdDir });
     // Should succeed since tbd is set to warn
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('[tbd]');
