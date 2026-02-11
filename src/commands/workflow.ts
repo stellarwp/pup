@@ -13,7 +13,7 @@ import * as output from '../utils/output.js';
  * @returns {void}
  */
 export function registerWorkflowCommand(program: Command): void {
-  const cmd = program
+  program
     .command('workflow <workflow>')
     .alias('do')
     .description('Run a command workflow.')
