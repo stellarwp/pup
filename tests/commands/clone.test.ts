@@ -38,11 +38,18 @@ describe('clone command', () => {
     const puprc = getPuprc({ repo: `file://${pupRoot}` });
     writePuprc(puprc, projectDir);
 
-    // Use the current branch so this works in CI where main may not exist locally
-    const currentBranch = execSync('git rev-parse --abbrev-ref HEAD', { cwd: pupRoot }).toString().trim();
-    const result = await runPup(`clone --branch ${currentBranch}`, { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('Cloned');
+    // Create a temporary branch so we have a known branch name to clone,
+    // even when CI checks out in detached HEAD mode
+    const testBranch = 'pup-test-clone-branch';
+    execSync(`git branch ${testBranch}`, { cwd: pupRoot });
+
+    try {
+      const result = await runPup(`clone --branch ${testBranch}`, { cwd: projectDir });
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('Cloned');
+    } finally {
+      execSync(`git branch -D ${testBranch}`, { cwd: pupRoot });
+    }
   });
 
   it('should fail when no repo is configured', async () => {
