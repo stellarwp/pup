@@ -12,7 +12,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm ci
-      - run: npm run build
       - name: Setup git
         run: |
           git config --global user.name "GitHub Actions"
