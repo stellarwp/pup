@@ -1,16 +1,25 @@
-import { runPup, resetFixtures, writeDefaultPuprc } from '../helpers/setup.js';
+import {
+  runPup,
+  writePuprc,
+  getPuprc,
+  createTempProject,
+  cleanupTempProjects,
+} from '../helpers/setup.js';
 
 describe('info command', () => {
+  let projectDir: string;
+
   beforeEach(() => {
-    writeDefaultPuprc();
+    projectDir = createTempProject();
+    writePuprc(getPuprc(), projectDir);
   });
 
   afterEach(() => {
-    resetFixtures();
+    cleanupTempProjects();
   });
 
   it('should show project info', async () => {
-    const result = await runPup('info');
+    const result = await runPup('info', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.stdout).toContain('pup');
   });
