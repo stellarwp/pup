@@ -3,19 +3,19 @@ on: [push, pull_request]
 jobs:
   test:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [18, 20, 22]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/cache@v4
         with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('bun.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+      - run: bun install --frozen-lockfile
+      - run: bun run build
       - name: Setup git
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "<>"
-      - run: npm test
+      - run: bun run test
