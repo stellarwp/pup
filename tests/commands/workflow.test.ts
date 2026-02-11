@@ -1,21 +1,23 @@
 import path from 'node:path';
 import {
   runPup,
-  resetFixtures,
-  writeDefaultPuprc,
   writePuprc,
   getPuprc,
-  fakeProjectDir,
+  createTempProject,
+  cleanupTempProjects,
   fixturesDir,
 } from '../helpers/setup.js';
 
 describe('workflow command', () => {
+  let projectDir: string;
+
   beforeEach(() => {
-    writeDefaultPuprc();
+    projectDir = createTempProject();
+    writePuprc(getPuprc(), projectDir);
   });
 
   afterEach(() => {
-    resetFixtures();
+    cleanupTempProjects();
   });
 
   it('should run a workflow', async () => {
@@ -23,9 +25,9 @@ describe('workflow command', () => {
     puprc.workflows = {
       'my-workflow': ['echo "workflow step 1"', 'echo "workflow step 2"'],
     };
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('workflow my-workflow');
+    const result = await runPup('workflow my-workflow', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('workflow step 1');
     expect(result.output).toContain('workflow step 2');
@@ -36,15 +38,15 @@ describe('workflow command', () => {
     puprc.workflows = {
       'my-workflow': ['echo "workflow via do"'],
     };
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('do my-workflow');
+    const result = await runPup('do my-workflow', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('workflow via do');
   });
 
   it('should error when workflow does not exist', async () => {
-    const result = await runPup('workflow nonexistent');
+    const result = await runPup('workflow nonexistent', { cwd: projectDir });
     expect(result.exitCode).not.toBe(0);
   });
 
@@ -54,9 +56,9 @@ describe('workflow command', () => {
     puprc.workflows = {
       'my-workflow': [`bash ${scriptPath}`],
     };
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('workflow my-workflow -- --option1 value1');
+    const result = await runPup('workflow my-workflow -- --option1 value1', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
   });
 
@@ -69,9 +71,9 @@ describe('workflow command', () => {
         'echo "step 3"',
       ],
     };
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('workflow my-workflow');
+    const result = await runPup('workflow my-workflow', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('step 1');
     expect(result.output).toContain('step 2');
@@ -86,9 +88,9 @@ describe('workflow command', () => {
         'echo "still running"',
       ],
     };
-    writePuprc(puprc);
+    writePuprc(puprc, projectDir);
 
-    const result = await runPup('workflow my-workflow');
+    const result = await runPup('workflow my-workflow', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('still running');
   });
