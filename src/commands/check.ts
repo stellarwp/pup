@@ -30,7 +30,6 @@ export async function runChecks(options: {
     return 0;
   }
 
-  let hasFailures = false;
   let shouldBail = false;
 
   for (const [slug, checkConfig] of checks) {
@@ -59,7 +58,6 @@ export async function runChecks(options: {
       output.log(`[${slug}] ${result.output}`);
     } else {
       output.error(`[${slug}] ${result.output}`);
-      hasFailures = true;
       if (bailOnFailure) {
         shouldBail = true;
       }
