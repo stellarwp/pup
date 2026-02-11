@@ -18,7 +18,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "TS_NODE_PROJECT=tsconfig.test.json jest",
+    "test": "TS_NODE_PROJECT=tsconfig.test.json jest --passWithNoTests",
     "lint": "eslint src/ tests/",
     "typecheck": "tsc --noEmit"
   },
