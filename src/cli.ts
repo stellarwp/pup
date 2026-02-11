@@ -1,6 +1,9 @@
 import { createApp } from './app.js';
+import { registerCheckCommand } from './commands/check.js';
 
 const program = createApp();
+
+registerCheckCommand(program);
 
 program.parseAsync(process.argv).catch((err) => {
   console.error(err instanceof Error ? err.message : String(err));
