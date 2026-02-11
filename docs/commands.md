@@ -26,7 +26,7 @@ _Note: If you need to pass environment variables to your build steps, you can ad
 ```bash
 pup build [--dev]
 # or
-composer -- pup build [--dev]
+npx @stellarwp/pup build [--dev]
 ```
 
 ### Arguments
@@ -63,7 +63,7 @@ declared any checks) by running the following command:
 ```bash
 pup check
 # or
-composer -- pup check
+npx @stellarwp/pup check
 ```
 
 ### Arguments
@@ -82,7 +82,7 @@ and line numbers where they appear.
 ```bash
 pup check:tbd
 # or
-composer -- pup check:tbd
+npx @stellarwp/pup check:tbd
 ```
 
 #### `.puprc` options
@@ -109,7 +109,7 @@ the purposes of validation, `pup` will consider `major.minor.patch` versions wit
 ```bash
 pup check:version-conflict
 # or
-composer -- pup check:version-conflict
+npx @stellarwp/pup check:version-conflict
 ```
 
 #### `.puprc` options
@@ -125,7 +125,7 @@ This command cleans up any directories that `pup` creates.
 ```bash
 pup clean
 # or
-composer -- pup clean
+npx @stellarwp/pup clean
 ```
 
 ### Arguments
@@ -141,7 +141,7 @@ Alias for `pup workflow`. See `pup help workflow` for more information.
 ```bash
 pup do <workflow>
 # or
-composer -- pup do <workflow>
+npx @stellarwp/pup do <workflow>
 ```
 
 ### Arguments
@@ -161,7 +161,7 @@ If you haven't provided a version file, the version will be `unknown`.
 ```bash
 pup get-version [--dev]
 # or
-composer -- pup get-version [--dev]
+npx @stellarwp/pup get-version [--dev]
 ```
 
 ### Arguments
@@ -177,7 +177,7 @@ Shows the help menu.
 ```bash
 pup help [command]
 # or
-composer -- pup help [command]
+npx @stellarwp/pup help [command]
 ```
 
 ### Arguments
@@ -192,7 +192,7 @@ Pulls in translations from a GlotPress instance.
 ```bash
 pup i18n
 # or
-composer -- pup i18n
+npx @stellarwp/pup i18n
 ```
 
 ### Arguments
@@ -225,7 +225,7 @@ Gets `pup` details for the current project.
 ```bash
 pup info
 # or
-composer -- pup info
+npx @stellarwp/pup info
 ```
 
 ## `pup package`
@@ -263,7 +263,7 @@ The zip that is generated will be placed in your project's root directory.
 ```bash
 pup package <version>
 # or
-composer -- pup package <version>
+npx @stellarwp/pup package <version>
 ```
 
 ### Arguments
@@ -299,9 +299,9 @@ pup workflow my-workflow
 # OR
 pup do my-workflow
 # OR
-composer -- pup workflow my-workflow
+npx @stellarwp/pup workflow my-workflow
 # OR
-composer -- pup do my-workflow
+npx @stellarwp/pup do my-workflow
 ```
 
 ### Usage
@@ -310,9 +310,9 @@ pup workflow <workflow>
 # or
 pup do <workflow>
 # or
-composer -- pup workflow <workflow>
+npx @stellarwp/pup workflow <workflow>
 # or
-composer -- pup do <workflow>
+npx @stellarwp/pup do <workflow>
 ```
 
 ### Arguments
@@ -332,7 +332,7 @@ more information on which commands it runs and when.
 ```bash
 pup zip <branch> [--dev] [--no-clone]
 # or
-composer -- pup zip <branch> [--dev] [--no-clone]
+npx @stellarwp/pup zip <branch> [--dev] [--no-clone]
 ```
 
 ### Arguments
@@ -356,7 +356,7 @@ This command will build a zip name based on data provided by `.puprc` and option
 ```bash
 pup zip-name <version> [--dev]
 # or
-composer -- pup zip-name <version> [--dev]
+npx @stellarwp/pup zip-name <version> [--dev]
 ```
 
 ### Arguments

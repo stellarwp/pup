@@ -9,21 +9,21 @@ checks out of the box, but also provides a simple way to add your own!
 * [Running all checks](#running-all-checks)
 * [Running specific checks](#running-specific-checks)
 * [Creating custom checks](#creating-custom-checks)
-  * [Simple checks](#simple-checks)
-  * [Class-based checks](#class-based-checks) 
+  * [Shell command checks](#shell-command-checks)
+  * [Module checks](#module-checks)
 
 ## Default checks
 
 If you do not include the `checks` property within your `.puprc` file, the default checks will be run for your project.
 
-Those defaults can be found in [`.puprc-defaults`](/.puprc-defaults) and here are some docs on them:
+Those defaults can be found in [`.puprc-defaults`](/defaults/.puprc-defaults) and here are some docs on them:
 
 * [`tbd`](/docs/commands.md#pup-checktbd)
 * [`version-conflict`](/docs/commands.md#pup-checkversion-conflict)
 
 ## Running all checks
 
-You can run all checks specified by your `.puprc` file (or the `.puprc-defaults` file if your `.puprc` file hasn't 
+You can run all checks specified by your `.puprc` file (or the `.puprc-defaults` file if your `.puprc` file hasn't
 declared any checks) by running the following command:
 
 ```bash
@@ -47,14 +47,93 @@ pup check:tbd
 
 ## Creating custom checks
 
-In addition to the provided checks within `pup`, you can create your own! They can either be simple PHP scripts or classes
-that extend `StellarWP\Pup\Commands\Checks\AbstractCheck`.
+In addition to the provided checks within `pup`, you can create your own! They can either be shell commands or
+JavaScript/TypeScript modules.
 
-### Simple checks
+### Shell command checks
 
-Simple checks are simply PHP scripts that get included and executed as a check. There is **one main requirement**, and that
-is that the PHP file must return an integer. If the check is considered valid, it should return `0`. If the check fails,
-it should return `1` (or any number greater than `0`).
+Shell command checks run a shell command and use the exit code to determine success or failure. An exit code of `0`
+means the check passed, and any non-zero exit code means it failed.
+
+#### Here's an example
+
+Let's say that our project has some JS files that get minified during the build process and we want to check to see if
+they were successfully minified.
+
+We add the check to our `.puprc` file:
+
+```json
+{
+  "checks": {
+    "has-min-js": {
+      "type": "command",
+      "command": "test $(find src/js -type f -name '*.min.js' | wc -l) -gt 0"
+    }
+  }
+}
+```
+
+The `has-min-js` will become the check slug (which we would use in order to run our check individually). The `type`
+property tells `pup` that this is a shell command check, and the `command` property is the shell command to execute.
+
+We should now be able to run the check!
+
+```bash
+pup check:has-min-js
+```
+
+You can also control how failures are handled by setting `fail_method` and `fail_method_dev`:
+
+```json
+{
+  "checks": {
+    "has-min-js": {
+      "type": "command",
+      "command": "test $(find src/js -type f -name '*.min.js' | wc -l) -gt 0",
+      "fail_method": "error",
+      "fail_method_dev": "warn"
+    }
+  }
+}
+```
+
+### Module checks
+
+Module checks use JavaScript (or compiled TypeScript) modules to run more complex check logic. The module must export
+an `execute()` function that returns a `CheckResult` object.
+
+#### The module interface
+
+Your module file must export an `execute` function. It can optionally export a `configure` function:
+
+```typescript
+interface CheckResult {
+  success: boolean;
+  output: string;
+}
+
+interface CheckConfig {
+  slug: string;
+  fail_method: 'error' | 'warn';
+  fail_method_dev: 'error' | 'warn';
+  type: 'simple' | 'class' | 'pup' | 'command';
+  file?: string;
+  command?: string;
+  args: Record<string, string>;
+  dirs?: string[];
+  skip_directories?: string;
+  skip_files?: string;
+}
+
+// Optional - called before execute() to allow setup
+export function configure(config: CheckConfig): void;
+
+// Required - runs the check and returns the result
+export async function execute(context: {
+  config: CheckConfig;
+  workingDir: string;
+}): Promise<CheckResult>;
+```
 
 #### Here's an example
 
@@ -65,31 +144,42 @@ First, let's create our check file. Let's put it in a `checks` directory within 
 
 ```bash
 mkdir checks
-touch checks/has-min-js.php
 ```
 
-We then edit `checks/has-min-js.php`:
+We then create `checks/has-min-js.mjs` (using `.mjs` so it's always treated as an ES module):
 
-```php
-<?php
-/**
- * These variables are available to us!
- * 
- * @var Symfony\Component\Console\Input\InputInterface $input
- * @var \StellarWP\Pup\Command\Io $output
- * @var \StellarWP\Pup\Commands\Checks\SimpleCheck $this
- */
+```javascript
+import { execSync } from 'node:child_process';
+import path from 'node:path';
 
-// Count the number of minified JS files in a directory.
-$num_min_js_files = exec( 'find src/js -type f -name "*.min.js" | wc -l' );
+export async function execute({ config, workingDir }) {
+  const jsDir = path.join(workingDir, 'src/js');
 
-// If there are no minified JS files, consider it a failure.
-if ( $num_min_js_files === 0 ) {
-    return 1;
+  try {
+    const result = execSync(`find ${jsDir} -type f -name "*.min.js" | wc -l`, {
+      encoding: 'utf-8',
+    }).trim();
+
+    const count = parseInt(result, 10);
+
+    if (count === 0) {
+      return {
+        success: false,
+        output: 'No minified JS files found!',
+      };
+    }
+
+    return {
+      success: true,
+      output: `${count} minified JS file(s) found.`,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      output: `Error checking for minified JS files: ${err}`,
+    };
+  }
 }
-
-// Successful!
-return 0;
 ```
 
 Now we have to tell `pup` about our new check. We do that by adding it to our `.puprc` file:
@@ -97,17 +187,17 @@ Now we have to tell `pup` about our new check. We do that by adding it to our `.
 ```json
 {
   "checks": {
-      "has-min-js": {
-          "type": "simple",
-          "file": "checks/has-min-js.php"
-      }
+    "has-min-js": {
+      "type": "simple",
+      "file": "checks/has-min-js.mjs"
+    }
   }
 }
 ```
 
-The `has-min-js` will become the check slug (which we would use in order to run our check). The `type` property tells `pup`
-that this is a simple check that gets its check logic from a file. And that file comes from the `file` property - which
-is a relative path from the root of the project.
+The `has-min-js` will become the check slug (which we would use in order to run our check). The `type` property tells
+`pup` that this check gets its logic from a module file. And that file comes from the `file` property - which is a
+relative path from the root of the project.
 
 We should now be able to run the check!
 
@@ -115,130 +205,36 @@ We should now be able to run the check!
 pup check:has-min-js
 ```
 
-The output isn't very exciting or informative. But! We can change that! Up above, there are 3 variables in the doc block
-of the PHP file that we created. One of those, `$output`, is an instance of `StellarWP\Pup\Command\Io` which is a wrapper
-for the [`SymfonyStyle`](https://symfony.com/doc/current/console/style.html) class. We can use that to provide some cool
-output. Read up on those docs to see everything that can be done.
+#### Using `configure()`
 
-But here's a quick example. We'll take our `checks/has-min-js.php` file and update it with some output:
-
-```php
-<?php
-/**
- * These variables are available to us!
- * 
- * @var Symfony\Component\Console\Input\InputInterface $input
- * @var \StellarWP\Pup\Command\Io $output
- * @var \StellarWP\Pup\Commands\Checks\SimpleCheck $this
- */
- 
-$output->writeln( '<comment>Checking for minified JS files...</comment>' );
-
-// Count the number of minified JS files in a directory.
-$num_min_js_files = exec( 'find src/js -type f -name "*.min.js" | wc -l' );
-
-// If there are no minified JS files, consider it a failure.
-if ( $num_min_js_files === 0 ) {
-  $output->error( 'No minified JS files found!' );
-  return 1;
-}
-
-$output->writeln( "<fg=green>Success!</> {$num_min_js_files} JS file(s) found." );
-
-// Successful!
-return 0;
-```
-
-The above example shows a couple of different types of output. Play around with it and make your output look the way
-you want!
-
-### Class-based checks
-
-If you have a more complicated check that you want to build and you need all of the power of a class, you can extend
-the `StellarWP\Pup\Commands\Checks\AbstractCheck` class. Let's walk through an example:
-
-#### Here's an example
-
-First, let's create our check file. Let's put it in a `checks` directory within our project:
-
-```bash
-mkdir checks
-touch checks/HasMinJs.php
-```
-
-Next, we'll create our class file:
-
-```php
-<?php
-namespace MyProject\Checks;
-
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
-use StellarWP\Pup\Command\Io;
-use StellarWP\Pup\Commands\Checks\AbstractCheck;
-
-class HasMinJS extends AbstractCheck {
-  /**
-   * @inheritdoc
-   */
-  protected function checkConfigure(): void {
-    // Let's accept in a color argument.
-    $this->addOption( 'color', null, InputOption::VALUE_REQUIRED, 'The color to use for output.', 'yellow' );
-  }
-  
-  /**
-   * @inheritdoc
-   */
-  protected function checkExecute( InputInterface $input, Io $output ) {
-    $color = $input->getOption( 'color' );
-    
-    $output->writeln( "<fg={$color}>Checking for minified JS files...</>" );
-  
-    // Count the number of minified JS files in a directory.
-    $num_min_js_files = exec( 'find src/js -type f -name "*.min.js" | wc -l' );
-  
-    // If there are no minified JS files, consider it a failure.
-    if ( $num_min_js_files === 0 ) {
-      $output->error( 'No minified JS files found!' );
-      return 1;
-    }
-  
-    $output->writeln( "<fg=green>Success!</> <fg={$color}>{$num_min_js_files} JS file(s) found.</>" );
-  
-    // Successful!
-    return 0;
-  }
-}
-```
-
-Now we have to tell `pup` about our new check. We do that by adding it to our `.puprc` file:
+If you need to set up your check based on the config provided in `.puprc`, you can export a `configure` function.
+This is called before `execute()` and receives the full check config object, including any custom `args`:
 
 ```json
 {
   "checks": {
-      "has-min-js-class": {
-          "type": "class",
-          "file": "checks/HasMinJs.php"
+    "has-min-js": {
+      "type": "simple",
+      "file": "checks/has-min-js.mjs",
+      "args": {
+        "directory": "dist/js"
       }
+    }
   }
 }
 ```
 
-If we were to run this with `pup check:has-min-js-class`, we would output that has the default color of `yellow` in the 
-places that we put `<fg={$color}>`. If we wanted a specific color, we could do: `pup check:has-min-js-class --color=cyan`.
+```javascript
+let searchDir = 'src/js';
 
-If we want to pass in a different `color` option when running `pup check`, we can do that by adding it to our `.puprc` file:
+export function configure(config) {
+  if (config.args.directory) {
+    searchDir = config.args.directory;
+  }
+}
 
-```bash
-{
-    "checks": {
-        "has-min-js-class": {
-            "type": "class",
-            "file": "checks/HasMinJs.php",
-            "args": {
-                  "--color": "cyan"
-            }
-        }
-    }
+export async function execute({ config, workingDir }) {
+  // searchDir is now 'dist/js' based on the .puprc config
+  // ... check logic here
 }
 ```
