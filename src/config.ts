@@ -394,7 +394,7 @@ export class Config {
     if (this._i18n !== null) return this._i18n;
 
     const defaults = this.config.i18n_defaults;
-    let i18nRaw = this.config.i18n;
+    const i18nRaw = this.config.i18n;
 
     if (!i18nRaw || (Array.isArray(i18nRaw) && i18nRaw.length === 0)) {
       this._i18n = [];
