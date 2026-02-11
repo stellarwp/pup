@@ -5,16 +5,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
       - name: Typecheck
         run: |
           if ls src/**/*.ts >/dev/null 2>&1; then
-            npm run typecheck
+            bun run typecheck
           else
             echo "No TypeScript source files found, skipping typecheck"
           fi
