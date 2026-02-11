@@ -1,22 +1,28 @@
 import {
   runPup,
-  resetFixtures,
-  fakeProjectDir,
+  createTempProject,
+  cleanupTempProjects,
 } from '../helpers/setup.js';
 import fs from 'fs-extra';
 import path from 'node:path';
 
 describe('invalid .puprc', () => {
+  let projectDir: string;
+
+  beforeEach(() => {
+    projectDir = createTempProject();
+  });
+
   afterEach(() => {
-    resetFixtures();
+    cleanupTempProjects();
   });
 
   it('should handle invalid JSON in .puprc', async () => {
-    const puprcPath = path.join(fakeProjectDir, '.puprc');
+    const puprcPath = path.join(projectDir, '.puprc');
     fs.writeFileSync(puprcPath, '{invalid json}');
 
-    const result = await runPup('info');
+    const result = await runPup('info', { cwd: projectDir });
     // Should still run but report invalid config
-    expect(result.stdout + result.stderr).toBeTruthy();
+    expect(result.output).toContain('could not be parsed');
   });
 });
