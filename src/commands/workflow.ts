@@ -17,7 +17,7 @@ export function registerWorkflowCommand(program: Command): void {
     .command('workflow <workflow>')
     .alias('do')
     .description('Run a command workflow.')
-    .option('--root <dir>', 'Set the root directory for running commands.')
+    .option('--root <dir>', 'Run workflow commands in the given directory instead of the current working directory.')
     .allowUnknownOption(true)
     .action(
       async (
