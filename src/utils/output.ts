@@ -95,7 +95,7 @@ export function info(message: string): void {
 }
 
 /**
- * Prints a bold title with an underline rule.
+ * Prints a yellow title with an underline rule.
  *
  * @since TBD
  *
@@ -105,13 +105,13 @@ export function info(message: string): void {
  */
 export function title(message: string): void {
   console.log('');
-  console.log(formatMessage(chalk.bold(message)));
-  console.log(formatMessage(chalk.bold('='.repeat(message.length))));
+  console.log(formatMessage(chalk.yellow(message)));
+  console.log(formatMessage(chalk.yellow('='.repeat(message.length))));
   console.log('');
 }
 
 /**
- * Prints a bold yellow section header.
+ * Prints a yellow section header.
  *
  * @since TBD
  *
@@ -121,8 +121,8 @@ export function title(message: string): void {
  */
 export function section(message: string): void {
   console.log('');
-  console.log(formatMessage(chalk.bold.yellow(message)));
-  console.log(formatMessage(chalk.bold.yellow('-'.repeat(message.length))));
+  console.log(formatMessage(chalk.yellow(message)));
+  console.log(formatMessage(chalk.yellow('-'.repeat(message.length))));
   console.log('');
 }
 
