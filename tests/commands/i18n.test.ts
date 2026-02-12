@@ -263,6 +263,59 @@ describe('i18n command', () => {
     expect(files).not.toContain('fake-project-es_ES.mo');
   });
 
+  it('should respect --retries 0 and bail without downloading', async () => {
+    const puprc = getPuprc({
+      i18n: [{
+        url: `${serverUrl}/api/projects/wp-plugins/%slug%/stable`,
+        textdomain: 'fake-project',
+        slug: 'fake-project',
+        path: 'lang',
+      }],
+    });
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup('i18n --retries 0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    // de and fr pass filters but retries=0 means every download bails immediately
+    expect(result.output).toContain('too many times, bailing');
+
+    // No files should have been downloaded
+    const langDir = path.join(projectDir, 'lang');
+    if (fs.existsSync(langDir)) {
+      expect(fs.readdirSync(langDir)).toHaveLength(0);
+    }
+  });
+
+  it('should use --root to download files to the specified directory', async () => {
+    // rootDir is an empty subdirectory — no .puprc, no project files.
+    // This proves config is loaded from projectDir (the cwd) and --root only
+    // controls where downloaded files are saved.
+    const rootDir = path.join(projectDir, 'alt-root');
+    fs.mkdirpSync(rootDir);
+
+    writePuprc(getPuprc({
+      i18n: [{
+        url: `${serverUrl}/api/projects/wp-plugins/%slug%/stable`,
+        textdomain: 'fake-project',
+        slug: 'fake-project',
+        path: 'custom/translations',
+      }],
+    }), projectDir);
+
+    const result = await runPup(`i18n --root ${rootDir}`, { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    // Files should be in rootDir/custom/translations
+    const rootLangDir = path.join(rootDir, 'custom', 'translations');
+    expect(fs.existsSync(rootLangDir)).toBe(true);
+    const files = fs.readdirSync(rootLangDir);
+    expect(files).toContain('fake-project-de_DE.po');
+    expect(files).toContain('fake-project-de_DE.mo');
+
+    // And NOT directly in projectDir/custom/translations
+    expect(fs.existsSync(path.join(projectDir, 'custom'))).toBe(false);
+  });
+
   it('should handle unreachable URL gracefully', async () => {
     const puprc = getPuprc({
       i18n: [{
