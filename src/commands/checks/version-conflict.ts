@@ -18,12 +18,21 @@ export async function executeVersionConflictCheck(
   versionFiles: VersionFile[],
   workingDir: string
 ): Promise<CheckResult> {
-  output.section('Checking for version conflicts...');
-
   if (versionFiles.length === 0) {
+    output.section('Checking for version conflicts...');
     output.log(`${chalk.yellow('Skipping!')} There are no ${chalk.cyan('.paths.versions')} set in ${chalk.cyan('.puprc')}.`);
     return { success: true, output: '' };
   }
+
+  for (const vf of versionFiles) {
+    const filePath = path.resolve(workingDir, vf.file);
+    if (!(await fs.pathExists(filePath))) {
+      output.writeln(`ERROR: Version file does not exist: ${vf.file}`);
+      return { success: false, output: '' };
+    }
+  }
+
+  output.section('Checking for version conflicts...');
 
   const versions: Map<string, string[]> = new Map();
   const normalizedVersions: Map<string, string[]> = new Map();
@@ -35,10 +44,6 @@ export async function executeVersionConflictCheck(
 
     let version = 'unknown';
     let normalizedVersion = 'unknown';
-
-    if (!(await fs.pathExists(filePath))) {
-      foundProblem = true;
-    }
 
     if (!foundProblem) {
       const contents = await fs.readFile(filePath, 'utf-8');
