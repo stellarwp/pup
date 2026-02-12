@@ -1,6 +1,8 @@
 import type { Command } from 'commander';
 import chalk from 'chalk';
 import { getConfig } from '../config.js';
+
+declare const BUILTIN_CHECK_SLUGS: string[];
 import { executeTbdCheck } from './checks/tbd.js';
 import { executeVersionConflictCheck } from './checks/version-conflict.js';
 import { runCommand } from '../utils/process.js';
@@ -198,7 +200,8 @@ async function runSingleCheck(
   const config = getConfig(options.root);
   const checks = config.getChecks();
   const cwd = options.root ?? config.getWorkingDir();
-  const checkConfig = checks.get(slug);
+  const isBuiltin = (BUILTIN_CHECK_SLUGS as string[]).includes(slug);
+  const checkConfig = checks.get(slug) ?? (isBuiltin ? {} as CheckConfig : undefined);
 
   if (!checkConfig) {
     output.error(`Check "${slug}" is not configured.`);
@@ -231,8 +234,32 @@ async function runSingleCheck(
 }
 
 /**
+ * Registers a single `check:{slug}` subcommand on the program.
+ *
+ * @since TBD
+ *
+ * @param {Command} program - The Commander.js program instance.
+ * @param {string} slug - The check slug to register.
+ *
+ * @returns {void}
+ */
+function registerCheckSubcommand(program: Command, slug: string): void {
+  program
+    .command(`check:${slug}`)
+    .description(`Run the ${slug} check.`)
+    .option('--dev', 'Run with dev failure methods.')
+    .option('--root <dir>', 'Set the root directory for running commands.')
+    .action(async (options: { dev?: boolean; root?: string }) => {
+      const exitCode = await runSingleCheck(slug, options);
+      if (exitCode !== 0) {
+        process.exit(exitCode);
+      }
+    });
+}
+
+/**
  * Registers the `check` command and individual `check:{slug}` subcommands
- * for each check configured in `.puprc`.
+ * for built-in checks and any custom checks configured in `.puprc`.
  *
  * @since TBD
  *
@@ -253,23 +280,25 @@ export function registerCheckCommand(program: Command): void {
       }
     });
 
+  const registered = new Set<string>();
+
+  // Register built-in checks determined at compile time from src/commands/checks/.
+  for (const slug of BUILTIN_CHECK_SLUGS) {
+    registerCheckSubcommand(program, slug);
+    registered.add(slug);
+  }
+
+  // Register any custom checks from .puprc that aren't already registered.
   try {
     const config = getConfig();
     for (const [slug] of config.getChecks()) {
-      program
-        .command(`check:${slug}`)
-        .description(`Run the ${slug} check.`)
-        .option('--dev', 'Run with dev failure methods.')
-        .option('--root <dir>', 'Set the root directory for running commands.')
-        .action(async (options: { dev?: boolean; root?: string }) => {
-          const exitCode = await runSingleCheck(slug, options);
-          if (exitCode !== 0) {
-            process.exit(exitCode);
-          }
-        });
+      if (registered.has(slug)) continue;
+      registerCheckSubcommand(program, slug);
+      registered.add(slug);
     }
   } catch {
-    // Config may not be loadable (e.g., no .puprc). Subcommands will not be
-    // registered, but the main `check` command still works.
+    // Config may not be loadable (e.g., no .puprc). Custom subcommands will
+    // not be registered, but built-in checks and the main `check` command
+    // still work.
   }
 }
