@@ -40,8 +40,22 @@ describe('package command', () => {
     expect(fs.existsSync(zipPath)).toBe(true);
   });
 
-  it('should respect .distinclude', async () => {
-    // Write a .distignore + .distinclude
+  it('should use .distinclude as a filter for candidate files', async () => {
+    // .distinclude restricts which files are candidates for packaging
+    const distincludePath = path.join(projectDir, '.distinclude');
+    fs.writeFileSync(distincludePath, 'bootstrap.php\n');
+
+    const result = await runPup('package 1.0.0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    const zipDir = path.join(projectDir, '.pup-zip');
+    // bootstrap.php passes the include filter
+    expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
+    // other-file.php is excluded because it doesn't match .distinclude
+    expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(false);
+  });
+
+  it('should not let .distinclude override .distignore', async () => {
     const distignorePath = path.join(projectDir, '.distignore');
     fs.writeFileSync(distignorePath, '*.php\n');
 
@@ -51,8 +65,9 @@ describe('package command', () => {
     const result = await runPup('package 1.0.0', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
 
-    const zipPath = path.join(projectDir, 'fake-project.1.0.0.zip');
-    expect(fs.existsSync(zipPath)).toBe(true);
+    const zipDir = path.join(projectDir, '.pup-zip');
+    // bootstrap.php passes the include filter but is still excluded by .distignore
+    expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(false);
   });
 
   it('should respect .distfiles', async () => {
