@@ -180,7 +180,63 @@ async function runModuleCheck(
 }
 
 /**
- * Registers the `check` command with the CLI program.
+ * Runs a single check by slug, handling prefix, output, and exit code.
+ *
+ * @since TBD
+ *
+ * @param {string} slug - The check slug to run.
+ * @param {object} options - The options object.
+ * @param {boolean} [options.dev] - Whether to use dev failure methods.
+ * @param {string} [options.root] - The root directory for running commands.
+ *
+ * @returns {Promise<number>} The exit code: 0 for success, 1 if the check failed.
+ */
+async function runSingleCheck(
+  slug: string,
+  options: { dev?: boolean; root?: string }
+): Promise<number> {
+  const config = getConfig(options.root);
+  const checks = config.getChecks();
+  const cwd = options.root ?? config.getWorkingDir();
+  const checkConfig = checks.get(slug);
+
+  if (!checkConfig) {
+    output.error(`Check "${slug}" is not configured.`);
+    return 1;
+  }
+
+  output.setPrefix(slug);
+
+  let result: CheckResult;
+
+  if (checkConfig.type === 'pup' || !checkConfig.type) {
+    result = await runBuiltinCheck(slug, checkConfig, cwd, config);
+  } else if (checkConfig.type === 'command' && checkConfig.command) {
+    result = await runShellCheck(checkConfig.command, cwd);
+  } else if (
+    (checkConfig.type === 'simple' || checkConfig.type === 'class') &&
+    checkConfig.file
+  ) {
+    result = await runModuleCheck(checkConfig.file, checkConfig, cwd);
+  } else {
+    output.warning(`Unknown check type: ${checkConfig.type}`);
+    output.setPrefix('');
+    return 1;
+  }
+
+  if (result.output) {
+    for (const line of result.output.split('\n')) {
+      output.log(line);
+    }
+  }
+
+  output.setPrefix('');
+  return result.success ? 0 : 1;
+}
+
+/**
+ * Registers the `check` command and individual `check:{slug}` subcommands
+ * for each check configured in `.puprc`.
  *
  * @since TBD
  *
@@ -200,4 +256,24 @@ export function registerCheckCommand(program: Command): void {
         process.exit(exitCode);
       }
     });
+
+  try {
+    const config = getConfig();
+    for (const [slug] of config.getChecks()) {
+      program
+        .command(`check:${slug}`)
+        .description(`Run the ${slug} check.`)
+        .option('--dev', 'Run with dev failure methods.')
+        .option('--root <dir>', 'Set the root directory for running commands.')
+        .action(async (options: { dev?: boolean; root?: string }) => {
+          const exitCode = await runSingleCheck(slug, options);
+          if (exitCode !== 0) {
+            process.exit(exitCode);
+          }
+        });
+    }
+  } catch {
+    // Config may not be loadable (e.g., no .puprc). Subcommands will not be
+    // registered, but the main `check` command still works.
+  }
 }

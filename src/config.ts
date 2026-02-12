@@ -287,7 +287,7 @@ export class Config {
    *
    * @returns {void}
    *
-   * @throws {Error} If a version file entry is missing required properties or the file does not exist.
+   * @throws {Error} If a version file entry is missing required properties.
    */
   private parseVersionFiles(): void {
     const versions = this.config.paths?.versions;
@@ -297,21 +297,6 @@ export class Config {
       if (!vf.file || !vf.regex) {
         throw new Error(
           'Versions specified in .puprc .paths.versions must have the "file" and "regex" property.'
-        );
-      }
-
-      const filePath = path.resolve(this.workingDir, vf.file);
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Version file does not exist: ${vf.file}`);
-      }
-
-      const contents = fs.readFileSync(filePath, 'utf-8');
-      const regex = new RegExp(vf.regex);
-      const matches = contents.match(regex);
-
-      if (!matches || !matches[1] || !matches[2]) {
-        throw new Error(
-          `Could not find version in file ${vf.file} using regex "/${vf.regex}/"`
         );
       }
 
