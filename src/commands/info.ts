@@ -1,4 +1,5 @@
 import type { Command } from 'commander';
+import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { getConfig } from '../config.js';
@@ -42,24 +43,26 @@ export function registerInfoCommand(program: Command): void {
       for (const file of files) {
         const filePath = path.join(workingDir, file);
         const exists = await fs.pathExists(filePath);
+        const styledFile = chalk.cyan(file);
 
         if (exists && file === '.puprc') {
           try {
             const contents = await fs.readFile(filePath, 'utf-8');
             JSON.parse(contents);
-            filesExist.push(`  ${file} - exists`);
-          } catch {
-            filesError.push(`  ${file} - exists but could not be parsed`);
+            filesExist.push(`✅ ${styledFile} - ${chalk.green('exists')}`);
+          } catch (e) {
+            const reason = e instanceof SyntaxError ? e.message : String(e);
+            filesError.push(`❌ ${styledFile} - ${chalk.green('exists')} but could not be parsed: ${reason}`);
           }
         } else if (exists) {
-          filesExist.push(`  ${file} - exists`);
+          filesExist.push(`✅ ${styledFile} - ${chalk.green('exists')}`);
         } else {
-          filesAbsent.push(`  ${file} - does not exist`);
+          filesAbsent.push(`⚫ ${styledFile} - does not exist`);
         }
       }
 
-      for (const line of filesError) output.error(line);
-      for (const line of filesExist) output.success(line);
+      for (const line of filesError) output.log(line);
+      for (const line of filesExist) output.log(line);
       for (const line of filesAbsent) output.log(line);
 
       output.section('Config');
