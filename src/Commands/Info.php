@@ -54,7 +54,7 @@ class Info extends Command {
 			$suffix = 'does not exist';
 			$array_to_populate = 'files_absent';
 
-			if ( $exists && $file === '.puprc' && ! json_decode( $file ) ) {
+			if ( $exists && $file === '.puprc' && ! json_decode( file_get_contents( $file ) ) ) {
 				$prefix = '❌';
 				$suffix = '<fg=green>exists</> but could not be parsed: ' . json_last_error_msg();
 				$array_to_populate = 'files_error';
