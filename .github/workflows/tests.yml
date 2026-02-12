@@ -4,7 +4,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: oven-sh/setup-bun@v2
       - uses: actions/cache@v4
         with:
@@ -14,8 +14,4 @@ jobs:
             ${{ runner.os }}-node-modules-
       - run: bun install --frozen-lockfile
       - run: bun run build
-      - name: Setup git
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "<>"
       - run: bun run test
