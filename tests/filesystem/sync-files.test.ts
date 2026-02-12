@@ -2,7 +2,17 @@ import path from 'node:path';
 import os from 'node:os';
 import fs from 'fs-extra';
 
-// Mock config.ts to avoid import.meta.url incompatibility with CommonJS test env
+/**
+ * These tests exercise the sync-files filesystem functions directly by importing
+ * them, rather than running through the CLI subprocess like package.test.ts does.
+ *
+ * sync-files.ts imports getDefaultsDir from config.ts, and config.ts uses
+ * import.meta.url at the module level. import.meta.url is an ESM-only construct
+ * that doesn't exist in CommonJS, so it throws when ts-jest compiles config.ts
+ * under the CommonJS test environment. The CLI subprocess tests avoid this because
+ * they run the built dist/cli.js (real ESM) in a child process where
+ * import.meta.url works natively.
+ */
 jest.mock('../../src/config', () => ({
   getDefaultsDir: () => path.resolve(__dirname, '..', '..', 'defaults'),
 }));
