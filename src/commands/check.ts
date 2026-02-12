@@ -1,4 +1,5 @@
 import type { Command } from 'commander';
+import chalk from 'chalk';
 import { getConfig } from '../config.js';
 import { executeTbdCheck } from './checks/tbd.js';
 import { executeVersionConflictCheck } from './checks/version-conflict.js';
@@ -26,17 +27,27 @@ export async function runChecks(options: {
   const cwd = options.root ?? config.getWorkingDir();
 
   if (checks.size === 0) {
-    output.log('No checks configured.');
+    output.writeln('📣 The .puprc does not have any checks configured.');
+    output.writeln(`💡 If you would like to use the defaults, simply remove the ${chalk.yellow('"checks"')} property in ${chalk.yellow('.puprc')}.`);
+    output.writeln('');
+    output.writeln(`If you would like to use one of the default checks, add one or more of the following to the ${chalk.yellow('"checks"')} property in your ${chalk.yellow('.puprc')}:`);
+    output.writeln('      "tbd": {}');
+    output.writeln('      "version-conflict": {}');
+    output.writeln('');
+    output.writeln('If you would like to create your own check, take a look at the pup docs to learn how:');
+    output.writeln('      https://github.com/stellarwp/pup');
     return 0;
   }
 
-  let shouldBail = false;
+  const failures: string[] = [];
 
   for (const [slug, checkConfig] of checks) {
     const failMethod = options.dev
       ? checkConfig.fail_method_dev
       : checkConfig.fail_method;
     const bailOnFailure = failMethod === 'error';
+
+    output.setPrefix(slug);
 
     let result: CheckResult;
 
@@ -50,22 +61,31 @@ export async function runChecks(options: {
     ) {
       result = await runModuleCheck(checkConfig.file, checkConfig, cwd);
     } else {
-      output.warning(`[${slug}] Unknown check type: ${checkConfig.type}`);
+      output.warning(`Unknown check type: ${checkConfig.type}`);
+      output.setPrefix('');
       continue;
     }
 
-    if (result.success) {
-      output.log(`[${slug}] ${result.output}`);
-    } else {
-      output.error(`[${slug}] ${result.output}`);
+    if (result.output) {
+      for (const line of result.output.split('\n')) {
+        output.log(line);
+      }
+    }
+
+    output.setPrefix('');
+
+    if (!result.success) {
+      failures.push(slug);
+
       if (bailOnFailure) {
-        shouldBail = true;
+        output.writeln(chalk.yellow(`${slug}'s fail_method in ${chalk.cyan('.puprc')} is set to "${chalk.red('error')}". Exiting...`));
+        return 1;
       }
     }
   }
 
-  if (shouldBail) {
-    return 1;
+  if (failures.length > 0) {
+    output.error(`The following checks failed:\n* ${failures.join('\n* ')}`);
   }
 
   return 0;

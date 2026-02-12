@@ -1,5 +1,7 @@
+import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
+import * as output from '../../utils/output.js';
 import type { CheckConfig, CheckResult } from '../../types.js';
 
 const DEFAULT_SKIP_DIRS = 'bin|build|vendor|node_modules|.git|.github|tests';
@@ -30,6 +32,8 @@ export async function executeTbdCheck(
   const skipFiles = (config.skip_files ?? DEFAULT_SKIP_FILES).split('|');
   const dirs = config.dirs ?? DEFAULT_DIRS;
 
+  output.section('Checking for TBDs...');
+
   const matches: TbdMatch[] = [];
 
   for (const dir of dirs) {
@@ -39,7 +43,11 @@ export async function executeTbdCheck(
   }
 
   if (matches.length === 0) {
-    return { success: true, output: 'Success! No TBDs found.' };
+    output.success('No TBDs found!');
+    output.log('');
+    output.log('');
+    output.success('Success! No TBDs found.');
+    return { success: true, output: '' };
   }
 
   // Group by file
@@ -50,17 +58,19 @@ export async function executeTbdCheck(
     grouped.set(match.file, existing);
   }
 
-  let output = 'TBDs have been found!\n\n';
   for (const [file, fileMatches] of grouped) {
     const relPath = path.relative(workingDir, file);
-    output += `${relPath}\n`;
+    output.log(chalk.cyan(relPath));
     for (const m of fileMatches) {
-      output += `  Line ${m.line}: ${m.content.trim()}\n`;
+      output.log(`${chalk.yellow(`${m.line}:`)} ${m.content.trim()}`);
     }
-    output += '\n';
+    output.log('');
   }
 
-  return { success: false, output };
+  output.log('');
+  output.error('TBDs have been found!');
+
+  return { success: false, output: '' };
 }
 
 /**
@@ -93,6 +103,7 @@ async function scanDirectory(
       await scanDirectory(fullPath, workingDir, skipDirs, skipFiles, matches);
     } else if (entry.isFile()) {
       if (skipFiles.some((skip) => entry.name.endsWith(skip))) continue;
+      if (entry.name.startsWith('.pup-') || entry.name === '.puprc') continue;
       await scanFile(fullPath, matches);
     }
   }

@@ -1,5 +1,7 @@
+import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
+import * as output from '../../utils/output.js';
 import type { CheckResult, VersionFile } from '../../types.js';
 
 /**
@@ -16,53 +18,73 @@ export async function executeVersionConflictCheck(
   versionFiles: VersionFile[],
   workingDir: string
 ): Promise<CheckResult> {
+  output.section('Checking for version conflicts...');
+
   if (versionFiles.length === 0) {
-    return { success: true, output: 'No version files configured.' };
+    output.log(`${chalk.yellow('Skipping!')} There are no ${chalk.cyan('.paths.versions')} set in ${chalk.cyan('.puprc')}.`);
+    return { success: true, output: '' };
   }
 
-  const versions: { file: string; version: string; regex: string }[] = [];
+  const versions: Map<string, string[]> = new Map();
+  const normalizedVersions: Map<string, string[]> = new Map();
+  let foundProblem = false;
 
   for (const vf of versionFiles) {
     const filePath = path.resolve(workingDir, vf.file);
+    const location = `${vf.file} :: ${vf.regex}`;
+
+    let version = 'unknown';
+    let normalizedVersion = 'unknown';
+
     if (!(await fs.pathExists(filePath))) {
-      return {
-        success: false,
-        output: `Version file not found: ${vf.file}`,
-      };
+      foundProblem = true;
     }
 
-    const contents = await fs.readFile(filePath, 'utf-8');
-    const regex = new RegExp(vf.regex);
-    const matches = contents.match(regex);
+    if (!foundProblem) {
+      const contents = await fs.readFile(filePath, 'utf-8');
+      const regex = new RegExp(vf.regex);
+      const matches = contents.match(regex);
 
-    if (!matches || !matches[2]) {
-      return {
-        success: false,
-        output: `Could not extract version from ${vf.file} using regex /${vf.regex}/`,
-      };
+      if (!matches || !matches[1] || !matches[2]) {
+        foundProblem = true;
+      } else {
+        version = matches[2].trim();
+        normalizedVersion = matches[2].trim();
+
+        const parts = version.split('.');
+        if (parts.length > 3) {
+          normalizedVersion = parts.slice(0, 3).join('.');
+        }
+      }
     }
 
-    versions.push({ file: vf.file, version: matches[2], regex: vf.regex });
+    if (!versions.has(version)) {
+      versions.set(version, []);
+    }
+    versions.get(version)!.push(location);
+
+    if (!normalizedVersions.has(normalizedVersion)) {
+      normalizedVersions.set(normalizedVersion, []);
+    }
+    normalizedVersions.get(normalizedVersion)!.push(location);
   }
 
-  // Normalize versions for comparison (package.json only supports major.minor.patch)
-  const normalizedVersions = versions.map((v) => {
-    const parts = v.version.split('.');
-    // Reduce to first 3 parts for comparison
-    const normalized = parts.slice(0, 3).join('.');
-    return { ...v, normalized };
-  });
-
-  const uniqueVersions = new Set(normalizedVersions.map((v) => v.normalized));
-
-  if (uniqueVersions.size <= 1) {
-    return { success: true, output: 'No version conflicts found.' };
+  if (normalizedVersions.size !== 1) {
+    foundProblem = true;
+    output.error('Found more than one version within the version files.');
   }
 
-  let output = 'Version conflicts found!\n\n';
-  for (const v of normalizedVersions) {
-    output += `  ${v.file}: ${v.version} (regex: /${v.regex}/)\n`;
+  if (foundProblem) {
+    output.log('Versions found:');
+    for (const [version, locations] of versions) {
+      for (const location of locations) {
+        output.log(` - ${version} in ${location}`);
+      }
+    }
+
+    return { success: false, output: '' };
   }
 
-  return { success: false, output };
+  output.success('No version conflicts found.');
+  return { success: true, output: '' };
 }
