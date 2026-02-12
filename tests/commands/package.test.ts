@@ -141,4 +141,35 @@ describe('package command', () => {
     expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(true);
     expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
   });
+
+  it('should generate .pup-distignore during packaging', async () => {
+    const distignorePath = path.join(projectDir, '.distignore');
+    fs.writeFileSync(distignorePath, 'other-file.php\n');
+
+    const gitattrsPath = path.join(projectDir, '.gitattributes');
+    fs.writeFileSync(gitattrsPath, 'src/ export-ignore\n');
+
+    const result = await runPup('package 1.0.0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    // .pup-distignore should contain patterns from both .distignore and .gitattributes
+    // Note: cleanSyncFiles runs after zip, so check output instead of file
+    const zipDir = path.join(projectDir, '.pup-zip');
+    expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(false);
+    expect(fs.existsSync(path.join(zipDir, 'src', 'Plugin.php'))).toBe(false);
+    expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
+  });
+
+  it('should clean up .pup-* files after packaging', async () => {
+    const distignorePath = path.join(projectDir, '.distignore');
+    fs.writeFileSync(distignorePath, 'other-file.php\n');
+
+    const result = await runPup('package 1.0.0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    // .pup-* files should be cleaned up after packaging
+    expect(fs.existsSync(path.join(projectDir, '.pup-distfiles'))).toBe(false);
+    expect(fs.existsSync(path.join(projectDir, '.pup-distinclude'))).toBe(false);
+    expect(fs.existsSync(path.join(projectDir, '.pup-distignore'))).toBe(false);
+  });
 });

@@ -6,6 +6,8 @@ import { getConfig } from '../config.js';
 import { globToRegex } from '../utils/glob.js';
 import { rmdir, trailingSlashIt } from '../utils/directory.js';
 import {
+  buildSyncFiles,
+  cleanSyncFiles,
   getIgnorePatterns,
   getIncludePatterns,
   getDistfilesPatterns,
@@ -62,7 +64,10 @@ export function registerPackageCommand(program: Command): void {
       }
       await fs.mkdirp(zipDir);
 
-      // Get file patterns
+      // Generate .pup-* sync files
+      buildSyncFiles(sourceDir, config);
+
+      // Get file patterns (from generated .pup-* files)
       const distfiles = getDistfilesPatterns(sourceDir);
       if (distfiles !== null) {
         output.log(
@@ -72,14 +77,14 @@ export function registerPackageCommand(program: Command): void {
 
       const includePatterns = getIncludePatterns(sourceDir);
 
-      // Only observe .distignore if there is no .distfiles
+      // Only observe .pup-distignore if there is no .pup-distfiles
       let ignorePatterns: string[];
       if (distfiles !== null) {
         ignorePatterns = getDefaultIgnoreLines(config);
       } else {
         ignorePatterns = [
           ...getDefaultIgnoreLines(config),
-          ...getIgnorePatterns(sourceDir, config.getZipUseDefaultIgnore()),
+          ...getIgnorePatterns(sourceDir),
         ];
       }
 
@@ -97,6 +102,9 @@ export function registerPackageCommand(program: Command): void {
       output.log('- Zipping...');
       await createZip(zipDir, zipFilename, zipName);
       output.log('Zipping...Complete.');
+
+      // Clean up .pup-* sync files
+      cleanSyncFiles(sourceDir);
 
       // Undo version file changes
       undoChanges(config);
