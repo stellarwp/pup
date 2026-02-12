@@ -17,7 +17,8 @@ describe('version-conflict check', () => {
 
     const result = await runPup('check', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('[version-conflict]');
+    expect(result.output).toContain('[version-conflict] Checking for version conflicts...');
+    expect(result.output).toContain('[version-conflict] No version conflicts found.');
   });
 
   it('should fail version-conflict check when there are mismatched versions', async () => {
@@ -33,6 +34,9 @@ describe('version-conflict check', () => {
 
     const result = await runPup('check', { cwd: projectDir });
     expect(result.exitCode).not.toBe(0);
-    expect(result.output).toContain('Version conflicts found!');
+    expect(result.output).toContain('[version-conflict] Checking for version conflicts...');
+    expect(result.output).toContain('Found more than one version within the version files.');
+    expect(result.output).toContain('[version-conflict] Versions found:');
+    expect(result.output).toContain("version-conflict's fail_method in .puprc is set to");
   });
 });
