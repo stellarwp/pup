@@ -19,9 +19,9 @@ export function registerI18nCommand(program: Command): void {
     .command('i18n')
     .description('Fetches language files for the project.')
     .option('--retries <number>', 'How many retries we do for each file.', '3')
-    .option('--root <dir>', 'Set the root directory for running commands.')
+    .option('--root <dir>', 'Set the root directory for downloading language files.')
     .action(async (options: { retries?: string; root?: string }) => {
-      const config = getConfig(options.root);
+      const config = getConfig();
       const i18nConfigs = config.getI18n();
       const cwd = options.root ?? config.getWorkingDir();
       const maxRetries = parseInt(options.retries ?? '3', 10);
