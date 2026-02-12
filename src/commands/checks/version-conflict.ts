@@ -76,7 +76,7 @@ export async function executeVersionConflictCheck(
 
   if (normalizedVersions.size !== 1) {
     foundProblem = true;
-    output.error('Found more than one version within the version files.');
+    output.log(chalk.bgRed.white('Found more than one version within the version files.'));
   }
 
   if (foundProblem) {

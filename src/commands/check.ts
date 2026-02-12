@@ -205,8 +205,6 @@ async function runSingleCheck(
     return 1;
   }
 
-  output.setPrefix(slug);
-
   let result: CheckResult;
 
   if (checkConfig.type === 'pup' || !checkConfig.type) {
@@ -220,7 +218,6 @@ async function runSingleCheck(
     result = await runModuleCheck(checkConfig.file, checkConfig, cwd);
   } else {
     output.warning(`Unknown check type: ${checkConfig.type}`);
-    output.setPrefix('');
     return 1;
   }
 
@@ -230,7 +227,6 @@ async function runSingleCheck(
     }
   }
 
-  output.setPrefix('');
   return result.success ? 0 : 1;
 }
 
