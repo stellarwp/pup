@@ -22,7 +22,7 @@ export async function runChecks(options: {
   dev?: boolean;
   root?: string;
 }): Promise<number> {
-  const config = getConfig(options.root);
+  const config = getConfig();
   const checks = config.getChecks();
   const cwd = options.root ?? config.getWorkingDir();
 
@@ -223,7 +223,7 @@ async function runSingleCheck(
   options: { dev?: boolean; root?: string },
   extraArgs: Record<string, string> = {}
 ): Promise<number> {
-  const config = getConfig(options.root);
+  const config = getConfig();
   const checks = config.getChecks();
   const cwd = options.root ?? config.getWorkingDir();
   const isBuiltin = (BUILTIN_CHECK_SLUGS as string[]).includes(slug);
