@@ -1,8 +1,8 @@
 import type { Command } from 'commander';
 import fs from 'fs-extra';
 import { simpleGit } from 'simple-git';
-import { getConfig } from '../config.js';
-import * as output from '../utils/output.js';
+import { getConfig } from '../config.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Registers the `clone` command with the CLI program.

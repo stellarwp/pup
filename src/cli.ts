@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerCloneCommand } from './commands/clone.js';
+import { createApp } from './app.ts';
+import { registerCloneCommand } from './commands/clone.ts';
 
 const program = createApp();
 

@@ -1,4 +1,4 @@
-import type { Workflow } from '../types.js';
+import type { Workflow } from '../types.ts';
 
 /**
  * Creates a Workflow object from a slug and list of commands.
