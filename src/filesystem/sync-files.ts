@@ -1,6 +1,6 @@
 import fs from 'fs-extra';
 import path from 'node:path';
-import { getDefaultsDir } from '../config.js';
+import { getDefaultsDir } from '../config.ts';
 
 export interface SyncFileResult {
   patterns: string[];
