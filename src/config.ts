@@ -51,8 +51,6 @@ export class Config {
   readonly #workingDir: string;
   readonly #puprcFilePath: string;
   readonly #config: PupConfig;
-  #hasInvalidPuprc = false;
-  #puprcParseError = '';
   #workflows: WorkflowCollection;
   #checks: Map<string, CheckConfig>;
   #versionFiles: VersionFile[];
@@ -64,6 +62,8 @@ export class Config {
    * @since TBD
    *
    * @param {string} workingDir - The project working directory. Defaults to process.cwd().
+   *
+   * @throws {Error} If the .puprc file is present but contains invalid JSON or fails validation.
    */
   constructor(workingDir?: string) {
     const cwd = workingDir ?? process.cwd();
@@ -93,7 +93,7 @@ export class Config {
    *
    * @since TBD
    *
-   * @returns {void}
+   * @throws {Error} If the .puprc file contains invalid JSON or fails schema validation.
    */
   private mergeConfigWithDefaults(): void {
     if (!fs.existsSync(this.#puprcFilePath)) {
@@ -106,15 +106,15 @@ export class Config {
     try {
       rawPuprc = JSON.parse(puprcContents);
     } catch {
-      this.#hasInvalidPuprc = true;
-      this.#puprcParseError = 'Invalid JSON in .puprc';
-      return;
+      throw new Error(
+        'There is a .puprc file in this directory, but it could not be parsed. Invalid JSON in .puprc.'
+      );
     }
 
     if (!rawPuprc || typeof rawPuprc !== 'object') {
-      this.#hasInvalidPuprc = true;
-      this.#puprcParseError = 'Invalid .puprc format';
-      return;
+      throw new Error(
+        'There is a .puprc file in this directory, but it could not be parsed. Invalid .puprc format.'
+      );
     }
 
     const parseResult = PuprcInputSchema.safeParse(rawPuprc);
@@ -123,9 +123,9 @@ export class Config {
       const issues = parseResult.error.issues
         .map((issue) => `  ${issue.path.join('.')}: ${issue.message}`)
         .join('\n');
-      this.#hasInvalidPuprc = true;
-      this.#puprcParseError = `Invalid .puprc configuration:\n${issues}`;
-      return;
+      throw new Error(
+        `There is a .puprc file in this directory, but it contains invalid configuration:\n${issues}`
+      );
     }
 
     const puprc = parseResult.data as Record<string, unknown>;
@@ -633,28 +633,6 @@ export class Config {
    */
   getZipUseDefaultIgnore(): boolean {
     return this.#config.zip_use_default_ignore ?? true;
-  }
-
-  /**
-   * Returns whether the .puprc file failed to parse.
-   *
-   * @since TBD
-   *
-   * @returns {boolean} True if the .puprc file is invalid.
-   */
-  hasInvalidPuprc(): boolean {
-    return this.#hasInvalidPuprc;
-  }
-
-  /**
-   * Returns the parse error message if .puprc is invalid.
-   *
-   * @since TBD
-   *
-   * @returns {string} The error message string, or an empty string if no error.
-   */
-  getPuprcParseError(): string {
-    return this.#puprcParseError;
   }
 
   /**
