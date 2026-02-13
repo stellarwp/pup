@@ -128,7 +128,7 @@ export class Config {
         continue;
       }
 
-      if (typeof current !== 'object' || current === null) {
+      if (typeof current !== 'object') {
         configRecord[key] = value;
         continue;
       }
