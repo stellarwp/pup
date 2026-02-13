@@ -38,7 +38,8 @@
     "execa": "^8.0.1",
     "fs-extra": "^11.2.0",
     "picomatch": "^4.0.0",
-    "simple-git": "^3.22.0"
+    "simple-git": "^3.22.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@jest/types": "^30.2.0",
