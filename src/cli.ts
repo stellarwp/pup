@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerBuildCommand } from './commands/build.js';
+import { createApp } from './app.ts';
+import { registerBuildCommand } from './commands/build.ts';
 
 const program = createApp();
 

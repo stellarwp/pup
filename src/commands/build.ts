@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
-import { getConfig } from '../config.js';
-import { runCommand } from '../utils/process.js';
-import * as output from '../utils/output.js';
+import { getConfig } from '../config.ts';
+import { runCommand } from '../utils/process.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Registers the `build` command with the CLI program.
@@ -38,7 +38,6 @@ export function registerBuildCommand(program: Command): void {
 
         const result = await runCommand(cmd, {
           cwd,
-          envVarNames: config.getEnvVarNames(),
         });
 
         if (result.exitCode !== 0) {
