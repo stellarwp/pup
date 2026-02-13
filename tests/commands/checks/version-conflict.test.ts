@@ -11,6 +11,16 @@ describe('version-conflict check', () => {
     cleanupTempProjects();
   });
 
+  it('should run version-conflict but not tbd when only version-conflict is configured', async () => {
+    const projectDir = createTempProject();
+    writePuprc(getPuprc({ checks: { 'version-conflict': {} } }), projectDir);
+
+    const result = await runPup('check', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('[version-conflict]');
+    expect(result.output).not.toContain('[tbd]');
+  });
+
   it('should run successful version-conflict check', async () => {
     const projectDir = createTempProject();
     writePuprc(getPuprc({ checks: { 'version-conflict': {} } }), projectDir);

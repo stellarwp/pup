@@ -20,15 +20,6 @@ describe('check command', () => {
     cleanupTempProjects();
   });
 
-  it('should run version-conflict but not tbd when only version-conflict is configured', async () => {
-    writePuprc(getPuprc({ checks: { 'version-conflict': {} } }), projectDir);
-
-    const result = await runPup('check', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('[version-conflict]');
-    expect(result.output).not.toContain('[tbd]');
-  });
-
   it('should show guidance when checks is an empty object', async () => {
     writePuprc(getPuprc({ checks: {} }), projectDir);
 
