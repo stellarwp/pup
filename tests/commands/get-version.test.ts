@@ -1,5 +1,4 @@
 import {
-  runPup,
   writePuprc,
   getPuprc,
   createTempProject,
@@ -21,8 +20,10 @@ jest.mock('../../src/utils/output.js', () => ({
 import { getVersion } from '../../src/commands/get-version.js';
 import { getConfig } from '../../src/config.js';
 import type { Config } from '../../src/config.js';
+import { runCommandSilent } from '../../src/utils/process.js';
 
 const mockGetConfig = jest.mocked(getConfig);
+const mockRunCommandSilent = jest.mocked(runCommandSilent);
 
 describe('get-version command', () => {
   let projectDir: string;
@@ -37,16 +38,41 @@ describe('get-version command', () => {
   });
 
   it('should get the version from the project', async () => {
-    const result = await runPup('get-version', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('1.0.0');
+    mockGetConfig.mockReturnValue({
+      getVersionFiles: () => [
+        { file: 'bootstrap.php', regex: '(Version: )(?<version>.+)' },
+      ],
+      getWorkingDir: () => projectDir,
+    } as unknown as Config);
+
+    const result = await getVersion({ root: projectDir });
+
+    expect(result).toBe('1.0.0');
   });
 
-  it('should get the dev version from the project', async () => {
-    const result = await runPup('get-version --dev', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('1.0.0');
-    expect(result.stdout).toContain('dev');
+  it('should format the dev version with git timestamp and hash', async () => {
+    mockGetConfig.mockReturnValue({
+      getVersionFiles: () => [
+        { file: 'bootstrap.php', regex: '(Version: )(?<version>.+)' },
+      ],
+      getWorkingDir: () => projectDir,
+    } as unknown as Config);
+
+    mockRunCommandSilent
+      .mockResolvedValueOnce({ stdout: '1234567890\n', stderr: '', exitCode: 0 })
+      .mockResolvedValueOnce({ stdout: 'abcd1234\n', stderr: '', exitCode: 0 });
+
+    const result = await getVersion({ dev: true, root: projectDir });
+
+    expect(result).toBe('1.0.0-dev-1234567890-abcd1234');
+    expect(mockRunCommandSilent).toHaveBeenCalledWith(
+      'git show -s --format=%ct HEAD',
+      { cwd: projectDir }
+    );
+    expect(mockRunCommandSilent).toHaveBeenCalledWith(
+      'git rev-parse --short=8 HEAD',
+      { cwd: projectDir }
+    );
   });
 
   it('should throw when no version files are configured', async () => {
