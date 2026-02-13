@@ -3,6 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { trailingSlashIt } from './utils/directory.ts';
 import { WorkflowCollection, createWorkflow } from './models/workflow.ts';
+import { PuprcInputSchema } from './schemas.ts';
 import type {
   PupConfig,
   CheckConfig,
@@ -100,22 +101,34 @@ export class Config {
     }
 
     const puprcContents = fs.readFileSync(this.#puprcFilePath, 'utf-8');
-    let puprc: Record<string, unknown>;
+    let rawPuprc: unknown;
 
     try {
-      puprc = JSON.parse(puprcContents) as Record<string, unknown>;
+      rawPuprc = JSON.parse(puprcContents);
     } catch {
       this.#hasInvalidPuprc = true;
       this.#puprcParseError = 'Invalid JSON in .puprc';
       return;
     }
 
-    if (!puprc || typeof puprc !== 'object') {
+    if (!rawPuprc || typeof rawPuprc !== 'object') {
       this.#hasInvalidPuprc = true;
       this.#puprcParseError = 'Invalid .puprc format';
       return;
     }
 
+    const parseResult = PuprcInputSchema.safeParse(rawPuprc);
+
+    if (!parseResult.success) {
+      const issues = parseResult.error.issues
+        .map((issue) => `  ${issue.path.join('.')}: ${issue.message}`)
+        .join('\n');
+      this.#hasInvalidPuprc = true;
+      this.#puprcParseError = `Invalid .puprc configuration:\n${issues}`;
+      return;
+    }
+
+    const puprc = parseResult.data as Record<string, unknown>;
     const configRecord = this.#config as unknown as Record<string, unknown>;
 
     for (const [key, value] of Object.entries(puprc)) {
