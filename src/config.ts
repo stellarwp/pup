@@ -46,15 +46,15 @@ export function getDefaultsDir(): string {
  * @since TBD
  */
 export class Config {
-  private workingDir: string;
-  private puprcFilePath: string;
-  private config: PupConfig;
-  private _hasInvalidPuprc = false;
-  private _puprcParseError = '';
-  private _workflows: WorkflowCollection = new WorkflowCollection();
-  private _checks: Map<string, CheckConfig> = new Map();
-  private _versionFiles: VersionFile[] = [];
-  private _i18n: I18nResolvedConfig[] | null = null;
+  readonly #workingDir: string;
+  readonly #puprcFilePath: string;
+  readonly #config: PupConfig;
+  #hasInvalidPuprc = false;
+  #puprcParseError = '';
+  #workflows: WorkflowCollection;
+  #checks: Map<string, CheckConfig>;
+  #versionFiles: VersionFile[];
+  #i18n: I18nResolvedConfig[] | null = null;
 
   /**
    * Initializes configuration by loading and merging .puprc with defaults.
@@ -62,19 +62,17 @@ export class Config {
    * @since TBD
    *
    * @param {string} workingDir - The project working directory. Defaults to process.cwd().
-   *
-   * @returns {void}
    */
   constructor(workingDir?: string) {
     const cwd = workingDir ?? process.cwd();
 
-    this.workingDir = trailingSlashIt(path.normalize(cwd));
-    this.puprcFilePath = path.join(this.workingDir, '.puprc');
-    this.config = this.getDefaultConfig();
+    this.#workingDir = trailingSlashIt(path.normalize(cwd));
+    this.#puprcFilePath = path.join(this.#workingDir, '.puprc');
+    this.#config = this.getDefaultConfig();
     this.mergeConfigWithDefaults();
-    this.buildWorkflows();
-    this.parseCheckConfig();
-    this.parseVersionFiles();
+    this.#workflows = this.buildWorkflows();
+    this.#checks = this.parseCheckConfig();
+    this.#versionFiles = this.parseVersionFiles();
   }
 
   /**
@@ -99,28 +97,28 @@ export class Config {
    * @returns {void}
    */
   private mergeConfigWithDefaults(): void {
-    if (!fs.existsSync(this.puprcFilePath)) {
+    if (!fs.existsSync(this.#puprcFilePath)) {
       return;
     }
 
-    const puprcContents = fs.readFileSync(this.puprcFilePath, 'utf-8');
+    const puprcContents = fs.readFileSync(this.#puprcFilePath, 'utf-8');
     let puprc: Record<string, unknown>;
 
     try {
       puprc = JSON.parse(puprcContents) as Record<string, unknown>;
     } catch {
-      this._hasInvalidPuprc = true;
-      this._puprcParseError = 'Invalid JSON in .puprc';
+      this.#hasInvalidPuprc = true;
+      this.#puprcParseError = 'Invalid JSON in .puprc';
       return;
     }
 
     if (!puprc || typeof puprc !== 'object') {
-      this._hasInvalidPuprc = true;
-      this._puprcParseError = 'Invalid .puprc format';
+      this.#hasInvalidPuprc = true;
+      this.#puprcParseError = 'Invalid .puprc format';
       return;
     }
 
-    const configRecord = this.config as unknown as Record<string, unknown>;
+    const configRecord = this.#config as unknown as Record<string, unknown>;
 
     for (const [key, value] of Object.entries(puprc)) {
       const current = configRecord[key];
@@ -209,26 +207,26 @@ export class Config {
    *
    * @since TBD
    *
-   * @returns {void}
+   * @returns {WorkflowCollection} The built workflow collection.
    */
-  private buildWorkflows(): void {
+  private buildWorkflows(): WorkflowCollection {
     const collection = new WorkflowCollection();
 
-    const rawWorkflows = this.config.workflows as unknown;
+    const rawWorkflows = this.#config.workflows as unknown;
 
     // Auto-create build workflow
     if (
-      this.config.build?.length > 0 &&
+      this.#config.build?.length > 0 &&
       !(rawWorkflows as Record<string, unknown>)?.['build']
     ) {
-      collection.add(createWorkflow('build', this.config.build));
+      collection.add(createWorkflow('build', this.#config.build));
     }
 
     if (
-      this.config.build_dev?.length > 0 &&
+      this.#config.build_dev?.length > 0 &&
       !(rawWorkflows as Record<string, unknown>)?.['build_dev']
     ) {
-      collection.add(createWorkflow('build_dev', this.config.build_dev));
+      collection.add(createWorkflow('build_dev', this.#config.build_dev));
     }
 
     if (rawWorkflows && typeof rawWorkflows === 'object') {
@@ -241,7 +239,7 @@ export class Config {
       }
     }
 
-    this._workflows = collection;
+    return collection;
   }
 
   /**
@@ -249,11 +247,12 @@ export class Config {
    *
    * @since TBD
    *
-   * @returns {void}
+   * @returns {Map<string, CheckConfig>} A map of check slug to CheckConfig.
    */
-  private parseCheckConfig(): void {
-    const checks = this.config.checks;
-    if (!checks) return;
+  private parseCheckConfig(): Map<string, CheckConfig> {
+    const checks = this.#config.checks;
+    const result = new Map<string, CheckConfig>();
+    if (!checks) return result;
 
     for (const [slug, checkInput] of Object.entries(checks)) {
       const input = (
@@ -276,8 +275,10 @@ export class Config {
         skip_files: input.skip_files,
       };
 
-      this._checks.set(slug, config);
+      result.set(slug, config);
     }
+
+    return result;
   }
 
   /**
@@ -285,13 +286,14 @@ export class Config {
    *
    * @since TBD
    *
-   * @returns {void}
+   * @returns {VersionFile[]} The parsed list of version file objects.
    *
    * @throws {Error} If a version file entry is missing required properties or the file does not exist.
    */
-  private parseVersionFiles(): void {
-    const versions = this.config.paths?.versions;
-    if (!versions || !Array.isArray(versions)) return;
+  private parseVersionFiles(): VersionFile[] {
+    const versions = this.#config.paths?.versions;
+    const result: VersionFile[] = [];
+    if (!versions || !Array.isArray(versions)) return result;
 
     for (const vf of versions as VersionFileInput[]) {
       if (!vf.file || !vf.regex) {
@@ -300,7 +302,7 @@ export class Config {
         );
       }
 
-      const filePath = path.resolve(this.workingDir, vf.file);
+      const filePath = path.resolve(this.#workingDir, vf.file);
       if (!fs.existsSync(filePath)) {
         throw new Error(`Version file does not exist: ${vf.file}`);
       }
@@ -315,8 +317,10 @@ export class Config {
         );
       }
 
-      this._versionFiles.push({ file: vf.file, regex: vf.regex });
+      result.push({ file: vf.file, regex: vf.regex });
     }
+
+    return result;
   }
 
   /**
@@ -327,7 +331,7 @@ export class Config {
    * @returns {PupConfig} The configuration object.
    */
   get raw(): PupConfig {
-    return this.config;
+    return this.#config;
   }
 
   /**
@@ -340,10 +344,10 @@ export class Config {
    * @returns {string[]} The list of build command strings.
    */
   getBuildCommands(isDev = false): string[] {
-    if (isDev && this.config.build_dev?.length > 0) {
-      return this.config.build_dev;
+    if (isDev && this.#config.build_dev?.length > 0) {
+      return this.#config.build_dev;
     }
-    return this.config.build ?? [];
+    return this.#config.build ?? [];
   }
 
   /**
@@ -356,9 +360,9 @@ export class Config {
    * @returns {string} The build directory path.
    */
   getBuildDir(fullPath = true): string {
-    const buildDir = this.config.paths?.build_dir ?? '.pup-build';
+    const buildDir = this.#config.paths?.build_dir ?? '.pup-build';
     if (!fullPath) return buildDir;
-    return path.resolve(this.workingDir, buildDir);
+    return path.resolve(this.#workingDir, buildDir);
   }
 
   /**
@@ -369,7 +373,7 @@ export class Config {
    * @returns {string[]} The list of clean command strings.
    */
   getCleanCommands(): string[] {
-    return this.config.clean ?? [];
+    return this.#config.clean ?? [];
   }
 
   /**
@@ -380,7 +384,7 @@ export class Config {
    * @returns {Map<string, CheckConfig>} A map of check slug to CheckConfig.
    */
   getChecks(): Map<string, CheckConfig> {
-    return this._checks;
+    return this.#checks;
   }
 
   /**
@@ -391,14 +395,14 @@ export class Config {
    * @returns {I18nResolvedConfig[]} The list of resolved i18n configuration objects.
    */
   getI18n(): I18nResolvedConfig[] {
-    if (this._i18n !== null) return this._i18n;
+    if (this.#i18n !== null) return this.#i18n;
 
-    const defaults = this.config.i18n_defaults;
-    const i18nRaw = this.config.i18n;
+    const defaults = this.#config.i18n_defaults;
+    const i18nRaw = this.#config.i18n;
 
     if (!i18nRaw || (Array.isArray(i18nRaw) && i18nRaw.length === 0)) {
-      this._i18n = [];
-      return this._i18n;
+      this.#i18n = [];
+      return this.#i18n;
     }
 
     // Normalize to array
@@ -415,11 +419,11 @@ export class Config {
     );
 
     if (i18nArr.length === 0) {
-      this._i18n = [];
-      return this._i18n;
+      this.#i18n = [];
+      return this.#i18n;
     }
 
-    this._i18n = i18nArr.map((item) => ({
+    this.#i18n = i18nArr.map((item) => ({
       path: item.path ?? defaults.path,
       url: item.url ?? defaults.url,
       slug: item.slug ?? defaults.slug,
@@ -433,18 +437,18 @@ export class Config {
       },
     }));
 
-    return this._i18n;
+    return this.#i18n;
   }
 
   /**
-   * Returns the list of environment variable names to forward to subprocesses.
+   * Returns the list of environment variable names from configuration.
    *
    * @since TBD
    *
    * @returns {string[]} The list of environment variable name strings.
    */
   getEnvVarNames(): string[] {
-    return this.config.env ?? [];
+    return this.#config.env ?? [];
   }
 
   /**
@@ -457,9 +461,9 @@ export class Config {
    * @throws {Error} If no repository can be determined.
    */
   getRepo(): string {
-    if (!this.config.repo) {
+    if (!this.#config.repo) {
       // Try to infer from package.json
-      const pkgPath = path.join(this.workingDir, 'package.json');
+      const pkgPath = path.join(this.#workingDir, 'package.json');
       if (fs.existsSync(pkgPath)) {
         const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as {
           repository?: { url?: string } | string;
@@ -473,7 +477,7 @@ export class Config {
       }
 
       // Try composer.json fallback
-      const composerPath = path.join(this.workingDir, 'composer.json');
+      const composerPath = path.join(this.#workingDir, 'composer.json');
       if (fs.existsSync(composerPath)) {
         const composer = JSON.parse(
           fs.readFileSync(composerPath, 'utf-8')
@@ -488,7 +492,7 @@ export class Config {
       );
     }
 
-    const repo = this.config.repo;
+    const repo = this.#config.repo;
 
     if (
       !repo.includes('https://') &&
@@ -512,7 +516,7 @@ export class Config {
    */
   getSyncFiles(): string[] {
     const defaults = ['.distfiles', '.distinclude', '.distignore', '.gitattributes'];
-    const configFiles = this.config.paths?.sync_files;
+    const configFiles = this.#config.paths?.sync_files;
 
     if (!configFiles || !Array.isArray(configFiles) || configFiles.length === 0) {
       return defaults;
@@ -529,7 +533,7 @@ export class Config {
    * @returns {VersionFile[]} The list of version file objects.
    */
   getVersionFiles(): VersionFile[] {
-    return this._versionFiles;
+    return this.#versionFiles;
   }
 
   /**
@@ -540,7 +544,7 @@ export class Config {
    * @returns {WorkflowCollection} The WorkflowCollection instance.
    */
   getWorkflows(): WorkflowCollection {
-    return this._workflows;
+    return this.#workflows;
   }
 
   /**
@@ -551,7 +555,7 @@ export class Config {
    * @returns {string} The absolute working directory path with trailing slash.
    */
   getWorkingDir(): string {
-    return this.workingDir;
+    return this.#workingDir;
   }
 
   /**
@@ -564,9 +568,9 @@ export class Config {
    * @returns {string} The zip staging directory path.
    */
   getZipDir(fullPath = true): string {
-    const zipDir = this.config.paths?.zip_dir ?? '.pup-zip';
+    const zipDir = this.#config.paths?.zip_dir ?? '.pup-zip';
     if (!fullPath) return zipDir;
-    return path.resolve(this.workingDir, zipDir);
+    return path.resolve(this.#workingDir, zipDir);
   }
 
   /**
@@ -579,12 +583,12 @@ export class Config {
    * @throws {Error} If no zip name can be determined.
    */
   getZipName(): string {
-    if (this.config.zip_name) {
-      return this.config.zip_name;
+    if (this.#config.zip_name) {
+      return this.#config.zip_name;
     }
 
     // Try package.json name
-    const pkgPath = path.join(this.workingDir, 'package.json');
+    const pkgPath = path.join(this.#workingDir, 'package.json');
     if (fs.existsSync(pkgPath)) {
       const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8')) as {
         name?: string;
@@ -596,7 +600,7 @@ export class Config {
     }
 
     // Try composer.json name
-    const composerPath = path.join(this.workingDir, 'composer.json');
+    const composerPath = path.join(this.#workingDir, 'composer.json');
     if (fs.existsSync(composerPath)) {
       const composer = JSON.parse(
         fs.readFileSync(composerPath, 'utf-8')
@@ -617,7 +621,7 @@ export class Config {
    * @returns {boolean} True if default ignore patterns should be used.
    */
   getZipUseDefaultIgnore(): boolean {
-    return this.config.zip_use_default_ignore ?? true;
+    return this.#config.zip_use_default_ignore ?? true;
   }
 
   /**
@@ -628,7 +632,7 @@ export class Config {
    * @returns {boolean} True if the .puprc file is invalid.
    */
   hasInvalidPuprc(): boolean {
-    return this._hasInvalidPuprc;
+    return this.#hasInvalidPuprc;
   }
 
   /**
@@ -639,7 +643,7 @@ export class Config {
    * @returns {string} The error message string, or an empty string if no error.
    */
   getPuprcParseError(): string {
-    return this._puprcParseError;
+    return this.#puprcParseError;
   }
 
   /**
@@ -650,7 +654,7 @@ export class Config {
    * @returns {PupConfig} The configuration as a PupConfig object.
    */
   toJSON(): PupConfig {
-    return this.config;
+    return this.#config;
   }
 }
 
