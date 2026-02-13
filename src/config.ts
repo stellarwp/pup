@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { normalizeDir, trailingSlashIt } from './utils/directory.js';
+import { trailingSlashIt } from './utils/directory.js';
 import { WorkflowCollection, createWorkflow } from './models/workflow.js';
 import type {
   PupConfig,
@@ -69,7 +69,7 @@ export class Config {
   constructor(workingDir?: string) {
     const cwd = workingDir ?? process.cwd();
 
-    this.workingDir = trailingSlashIt(normalizeDir(cwd));
+    this.workingDir = trailingSlashIt(path.normalize(cwd));
     this.puprcFilePath = path.join(this.workingDir, '.puprc');
     this.config = this.getDefaultConfig();
     this.mergeConfigWithDefaults();
