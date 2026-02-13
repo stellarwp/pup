@@ -3,11 +3,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { trailingSlashIt } from './utils/directory.ts';
 import { WorkflowCollection, createWorkflow } from './models/workflow.ts';
-import { PuprcInputSchema } from './schemas.ts';
+import { PuprcInputSchema, CheckConfigSchema } from './schemas.ts';
 import type {
   PupConfig,
   CheckConfig,
-  CheckConfigInput,
   VersionFile,
   VersionFileInput,
   I18nResolvedConfig,
@@ -255,6 +254,7 @@ export class Config {
 
   /**
    * Parses the checks section of the configuration into CheckConfig objects.
+   * Uses Zod schema defaults for per-field values.
    *
    * @since TBD
    *
@@ -266,27 +266,12 @@ export class Config {
     if (!checks) return result;
 
     for (const [slug, checkInput] of Object.entries(checks)) {
-      const input = (
-        typeof checkInput === 'object' && checkInput !== null
-          ? checkInput
-          : {}
-      ) as CheckConfigInput;
+      const input = typeof checkInput === 'object' && checkInput !== null
+        ? checkInput
+        : {};
 
-      const config: CheckConfig = {
-        slug,
-        fail_method: input.fail_method ?? 'error',
-        fail_method_dev: input.fail_method_dev ?? 'warn',
-        type: input.type ?? 'pup',
-        file: input.file,
-        command: input.command,
-        configure: input.configure,
-        args: input.args ?? {},
-        dirs: input.dirs,
-        skip_directories: input.skip_directories,
-        skip_files: input.skip_files,
-      };
-
-      result.set(slug, config);
+      const parsed = CheckConfigSchema.parse({ slug, ...input });
+      result.set(slug, parsed);
     }
 
     return result;
