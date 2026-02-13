@@ -176,6 +176,36 @@ async function runModuleCheck(
 }
 
 /**
+ * Parses unknown CLI arguments into a key-value map.
+ *
+ * @since TBD
+ *
+ * @param {string[]} args - The raw argument array from Commander (unknown options).
+ *
+ * @returns {Record<string, string>} A map of argument names to values.
+ */
+function parseExtraArgs(args: string[]): Record<string, string> {
+  const result: Record<string, string> = {};
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (!arg.startsWith('--')) continue;
+
+    const key = arg.replace(/^--/, '');
+    const nextArg = args[i + 1];
+
+    if (nextArg && !nextArg.startsWith('--')) {
+      result[key] = nextArg;
+      i++;
+    } else {
+      result[key] = 'true';
+    }
+  }
+
+  return result;
+}
+
+/**
  * Runs a single check by slug, handling prefix, output, and exit code.
  *
  * @since TBD
@@ -184,12 +214,14 @@ async function runModuleCheck(
  * @param {object} options - The options object.
  * @param {boolean} [options.dev] - Whether to use dev failure methods.
  * @param {string} [options.root] - The root directory for running commands.
+ * @param {Record<string, string>} extraArgs - Additional CLI arguments to merge into check args.
  *
  * @returns {Promise<number>} The exit code: 0 for success, 1 if the check failed.
  */
 async function runSingleCheck(
   slug: string,
-  options: { dev?: boolean; root?: string }
+  options: { dev?: boolean; root?: string },
+  extraArgs: Record<string, string> = {}
 ): Promise<number> {
   const config = getConfig(options.root);
   const checks = config.getChecks();
@@ -200,6 +232,10 @@ async function runSingleCheck(
   if (!checkConfig) {
     output.error(`Check "${slug}" is not configured.`);
     return 1;
+  }
+
+  if (Object.keys(extraArgs).length > 0) {
+    checkConfig.args = { ...checkConfig.args, ...extraArgs };
   }
 
   let result: CheckResult;
@@ -243,8 +279,10 @@ function registerCheckSubcommand(program: Command, slug: string): void {
     .description(`Run the ${slug} check.`)
     .option('--dev', 'Run with dev failure methods.')
     .option('--root <dir>', 'Set the root directory for running commands.')
-    .action(async (options: { dev?: boolean; root?: string }) => {
-      const exitCode = await runSingleCheck(slug, options);
+    .allowUnknownOption()
+    .action(async (options: { dev?: boolean; root?: string }, command: Command) => {
+      const extraArgs = parseExtraArgs(command.args);
+      const exitCode = await runSingleCheck(slug, options, extraArgs);
       if (exitCode !== 0) {
         process.exit(exitCode);
       }
