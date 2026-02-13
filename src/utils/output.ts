@@ -95,7 +95,7 @@ export function info(message: string): void {
 }
 
 /**
- * Prints a bold title with an underline rule.
+ * Prints a yellow title with an underline rule.
  *
  * @since TBD
  *
@@ -105,13 +105,13 @@ export function info(message: string): void {
  */
 export function title(message: string): void {
   console.log('');
-  console.log(formatMessage(chalk.bold(message)));
-  console.log(formatMessage(chalk.bold('='.repeat(message.length))));
+  console.log(formatMessage(chalk.yellow(message)));
+  console.log(formatMessage(chalk.yellow('='.repeat(message.length))));
   console.log('');
 }
 
 /**
- * Prints a bold yellow section header.
+ * Prints a yellow section header.
  *
  * @since TBD
  *
@@ -121,7 +121,9 @@ export function title(message: string): void {
  */
 export function section(message: string): void {
   console.log('');
-  console.log(formatMessage(chalk.bold.yellow(message)));
+  console.log(formatMessage(chalk.yellow(message)));
+  console.log(formatMessage(chalk.yellow('-'.repeat(message.length))));
+  console.log('');
 }
 
 /**
@@ -159,4 +161,54 @@ export function writeln(message: string): void {
  */
 export function newline(): void {
   console.log('');
+}
+
+/**
+ * Strips ANSI escape codes from a string for accurate length calculation.
+ *
+ * @since TBD
+ *
+ * @param {string} str - The string potentially containing ANSI codes.
+ *
+ * @returns {string} The string with ANSI codes removed.
+ */
+function stripAnsi(str: string): string {
+  return str.replace(/\x1b\[[0-9;]*m/g, '');
+}
+
+/**
+ * Renders a formatted ASCII table to stdout.
+ *
+ * @since TBD
+ *
+ * @param {string[]} headers - Column header labels.
+ * @param {string[][]} rows - Array of row data, each row being an array of cell strings.
+ *
+ * @returns {void}
+ */
+export function table(headers: string[], rows: string[][]): void {
+  const colWidths: number[] = headers.map((h) => stripAnsi(h).length);
+
+  for (const row of rows) {
+    for (let i = 0; i < row.length; i++) {
+      const len = stripAnsi(row[i] || '').length;
+      if (len > (colWidths[i] || 0)) {
+        colWidths[i] = len;
+      }
+    }
+  }
+
+  const separator = '|' + colWidths.map((w) => '-'.repeat(w + 2)).join('|') + '|';
+  const formatRow = (cells: string[]): string => {
+    return '| ' + cells.map((cell, i) => {
+      const padding = (colWidths[i] || 0) - stripAnsi(cell || '').length;
+      return (cell || '') + ' '.repeat(Math.max(0, padding));
+    }).join(' | ') + ' |';
+  };
+
+  console.log(formatRow(headers));
+  console.log(separator);
+  for (const row of rows) {
+    console.log(formatRow(row));
+  }
 }
