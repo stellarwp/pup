@@ -28,7 +28,7 @@ export function registerPackageCommand(program: Command): void {
     .description('Packages the project for distribution.')
     .option('--root <dir>', 'Set the root directory for running commands.')
     .action(async (version: string, options: { root?: string }) => {
-      const config = getConfig(options.root);
+      const config = getConfig();
       const zipName = config.getZipName();
       const workingDir = config.getWorkingDir();
 
