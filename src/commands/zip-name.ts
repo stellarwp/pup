@@ -1,7 +1,7 @@
 import type { Command } from 'commander';
-import { getConfig } from '../config.js';
-import { getVersion } from './get-version.js';
-import * as output from '../utils/output.js';
+import { getConfig } from '../config.ts';
+import { getVersion } from './get-version.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Registers the `zip-name` command with the CLI program.

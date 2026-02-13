@@ -1,6 +1,6 @@
-import { createApp } from './app.js';
-import { registerGetVersionCommand } from './commands/get-version.js';
-import { registerZipNameCommand } from './commands/zip-name.js';
+import { createApp } from './app.ts';
+import { registerGetVersionCommand } from './commands/get-version.ts';
+import { registerZipNameCommand } from './commands/zip-name.ts';
 
 const program = createApp();
 
