@@ -49,7 +49,7 @@ export function registerBuildCommand(program: Command): void {
     .option('--dev', 'Run the dev build commands.')
     .option('--root <dir>', 'Set the root directory for running commands.')
     .action(async (options: { dev?: boolean; root?: string }) => {
-      const config = getConfig(options.root);
+      const config = getConfig();
       const buildSteps: BuildStep[] = config.getBuildCommands(options.dev);
       const cwd = options.root ?? config.getWorkingDir();
 
