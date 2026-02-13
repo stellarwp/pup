@@ -21,7 +21,7 @@ export async function getVersion(options: {
   dev?: boolean;
   root?: string;
 }): Promise<string> {
-  const config = getConfig(options.root);
+  const config = getConfig();
   const versionFiles = config.getVersionFiles();
   const cwd = options.root ?? config.getWorkingDir();
 
