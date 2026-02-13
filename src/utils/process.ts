@@ -1,10 +1,8 @@
 import { execa } from 'execa';
-import { buildEnv } from './env.js';
-import type { RunCommandResult } from '../types.js';
+import type { RunCommandResult } from '../types.ts';
 
 export interface RunOptions {
   cwd?: string;
-  envVarNames?: string[];
   softFail?: boolean;
   silent?: boolean;
 }
@@ -33,14 +31,9 @@ export async function runCommand(
     softFail = true;
   }
 
-  const env = options.envVarNames
-    ? { ...process.env, ...buildEnv(options.envVarNames) }
-    : process.env;
-
   try {
     const result = await execa(cmd, {
       cwd: options.cwd,
-      env: env as Record<string, string>,
       shell: true,
       stdout: options.silent ? 'pipe' : 'inherit',
       stderr: options.silent ? 'pipe' : 'inherit',

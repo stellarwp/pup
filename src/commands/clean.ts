@@ -1,10 +1,10 @@
 import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { getConfig } from '../config.js';
-import { rmdir } from '../utils/directory.js';
-import { runCommand } from '../utils/process.js';
-import * as output from '../utils/output.js';
+import { getConfig } from '../config.ts';
+import { rmdir } from '../utils/directory.ts';
+import { runCommand } from '../utils/process.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Registers the `clean` command with the CLI program.
