@@ -12,12 +12,13 @@ import type {
   I18nResolvedConfig,
   I18nConfigInput,
 } from './types.ts';
+import puprcDefaults from '../defaults/.puprc-defaults.json';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Locates the defaults directory containing .puprc-defaults and .distignore-defaults.
+ * Locates the defaults directory containing .distignore-defaults and docs.
  *
  * @since TBD
  *
@@ -76,17 +77,14 @@ export class Config {
   }
 
   /**
-   * Loads the default configuration from .puprc-defaults.
+   * Returns the default configuration from the bundled .puprc-defaults.
    *
    * @since TBD
    *
    * @returns {PupConfig} The parsed default configuration object.
    */
   private getDefaultConfig(): PupConfig {
-    const defaultsPath = path.join(getDefaultsDir(), '.puprc-defaults');
-    const contents = fs.readFileSync(defaultsPath, 'utf-8');
-    const parsed = JSON.parse(contents) as PupConfig;
-    return parsed;
+    return structuredClone(puprcDefaults) as PupConfig;
   }
 
   /**
