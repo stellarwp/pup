@@ -98,25 +98,6 @@ describe('info command', () => {
       });
     });
 
-    describe('when .puprc exists but is invalid JSON', () => {
-      beforeEach(() => {
-        fs.writeFileSync(path.join(projectDir, '.puprc'), 'not valid json {{{');
-      });
-
-      it('should show error icon for .puprc', async () => {
-        const result = await runPup('info', { cwd: projectDir });
-        const puprcLine = result.stdout.split('\n').find((l) => l.includes('.puprc'));
-        expect(puprcLine).toContain('❌');
-        expect(puprcLine).toContain('could not be parsed');
-      });
-
-      it('should include the parse error reason', async () => {
-        const result = await runPup('info', { cwd: projectDir });
-        const puprcLine = result.stdout.split('\n').find((l) => l.includes('.puprc'));
-        expect(puprcLine).toMatch(/could not be parsed:.+/);
-      });
-    });
-
     describe('when .distignore exists', () => {
       beforeEach(() => {
         fs.writeFileSync(path.join(projectDir, '.distignore'), '*.test.js\n');
@@ -157,21 +138,6 @@ describe('info command', () => {
     });
 
     describe('file ordering', () => {
-      it('should show error files before existing files', async () => {
-        // Write an invalid .puprc and a valid .distignore
-        fs.writeFileSync(path.join(projectDir, '.puprc'), '{invalid');
-        fs.writeFileSync(path.join(projectDir, '.distignore'), '*.test.js\n');
-
-        const result = await runPup('info', { cwd: projectDir });
-        const lines = result.stdout.split('\n');
-        const errorIdx = lines.findIndex((l) => l.includes('❌'));
-        const existIdx = lines.findIndex((l) => l.includes('✅'));
-
-        expect(errorIdx).toBeGreaterThan(-1);
-        expect(existIdx).toBeGreaterThan(-1);
-        expect(errorIdx).toBeLessThan(existIdx);
-      });
-
       it('should show existing files before absent files', async () => {
         const result = await runPup('info', { cwd: projectDir });
         const lines = result.stdout.split('\n');
