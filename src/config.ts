@@ -302,7 +302,7 @@ export class Config {
         );
       }
 
-      const filePath = path.resolve(this.#workingDir, vf.file);
+      const filePath = path.join(this.#workingDir, vf.file);
       if (!fs.existsSync(filePath)) {
         throw new Error(`Version file does not exist: ${vf.file}`);
       }
