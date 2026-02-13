@@ -1,12 +1,12 @@
 import type { Command } from 'commander';
 import chalk from 'chalk';
-import { getConfig } from '../config.js';
+import { getConfig } from '../config.ts';
 
 declare const BUILTIN_CHECK_SLUGS: string[];
-import { executeTbdCheck } from './checks/tbd.js';
-import { runCommand } from '../utils/process.js';
-import * as output from '../utils/output.js';
-import type { CheckConfig, CheckResult } from '../types.js';
+import { executeTbdCheck } from './checks/tbd.ts';
+import { runCommand } from '../utils/process.ts';
+import * as output from '../utils/output.ts';
+import type { CheckConfig, CheckResult } from '../types.ts';
 
 /**
  * Runs all configured checks and returns an exit code.

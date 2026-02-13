@@ -1,4 +1,4 @@
-import type { CheckConfig, CheckResult } from '../types.js';
+import type { CheckConfig, CheckResult } from '../types.ts';
 
 export interface CheckContext {
   config: CheckConfig;

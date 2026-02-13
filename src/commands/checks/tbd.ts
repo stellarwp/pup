@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
-import * as output from '../../utils/output.js';
-import type { CheckConfig, CheckResult } from '../../types.js';
+import * as output from '../../utils/output.ts';
+import type { CheckConfig, CheckResult } from '../../types.ts';
 
 const DEFAULT_SKIP_DIRS = 'bin|build|vendor|node_modules|.git|.github|tests';
 const DEFAULT_SKIP_FILES = '.min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico';
