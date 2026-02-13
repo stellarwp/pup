@@ -1,5 +1,0 @@
-
-Checking for version conflicts...
----------------------------------
-
-No version conflicts found.
