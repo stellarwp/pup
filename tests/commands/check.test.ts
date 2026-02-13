@@ -29,6 +29,15 @@ describe('check command', () => {
     expect(result.output).toContain('"tbd": {}');
     expect(result.output).toContain('"version-conflict": {}');
   });
+
+  it('should run tbd but not version-conflict when only tbd is configured', async () => {
+    writePuprc(getPuprc({ checks: { tbd: {} } }), projectDir);
+
+    const result = await runPup('check', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('[tbd]');
+    expect(result.output).not.toContain('[version-conflict]');
+  });
 });
 
 describe('check subcommands', () => {
