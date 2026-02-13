@@ -157,4 +157,29 @@ export async function execute({ config, workingDir }) {
     expect(result.output).toContain('[simple-check]');
     expect(result.output).toContain('simple module check passed');
   });
+
+  it('should pass CLI args through to a subcommand check', async () => {
+    const projectDir = createTempProject();
+
+    const checkScript = path.join(projectDir, 'args-check.mjs');
+    fs.writeFileSync(checkScript, `
+export async function execute({ config }) {
+  const version = config.args['some-arg'] || 'none';
+  return { success: true, output: 'some-arg=' + version };
+}
+`);
+
+    writePuprc(getPuprc({
+      checks: {
+        'args-check': {
+          type: 'simple',
+          file: 'args-check.mjs',
+        },
+      },
+    }), projectDir);
+
+    const result = await runPup('check:args-check --some-arg 5.0.1', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('some-arg=5.0.1');
+  });
 });
