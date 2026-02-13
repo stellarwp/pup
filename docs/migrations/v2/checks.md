@@ -252,6 +252,12 @@ export async function execute({ config, workingDir }) {
    - "--expected-version": "1.0.0"
    + "expected-version": "1.0.0"
    ```
+   Args defined in `.puprc` are static values passed through as-is on every run. To pass dynamic values, use
+   CLI arguments when running the check subcommand — these are merged into `config.args` and override `.puprc`
+   values with the same key:
+   ```bash
+   pup check:expected-version --expected-version 5.0.1
+   ```
 
 5. **Config access**: Instead of `App::getConfig()`, read `.puprc` directly with `fs.readFileSync` or use the
    `config` parameter passed to your function.

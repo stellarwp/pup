@@ -45,6 +45,15 @@ For example, to run the `tbd` check:
 pup check:tbd
 ```
 
+You can also pass additional arguments to a check subcommand. These are merged into the check's `args` and override
+any values with the same key from `.puprc`:
+
+```bash
+pup check:expected-version --expected-version 5.0.1
+# or
+npx @stellarwp/pup check:expected-version --expected-version 5.0.1
+```
+
 ## Creating custom checks
 
 In addition to the provided checks within `pup`, you can create your own! They can either be shell commands or
@@ -205,10 +214,12 @@ We should now be able to run the check!
 pup check:has-min-js
 ```
 
-#### Using `configure()`
+#### Using `args`
 
-If you need to set up your check based on the config provided in `.puprc`, you can export a `configure` function.
-This is called before `execute()` and receives the full check config object, including any custom `args`:
+You can pass arguments to module checks in two ways:
+
+**Static args in `.puprc`** are fixed values defined in your configuration. These are passed through as-is every time
+the check runs:
 
 ```json
 {
@@ -224,6 +235,29 @@ This is called before `execute()` and receives the full check config object, inc
 }
 ```
 
+**Dynamic args via the CLI** can be passed when running a check subcommand. These are merged into `config.args`,
+overriding any `.puprc` values with the same key:
+
+```bash
+pup check:has-min-js --directory src/js
+# or
+npx @stellarwp/pup check:has-min-js --directory src/js
+```
+
+Both static and dynamic args are available in `config.args` within your module:
+
+```javascript
+export async function execute({ config, workingDir }) {
+  const directory = config.args.directory || 'src/js';
+  // ... check logic here
+}
+```
+
+#### Using `configure()`
+
+If you need to set up your check before `execute()` runs, you can export a `configure` function. This is called
+with the full check config object, including any `args`:
+
 ```javascript
 let searchDir = 'src/js';
 
@@ -238,3 +272,6 @@ export async function execute({ config, workingDir }) {
   // ... check logic here
 }
 ```
+
+Note that `configure()` is only called with the static `.puprc` args. CLI args are merged into `config.args` after
+`configure()` runs, so they are only available in `execute()`.
