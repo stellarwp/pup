@@ -1,0 +1,141 @@
+import path from 'node:path';
+import {
+  runPup,
+  writePuprc,
+  getPuprc,
+  createTempProject,
+  cleanupTempProjects,
+  fixturesDir,
+} from '../helpers/setup.js';
+
+describe('workflow command', () => {
+  let projectDir: string;
+
+  beforeEach(() => {
+    projectDir = createTempProject();
+    writePuprc(getPuprc(), projectDir);
+  });
+
+  afterEach(() => {
+    cleanupTempProjects();
+  });
+
+  it('should run a workflow', async () => {
+    const puprc = getPuprc();
+    puprc.workflows = {
+      'my-workflow': ['echo "workflow step 1"', 'echo "workflow step 2"'],
+    };
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup('workflow my-workflow', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('workflow step 1');
+    expect(result.output).toContain('workflow step 2');
+  });
+
+  it('should support "do" alias', async () => {
+    const puprc = getPuprc();
+    puprc.workflows = {
+      'my-workflow': ['echo "workflow via do"'],
+    };
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup('do my-workflow', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('workflow via do');
+  });
+
+  it('should error when workflow does not exist', async () => {
+    const result = await runPup('workflow nonexistent', { cwd: projectDir });
+    expect(result.exitCode).not.toBe(0);
+  });
+
+  it('should pass extra args to workflow', async () => {
+    const scriptPath = path.resolve(fixturesDir, 'test-workflow-script.sh');
+    const puprc = getPuprc();
+    puprc.workflows = {
+      'my-workflow': [`bash ${scriptPath}`],
+    };
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup('workflow my-workflow -- --option1 value1', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+  });
+
+  it('should support multiple workflow commands', async () => {
+    const puprc = getPuprc();
+    puprc.workflows = {
+      'my-workflow': [
+        'echo "step 1"',
+        'echo "step 2"',
+        'echo "step 3"',
+      ],
+    };
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup('workflow my-workflow', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('step 1');
+    expect(result.output).toContain('step 2');
+    expect(result.output).toContain('step 3');
+  });
+
+  it('should handle soft-fail commands in workflows', async () => {
+    const puprc = getPuprc();
+    puprc.workflows = {
+      'my-workflow': [
+        '@false',
+        'echo "still running"',
+      ],
+    };
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup('workflow my-workflow', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('still running');
+  });
+
+  describe('--root flag', () => {
+    let rootDir: string;
+
+    beforeEach(() => {
+      rootDir = createTempProject();
+    });
+
+    it('should run workflow commands in the --root directory', async () => {
+      const puprc = getPuprc();
+      puprc.workflows = {
+        'pwd-workflow': ['pwd'],
+      };
+      writePuprc(puprc, projectDir);
+
+      const result = await runPup(`workflow pwd-workflow --root ${rootDir}`, { cwd: projectDir });
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain(rootDir);
+    });
+
+    it('should work with the "do" alias and --root', async () => {
+      const puprc = getPuprc();
+      puprc.workflows = {
+        'my-workflow': ['pwd'],
+      };
+      writePuprc(puprc, projectDir);
+
+      const result = await runPup(`do my-workflow --root ${rootDir}`, { cwd: projectDir });
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain(rootDir);
+    });
+
+    it('should pass extra args with --root', async () => {
+      const scriptPath = path.resolve(fixturesDir, 'test-workflow-script.sh');
+      const puprc = getPuprc();
+      puprc.workflows = {
+        'my-workflow': [`bash ${scriptPath}`],
+      };
+      writePuprc(puprc, projectDir);
+
+      const result = await runPup(`workflow my-workflow --root ${rootDir} -- --option1 value1`, { cwd: projectDir });
+      expect(result.exitCode).toBe(0);
+    });
+  });
+});
