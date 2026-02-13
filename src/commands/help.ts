@@ -185,7 +185,7 @@ function printCommandHelp(topic: string, contents: string): boolean {
  */
 export function registerHelpCommand(program: Command): void {
   program
-    .command('help [topic]')
+    .command('help [topic]', { isDefault: true })
     .description('Shows help for pup.')
     .action(async (topic?: string) => {
       const docsDir = path.resolve(getDefaultsDir(), '..', 'docs');
