@@ -1,0 +1,30 @@
+name: 'StellarWP PUP'
+description: 'Project Utilities & Packager for WordPress plugins and themes'
+inputs:
+  command:
+    description: 'The pup command to run (e.g., "zip", "build", "check")'
+    required: true
+  args:
+    description: 'Additional arguments to pass to the command'
+    required: false
+    default: ''
+  working-directory:
+    description: 'Working directory for the command'
+    required: false
+    default: '.'
+  node-version:
+    description: 'Node.js version to use'
+    required: false
+    default: '20'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+
+    - name: Run PUP
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: npx @stellarwp/pup@latest ${{ inputs.command }} ${{ inputs.args }}

@@ -36,20 +36,33 @@ describe('build command', () => {
     expect(result.exitCode).toBe(0);
   });
 
-  it('should fail without .puprc', async () => {
-    // Run in a dir with no .puprc but a package.json
+  it('should succeed with defaults when no .puprc exists (defaults to no build steps)', async () => {
     const emptyDir = createTempProject();
     const result = await runPup('build', { cwd: emptyDir });
     expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Build complete');
   });
 
-  it('should pass default env vars', async () => {
+  it('should pass env vars', async () => {
     const puprc = getPuprc();
-    puprc.build = ['echo "env test"'];
+    puprc.build = ['echo "TOKEN=$NODE_AUTH_TOKEN"'];
+    puprc.env = ['NODE_AUTH_TOKEN'];
     writePuprc(puprc, projectDir);
 
-    const result = await runPup('build', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
+    const originalToken = process.env.NODE_AUTH_TOKEN;
+    process.env.NODE_AUTH_TOKEN = 'test-token-12345';
+
+    try {
+      const result = await runPup('build', { cwd: projectDir });
+      expect(result.exitCode).toBe(0);
+      expect(result.output).toContain('TOKEN=test-token-12345');
+    } finally {
+      if (originalToken === undefined) {
+        delete process.env.NODE_AUTH_TOKEN;
+      } else {
+        process.env.NODE_AUTH_TOKEN = originalToken;
+      }
+    }
   });
 
   it('should run build with dev flag', async () => {
