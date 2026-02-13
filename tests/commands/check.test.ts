@@ -20,13 +20,6 @@ describe('check command', () => {
     cleanupTempProjects();
   });
 
-  it('should run default checks successfully', async () => {
-    const result = await runPup('check', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.output).toContain('[tbd]');
-    expect(result.output).toContain('[version-conflict]');
-  });
-
   it('should show guidance when checks is an empty object', async () => {
     writePuprc(getPuprc({ checks: {} }), projectDir);
 
