@@ -1,4 +1,4 @@
-import { defineConfig } from 'tsup';
+import { defineConfig } from 'tsdown';
 import fs from 'node:fs';
 
 const builtinCheckSlugs = fs.existsSync('src/commands/checks')
@@ -11,15 +11,15 @@ const builtinCheckSlugs = fs.existsSync('src/commands/checks')
 export default defineConfig({
   entry: ['src/cli.ts'],
   format: ['esm'],
-  target: 'node18',
+  target: 'node24',
   outDir: 'dist',
-  clean: true,
+  fixedExtension: false,
   sourcemap: true,
   dts: false,
-  banner: {
-    js: '#!/usr/bin/env node',
-  },
   define: {
     BUILTIN_CHECK_SLUGS: JSON.stringify(builtinCheckSlugs),
+  },
+  outputOptions: {
+    banner: '#!/usr/bin/env node',
   },
 });
