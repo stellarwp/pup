@@ -1,8 +1,8 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { trailingSlashIt } from './utils/directory.js';
-import { WorkflowCollection, createWorkflow } from './models/workflow.js';
+import { trailingSlashIt } from './utils/directory.ts';
+import { WorkflowCollection, createWorkflow } from './models/workflow.ts';
 import type {
   PupConfig,
   CheckConfig,
@@ -11,7 +11,7 @@ import type {
   VersionFileInput,
   I18nResolvedConfig,
   I18nConfigInput,
-} from './types.js';
+} from './types.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

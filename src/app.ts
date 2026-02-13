@@ -1,6 +1,6 @@
 import { Command } from 'commander';
-import { Config, getConfig, resetConfig } from './config.js';
-import * as output from './utils/output.js';
+import { Config, getConfig, resetConfig } from './config.ts';
+import * as output from './utils/output.ts';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'fs-extra';

@@ -1,6 +1,6 @@
 import { execa } from 'execa';
 import { buildEnv } from './env.js';
-import type { RunCommandResult } from '../types.js';
+import type { RunCommandResult } from '../types.ts';
 
 export interface RunOptions {
   cwd?: string;
