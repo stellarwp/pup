@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerGetVersionCommand } from './commands/get-version.js';
+import { createApp } from './app.ts';
+import { registerGetVersionCommand } from './commands/get-version.ts';
 
 const program = createApp();
 
