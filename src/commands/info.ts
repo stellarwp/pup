@@ -2,9 +2,9 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { getConfig } from '../config.js';
-import { PUP_VERSION } from '../app.js';
-import * as output from '../utils/output.js';
+import { getConfig } from '../config.ts';
+import { PUP_VERSION } from '../app.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Registers the `info` command with the CLI program.

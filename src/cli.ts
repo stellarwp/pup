@@ -1,6 +1,6 @@
-import { createApp } from './app.js';
-import { registerHelpCommand } from './commands/help.js';
-import { registerInfoCommand } from './commands/info.js';
+import { createApp } from './app.ts';
+import { registerHelpCommand } from './commands/help.ts';
+import { registerInfoCommand } from './commands/info.ts';
 
 const program = createApp();
 
