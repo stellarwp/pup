@@ -47,7 +47,7 @@ async function executeWorkflow(
   options: { root?: string },
   command: Command
 ): Promise<void> {
-  const config = getConfig(options.root);
+  const config = getConfig();
   const workflows = config.getWorkflows();
   const cwd = options.root ?? config.getWorkingDir();
 
