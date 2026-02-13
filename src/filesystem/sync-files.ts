@@ -1,7 +1,7 @@
 import fs from 'fs-extra';
 import path from 'node:path';
-import { getDefaultsDir } from '../config.js';
-import type { Config } from '../config.js';
+import { getDefaultsDir } from '../config.ts';
+import type { Config } from '../config.ts';
 
 /**
  * The generated .pup-* filenames.

@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerPackageCommand } from './commands/package.js';
+import { createApp } from './app.ts';
+import { registerPackageCommand } from './commands/package.ts';
 
 const program = createApp();
 

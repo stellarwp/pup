@@ -2,18 +2,18 @@ import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'node:path';
 import archiver from 'archiver';
-import { getConfig } from '../config.js';
-import { globToRegex } from '../utils/glob.js';
-import { rmdir, trailingSlashIt } from '../utils/directory.js';
+import { getConfig } from '../config.ts';
+import { globToRegex } from '../utils/glob.ts';
+import { rmdir, trailingSlashIt } from '../utils/directory.ts';
 import {
   buildSyncFiles,
   cleanSyncFiles,
   getIgnorePatterns,
   getIncludePatterns,
   getDistfilesPatterns,
-} from '../filesystem/sync-files.js';
-import { runCommand } from '../utils/process.js';
-import * as output from '../utils/output.js';
+} from '../filesystem/sync-files.ts';
+import { runCommand } from '../utils/process.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Registers the `package` command with the CLI program.
