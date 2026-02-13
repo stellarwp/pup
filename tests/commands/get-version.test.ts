@@ -37,10 +37,23 @@ describe('get-version command', () => {
     cleanupTempProjects();
   });
 
-  it('should get the version from the project', async () => {
+  it('should extract version using a named capture group', async () => {
     mockGetConfig.mockReturnValue({
       getVersionFiles: () => [
         { file: 'bootstrap.php', regex: '(Version: )(?<version>.+)' },
+      ],
+      getWorkingDir: () => projectDir,
+    } as unknown as Config);
+
+    const result = await getVersion({ root: projectDir });
+
+    expect(result).toBe('1.0.0');
+  });
+
+  it('should extract version using a second capture group', async () => {
+    mockGetConfig.mockReturnValue({
+      getVersionFiles: () => [
+        { file: 'bootstrap.php', regex: '(Version: )(.+)' },
       ],
       getWorkingDir: () => projectDir,
     } as unknown as Config);
