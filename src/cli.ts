@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerWorkflowCommand } from './commands/workflow.js';
+import { createApp } from './app.ts';
+import { registerWorkflowCommand } from './commands/workflow.ts';
 
 const program = createApp();
 
