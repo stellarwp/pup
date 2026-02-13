@@ -24,7 +24,7 @@ export function registerZipNameCommand(program: Command): void {
         versionArg: string | undefined,
         options: { dev?: boolean; root?: string }
       ) => {
-        const config = getConfig(options.root);
+        const config = getConfig();
         const zipName = config.getZipName();
 
         let version = versionArg;
