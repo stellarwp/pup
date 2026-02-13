@@ -284,7 +284,7 @@ export class Config {
    *
    * @returns {VersionFile[]} The parsed list of version file objects.
    *
-   * @throws {Error} If a version file entry is missing required properties or the file does not exist.
+   * @throws {Error} If a version file entry is missing required properties.
    */
   private parseVersionFiles(): VersionFile[] {
     const versions = this.#config.paths?.versions;
