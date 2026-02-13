@@ -1,4 +1,4 @@
-import type { CheckConfig } from '../types.js';
+import type { CheckConfig } from '../types.ts';
 
 /**
  * Manages a collection of registered checks.

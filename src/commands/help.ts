@@ -2,8 +2,8 @@ import type { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { getDefaultsDir } from '../config.js';
-import * as output from '../utils/output.js';
+import { getDefaultsDir } from '../config.ts';
+import * as output from '../utils/output.ts';
 
 /**
  * Prints the decorated banner and command list.

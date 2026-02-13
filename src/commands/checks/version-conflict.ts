@@ -1,8 +1,8 @@
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'node:path';
-import * as output from '../../utils/output.js';
-import type { CheckResult, VersionFile } from '../../types.js';
+import * as output from '../../utils/output.ts';
+import type { CheckResult, VersionFile } from '../../types.ts';
 
 /**
  * Checks that all configured version files contain the same version number.
