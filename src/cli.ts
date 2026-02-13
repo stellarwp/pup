@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerI18nCommand } from './commands/i18n.js';
+import { createApp } from './app.ts';
+import { registerI18nCommand } from './commands/i18n.ts';
 
 const program = createApp();
 

@@ -1,9 +1,9 @@
 import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'node:path';
-import { getConfig } from '../config.js';
-import * as output from '../utils/output.js';
-import type { I18nResolvedConfig } from '../types.js';
+import { getConfig } from '../config.ts';
+import * as output from '../utils/output.ts';
+import type { I18nResolvedConfig } from '../types.ts';
 
 /**
  * Registers the `i18n` command with the CLI program.
