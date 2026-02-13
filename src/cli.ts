@@ -1,5 +1,5 @@
-import { createApp } from './app.js';
-import { registerZipCommand } from './commands/zip.js';
+import { createApp } from './app.ts';
+import { registerZipCommand } from './commands/zip.ts';
 
 const program = createApp();
 

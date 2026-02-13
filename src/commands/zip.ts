@@ -1,14 +1,14 @@
 import type { Command as CommanderCommand } from 'commander';
-import { getConfig } from '../config.js';
-import { getVersion } from './get-version.js';
-import { runChecks } from './check.js';
-import { executeClone } from './clone.js';
-import { executeBuild } from './build.js';
-import { executeI18n } from './i18n.js';
-import { executePackage } from './package.js';
-import { executeClean } from './clean.js';
-import { runCommand } from '../utils/process.js';
-import * as output from '../utils/output.js';
+import { getConfig } from '../config.ts';
+import { getVersion } from './get-version.ts';
+import { runChecks } from './check.ts';
+import { executeClone } from './clone.ts';
+import { executeBuild } from './build.ts';
+import { executeI18n } from './i18n.ts';
+import { executePackage } from './package.ts';
+import { executeClean } from './clean.ts';
+import { runCommand } from '../utils/process.ts';
+import * as output from '../utils/output.ts';
 
 interface ZipOptions {
   dev?: boolean;
