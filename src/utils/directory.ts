@@ -2,32 +2,39 @@ import path from 'node:path';
 import fs from 'fs-extra';
 
 /**
- * Normalizes a directory path by replacing backslashes with forward slashes.
+ * Checks whether a child directory is inside a parent directory.
  *
  * @since TBD
  *
- * @param {string} dir - The directory path to normalize.
+ * @param {string} parentDir - The parent directory path.
+ * @param {string} childDir - The child directory path.
  *
- * @returns {string} The normalized path with forward slashes.
+ * @returns {boolean} True if childDir is inside parentDir.
  */
-export function normalizeDir(dir: string): string {
-  return dir.replace(/\\/g, '/');
+export function isInside(parentDir: string, childDir: string): boolean {
+  const relative = path.relative(parentDir, childDir);
+  return !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 }
 
 /**
- * Ensures a path ends with a trailing forward slash.
+ * Ensures a directory path ends with a trailing separator.
  *
  * @since TBD
  *
- * @param {string} p - The path to ensure has a trailing slash.
+ * @param {string} p - The path to ensure has a trailing separator.
  *
- * @returns {string} The path with a trailing forward slash.
+ * @returns {string} The path with a trailing separator.
+ *
+ * @throws {Error} If the path appears to be a file (has an extension).
  */
 export function trailingSlashIt(p: string): string {
-  if (p.endsWith('/')) {
-    return p;
+  const { dir, base, ext } = path.parse(p);
+
+  if (ext.length > 0) {
+    throw new Error('Could not add trailing slash to file path.');
   }
-  return p + '/';
+
+  return path.join(dir, base, path.sep);
 }
 
 /**
@@ -43,11 +50,11 @@ export function trailingSlashIt(p: string): string {
  * @throws {Error} If the directory is outside the working directory.
  */
 export async function rmdir(dir: string, workingDir: string): Promise<void> {
-  const normalized = normalizeDir(dir);
-  const normalizedWorking = normalizeDir(workingDir);
+  const relative = path.relative(workingDir, dir);
+  const inside = relative && !relative.startsWith('..') && !path.isAbsolute(relative);
 
   // Safety check: only remove directories within the working directory
-  if (!normalized.startsWith(normalizedWorking)) {
+  if (!inside) {
     throw new Error(
       `Refusing to remove directory outside working directory: ${dir}`
     );
@@ -60,7 +67,7 @@ export async function rmdir(dir: string, workingDir: string): Promise<void> {
 
 /**
  * Resolves a relative path against a working directory.
- * Strips any existing prefix and rejects absolute paths unless a default is provided.
+ * Rejects absolute paths unless a default is provided.
  *
  * @since TBD
  *
@@ -77,19 +84,17 @@ export function resolveRelativePath(
   workingDir: string,
   defaultPath?: string
 ): string {
-  const prefix = trailingSlashIt(workingDir);
-  let normalized = normalizeDir(relativePath);
-
-  // Strip the prefix if it's already there
-  normalized = normalized.replace(prefix, '');
-
-  // Don't allow absolute paths
-  if (normalized.startsWith('/')) {
-    if (defaultPath) {
-      return path.join(prefix, defaultPath);
+  if (path.isAbsolute(relativePath)) {
+    if (!defaultPath) {
+      throw new Error('Absolute paths are not allowed in the .puprc file.');
     }
-    throw new Error('Absolute paths are not allowed in the .puprc file.');
+
+    relativePath = defaultPath;
   }
 
-  return path.join(prefix, normalized);
+  if (isInside(workingDir, relativePath)) {
+    return relativePath;
+  }
+
+  return path.join(workingDir, relativePath);
 }
