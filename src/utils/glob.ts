@@ -1,88 +1,38 @@
+import picomatch from 'picomatch';
+
 /**
- * Port of PHP StellarWP\Pup\Utils\Glob::toRegex(). Converts a glob pattern to a regular expression.
- * Supports: **, *, ?, [...], !(...), +(...), *(...), ?(...), @(...) and POSIX classes.
+ * Tests whether a file path matches a glob pattern using picomatch.
+ *
+ * Normalizes trailing-slash directory patterns (e.g. `src/`) to match
+ * their contents (`src/**`). A leading `/` anchors the pattern to the
+ * root so `/license.txt` matches only `license.txt`, not `src/license.txt`.
+ * Patterns without slashes use basename matching so that `*.php` matches
+ * `src/Plugin.php`.
  *
  * @since TBD
  *
- * @param {string} originalPattern - The glob pattern to convert.
+ * @param {string} filePath - The file path to test.
+ * @param {string} pattern - The glob pattern to match against.
  *
- * @returns {RegExp} The compiled regular expression.
+ * @returns {boolean} True if the file path matches the pattern.
  */
-export function globToRegex(originalPattern: string): RegExp {
-  let pattern = originalPattern.replace(/^\//, '');
+export function isGlobMatch(filePath: string, pattern: string): boolean {
+  let normalized = pattern;
 
-  // Prevent escaping of desired patterns. Capture and adjust supported patterns.
-  pattern = pattern.replaceAll('**/', '&glob;');
-  pattern = pattern.replaceAll(']*', ']&squareast;');
-  pattern = pattern.replaceAll('[:upper:]', '&posixupper;');
-  pattern = pattern.replaceAll('[:lower:]', '&posixlower;');
-  pattern = pattern.replaceAll('[:alpha:]', '&posixalpha;');
-  pattern = pattern.replaceAll('[:digit:]', '&posixdigit;');
-  pattern = pattern.replaceAll('[:xdigit:]', '&posixxdigit;');
-  pattern = pattern.replaceAll('[:alnum:]', '&posixalnum;');
-  pattern = pattern.replaceAll('[:blank:]', '&posixblank;');
-  pattern = pattern.replaceAll('[:space:]', '&posixspace;');
-  pattern = pattern.replaceAll('[:word:]', '&posixword;');
-  pattern = pattern.replace(/\+\(([^)\/]+)\)/g, '($1)&pluscapture;');
-  pattern = pattern.replace(/\*\(([^)\/]+)\)/g, '($1)&astcapture;');
-  pattern = pattern.replace(/\?\(([^)\/]+)\)/g, '($1)&questcapture;');
-  pattern = pattern.replace(/@\(([^)\/]+)\)/g, '($1)&atcapture;');
-  pattern = pattern.replaceAll('?', '&question;');
-  pattern = pattern.replaceAll('(', '&openparen;');
-  pattern = pattern.replaceAll(')', '&closeparen;');
-  pattern = pattern.replaceAll('[', '&openbracket;');
-  pattern = pattern.replaceAll(']', '&closebracket;');
-  pattern = pattern.replaceAll('|', '&pipe;');
-  pattern = pattern.replaceAll('+', '&plus;');
-  pattern = pattern.replaceAll('*', '&ast;');
-
-  // Escape the regex
-  pattern = escapeRegex(pattern);
-
-  // Convert placeholders back into supported patterns.
-  pattern = pattern.replaceAll('&glob;', '(.+\\/)?');
-  pattern = pattern.replaceAll('&question;', '?');
-  pattern = pattern.replaceAll('&openparen;', '(');
-  pattern = pattern.replaceAll('&closeparen;', ')');
-  pattern = pattern.replaceAll('&openbracket;', '[');
-  pattern = pattern.replaceAll('&closebracket;', ']');
-  pattern = pattern.replaceAll('&pipe;', '|');
-  pattern = pattern.replaceAll('&plus;', '+');
-  pattern = pattern.replaceAll('&pluscapture;', '+');
-  pattern = pattern.replaceAll('&astcapture;', '*');
-  pattern = pattern.replaceAll('&questcapture;', '?');
-  pattern = pattern.replaceAll('&atcapture;', '{1}');
-  pattern = pattern.replaceAll('&ast;', '[^\\/]*');
-  pattern = pattern.replaceAll('&posixupper;', '[A-Z]');
-  pattern = pattern.replaceAll('&posixlower;', '[a-z]');
-  pattern = pattern.replaceAll('&posixalpha;', '[a-zA-Z]');
-  pattern = pattern.replaceAll('&posixdigit;', '[\\d]');
-  pattern = pattern.replaceAll('&posixxdigit;', '[\\dA-Fa-f]');
-  pattern = pattern.replaceAll('&posixalnum;', '[a-zA-Z\\d]');
-  pattern = pattern.replaceAll('&posixblank;', '[ \\t]');
-  pattern = pattern.replaceAll('&posixspace;', '\\s');
-  pattern = pattern.replaceAll('&posixword;', '\\w+');
-  pattern = pattern.replaceAll('&squareast;', '*');
-
-  // If the entry is tied to the beginning of the path, add the `^` regex symbol.
-  if (originalPattern.startsWith('/')) {
-    pattern = '^' + pattern;
-  } else if (originalPattern.startsWith('.')) {
-    pattern = '(^|\\/)' + pattern;
+  // Leading `/` anchors to root — strip it and force full-path matching.
+  let anchored = false;
+  if (normalized.startsWith('/')) {
+    normalized = normalized.slice(1);
+    anchored = true;
   }
 
-  return new RegExp(pattern);
-}
+  if (normalized.endsWith('/')) {
+    normalized += '**';
+  }
 
-/**
- * Escapes special regex characters in a string.
- *
- * @since TBD
- *
- * @param {string} str - The string to escape.
- *
- * @returns {string} The escaped string safe for use in a regular expression.
- */
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\\/\-]/g, '\\$&');
+  return picomatch.isMatch(filePath, normalized, {
+    dot: true,
+    matchBase: !anchored && !normalized.includes('/'),
+    posix: true,
+  });
 }

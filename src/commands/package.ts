@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import archiver from 'archiver';
 import { getConfig } from '../config.ts';
-import { globToRegex } from '../utils/glob.ts';
+import { isGlobMatch } from '../utils/glob.ts';
 import { rmdir, trailingSlashIt } from '../utils/directory.ts';
 import {
   buildSyncFiles,
@@ -30,7 +30,7 @@ export function registerPackageCommand(program: Command): void {
     .description('Packages the project for distribution.')
     .option('--root <dir>', 'Set the root directory for running commands.')
     .action(async (version: string, options: { root?: string }) => {
-      const config = getConfig(options.root);
+      const config = getConfig();
       const zipName = config.getZipName();
       const workingDir = config.getWorkingDir();
 
@@ -165,8 +165,7 @@ function isFileInGroup(relativePath: string, rules: string[]): boolean {
   for (const entry of rules) {
     if (!entry || entry.startsWith('#') || entry.trim() === '') continue;
 
-    const regex = globToRegex(entry);
-    if (regex.test(relativePath)) {
+    if (isGlobMatch(relativePath, entry)) {
       return true;
     }
   }

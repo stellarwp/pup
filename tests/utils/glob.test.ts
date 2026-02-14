@@ -1,11 +1,11 @@
-import { globToRegex } from '../../src/utils/glob';
+import { isGlobMatch } from '../../src/utils/glob';
 
-describe('globToRegex', () => {
+describe('isGlobMatch', () => {
   const testCases = [
     {
-      glob: '/license.txt',
-      match: ['license.txt'],
-      notMatch: ['src/license.txt'],
+      glob: 'license.txt',
+      match: ['license.txt', 'src/license.txt'],
+      notMatch: ['license.md', 'src/license.md'],
     },
     {
       glob: 'src/**/*.js',
@@ -14,13 +14,12 @@ describe('globToRegex', () => {
     },
     {
       glob: 'src/js?/*.js',
-      match: ['src/js/index.js', 'src/js/other.js', 'src/j/other.js'],
+      match: ['src/jsa/index.js', 'src/jsb/other.js', 'src/js1/other.js'],
       notMatch: [
+        'src/js/index.js',
         'src/js/index.css',
-        'src/js/other.css',
-        'src/jb/other.js',
+        'src/j/other.js',
         'src/bork/other/other.js',
-        'src/bork/other/other.php',
       ],
     },
     {
@@ -56,59 +55,19 @@ describe('globToRegex', () => {
       notMatch: ['src/jj/other.js', 'src/app/other.js'],
     },
     {
-      glob: 'src/[:upper:]+/*.js',
-      match: ['src/JS/index.js', 'src/CSS/other.js'],
-      notMatch: [
-        'src/jS/index.css',
-        'src/js/other.css',
-        'src/bork/other/other.js',
-        'src/bork/other/other.php',
-      ],
+      glob: 'src/[[:upper:]]*.js',
+      match: ['src/JS.js', 'src/CSS.js', 'src/Foo.js'],
+      notMatch: ['src/js.js', 'src/css.js'],
     },
     {
-      glob: 'src/[:lower:]+/*.js',
-      match: ['src/js/index.js', 'src/js/other.js'],
-      notMatch: ['src/JS/index.js', 'src/Js/other.js'],
+      glob: 'src/[[:lower:]]*.js',
+      match: ['src/js.js', 'src/foo.js'],
+      notMatch: ['src/JS.js', 'src/Foo.js'],
     },
     {
-      glob: 'src/[:word:]/*.js',
-      match: ['src/js/index.js', 'src/js/other.js'],
-      notMatch: [
-        'src/js/index.css',
-        'src/js/other.css',
-        'src/bork/other/other.js',
-        'src/bork/other/other.php',
-      ],
-    },
-    {
-      glob: 'src/[:lower:][:digit:]+/*.js',
-      match: ['src/v1/index.js', 'src/v2234/other.js'],
-      notMatch: ['src/js/other.js', 'src/bork/other/other.js', 'src/bork/other/other.php'],
-    },
-    {
-      glob: 'src/[:lower:][:xdigit:]+/*.js',
-      match: ['src/v1/index.js', 'src/v2F/other.js'],
-      notMatch: [
-        'src/js/other.js',
-        'src/vG/other.js',
-        'src/bork/other/other.js',
-        'src/bork/other/other.php',
-      ],
-    },
-    {
-      glob: 'src/v[:blank:]*[:digit:]/*.js',
-      match: ['src/v1/index.js', 'src/v 2/other.js', 'src/v   3/other.js'],
-      notMatch: ['src/bork/other/other.js', 'src/bork/other/other.php'],
-    },
-    {
-      glob: 'src/v[:space:]*[:digit:]/*.js',
-      match: ['src/v1/index.js', 'src/v 2/other.js', 'src/v   3/other.js'],
-      notMatch: ['src/bork/other/other.js', 'src/bork/other/other.php'],
-    },
-    {
-      glob: 'src/v+/*.js',
-      match: ['src/v/index.js', 'src/vv/other.js', 'src/vvv/other.js'],
-      notMatch: ['src/bork/other/other.js', 'src/bork/other/other.php'],
+      glob: 'src/[[:digit:]]*.js',
+      match: ['src/1.js', 'src/2foo.js'],
+      notMatch: ['src/foo.js', 'src/Foo.js'],
     },
     {
       glob: 'src/v*/**/js/**/*.js',
@@ -120,21 +79,44 @@ describe('globToRegex', () => {
       ],
       notMatch: ['src/bork/other/other.js', 'src/bork/other/other.php'],
     },
+    {
+      glob: '/license.txt',
+      match: ['license.txt'],
+      notMatch: ['src/license.txt', 'license.md'],
+    },
+    {
+      glob: '*.php',
+      match: ['bootstrap.php', 'src/Plugin.php'],
+      notMatch: ['bootstrap.js', 'src/Plugin.ts'],
+    },
+    {
+      glob: 'src/',
+      match: ['src/Plugin.php', 'src/deep/file.js'],
+      notMatch: ['bootstrap.php', 'other-file.php'],
+    },
+    {
+      glob: '.puprc',
+      match: ['.puprc'],
+      notMatch: ['puprc', 'src/puprc'],
+    },
+    {
+      glob: '.pup-*',
+      match: ['.pup-zip', '.pup-build', '.pup-distfiles'],
+      notMatch: ['pup-zip', 'src/pup-build'],
+    },
   ];
 
   for (const tc of testCases) {
     describe(`glob: ${tc.glob}`, () => {
       it('should match expected paths', () => {
-        const regex = globToRegex(tc.glob);
         for (const file of tc.match) {
-          expect(file).toMatch(regex);
+          expect(isGlobMatch(file, tc.glob)).toBe(true);
         }
       });
 
       it('should not match unexpected paths', () => {
-        const regex = globToRegex(tc.glob);
         for (const file of tc.notMatch) {
-          expect(file).not.toMatch(regex);
+          expect(isGlobMatch(file, tc.glob)).toBe(false);
         }
       });
     });
