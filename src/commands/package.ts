@@ -3,7 +3,7 @@ import fs from 'fs-extra';
 import path from 'node:path';
 import archiver from 'archiver';
 import { getConfig } from '../config.ts';
-import { globToRegex } from '../utils/glob.ts';
+import { isGlobMatch } from '../utils/glob.ts';
 import { rmdir, trailingSlashIt } from '../utils/directory.ts';
 import {
   getIgnorePatterns,
@@ -157,8 +157,7 @@ function isFileInGroup(relativePath: string, rules: string[]): boolean {
   for (const entry of rules) {
     if (!entry || entry.startsWith('#') || entry.trim() === '') continue;
 
-    const regex = globToRegex(entry);
-    if (regex.test(relativePath)) {
+    if (isGlobMatch(relativePath, entry)) {
       return true;
     }
   }
