@@ -18,11 +18,10 @@ export function registerZipNameCommand(program: Command): void {
     .description('Gets the zip name for the project.')
     .argument('[version]', 'The version number to use.')
     .option('--dev', 'Get the dev version.')
-    .option('--root <dir>', 'Set the root directory for running commands.')
     .action(
       async (
         versionArg: string | undefined,
-        options: { dev?: boolean; root?: string }
+        options: { dev?: boolean }
       ) => {
         const config = getConfig();
         const zipName = config.getZipName();
