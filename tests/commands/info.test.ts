@@ -160,9 +160,12 @@ describe('info command', () => {
 
     it('should display config as formatted JSON', async () => {
       const result = await runPup('info', { cwd: projectDir });
-      // The config JSON should contain key fields from .puprc
-      expect(result.stdout).toContain('"zip_name"');
-      expect(result.stdout).toContain('"build"');
+      const configHeaderIndex = result.stdout.indexOf('Config');
+      const jsonStart = result.stdout.indexOf('{', configHeaderIndex);
+      const jsonText = result.stdout.slice(jsonStart);
+
+      const parsed = JSON.parse(jsonText);
+      expect(parsed).toMatchObject(getPuprc());
     });
   });
 });
