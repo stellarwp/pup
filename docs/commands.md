@@ -168,7 +168,6 @@ composer -- pup get-version [--dev]
 | Argument | Description                                                                                              |
 |----------|----------------------------------------------------------------------------------------------------------|
 | `--dev`  | **Optional.** Whether or not this is a dev build. Using this option will result in a dev version number. |
-| `--root` | **Optional.** Run the command from a different directory from the current.   |
 
 ## `pup help`
 Shows the help menu.
