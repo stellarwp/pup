@@ -1,12 +1,39 @@
-import path from 'node:path';
-import fs from 'fs-extra';
+import { Command } from 'commander';
 import {
-  runPup,
   writePuprc,
   getPuprc,
   createTempProject,
   cleanupTempProjects,
 } from '../helpers/setup.js';
+
+jest.mock('../../src/config.js', () => ({
+  getConfig: jest.fn(),
+}));
+
+jest.mock('../../src/utils/process.js', () => ({
+  runCommandSilent: jest.fn(),
+}));
+
+jest.mock('../../src/utils/output.js', () => ({
+  writeln: jest.fn(),
+}));
+
+import { registerZipNameCommand } from '../../src/commands/zip-name.js';
+import { getConfig } from '../../src/config.js';
+import type { Config } from '../../src/config.js';
+import { runCommandSilent } from '../../src/utils/process.js';
+import * as output from '../../src/utils/output.js';
+
+const mockGetConfig = jest.mocked(getConfig);
+const mockRunCommandSilent = jest.mocked(runCommandSilent);
+const mockWriteln = jest.mocked(output.writeln);
+
+async function runZipName(args: string[] = []): Promise<void> {
+  const program = new Command();
+  program.exitOverride();
+  registerZipNameCommand(program);
+  await program.parseAsync(['node', 'test', 'zip-name', ...args]);
+}
 
 describe('zip-name command', () => {
   let projectDir: string;
@@ -14,67 +41,68 @@ describe('zip-name command', () => {
   beforeEach(() => {
     projectDir = createTempProject();
     writePuprc(getPuprc(), projectDir);
+    jest.clearAllMocks();
   });
 
   afterEach(() => {
     cleanupTempProjects();
   });
 
-  it('should get the zip name from the plugin', async () => {
-    const result = await runPup('zip-name', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('fake-project.1.0.0');
+  it('should combine zip name and version', async () => {
+    mockGetConfig.mockReturnValue({
+      getVersionFiles: () => [
+        { file: 'bootstrap.php', regex: '(Version: )(?<version>.+)' },
+      ],
+      getWorkingDir: () => projectDir,
+      getZipName: () => 'fake-project',
+    } as unknown as Config);
+
+    await runZipName();
+
+    expect(mockWriteln).toHaveBeenCalledWith('fake-project.1.0.0');
   });
 
-  it('should get the dev zip name from the plugin', async () => {
-    const result = await runPup('zip-name --dev', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('fake-project.1.0.0');
-    expect(result.stdout).toContain('dev');
+  it('should use an explicit version argument', async () => {
+    mockGetConfig.mockReturnValue({
+      getZipName: () => 'fake-project',
+    } as unknown as Config);
+
+    await runZipName(['2.5.0']);
+
+    expect(mockWriteln).toHaveBeenCalledWith('fake-project.2.5.0');
   });
 
-  it('should fall back to package.json name when zip_name is not set', async () => {
-    const puprc = getPuprc();
-    delete puprc.zip_name;
-    writePuprc(puprc, projectDir);
+  it('should include dev suffix when --dev is passed', async () => {
+    mockGetConfig.mockReturnValue({
+      getVersionFiles: () => [
+        { file: 'bootstrap.php', regex: '(Version: )(?<version>.+)' },
+      ],
+      getWorkingDir: () => projectDir,
+      getZipName: () => 'fake-project',
+    } as unknown as Config);
 
-    // Override the package.json name to confirm it's being used
-    fs.writeJsonSync(path.join(projectDir, 'package.json'), {
-      name: 'pkg-json-project',
-      version: '1.0.0',
-    }, { spaces: 2 });
+    mockRunCommandSilent
+      .mockResolvedValueOnce({ stdout: '1234567890\n', stderr: '', exitCode: 0 })
+      .mockResolvedValueOnce({ stdout: 'abcd1234\n', stderr: '', exitCode: 0 });
 
-    const result = await runPup('zip-name', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('pkg-json-project.1.0.0');
+    await runZipName(['--dev']);
+
+    expect(mockWriteln).toHaveBeenCalledWith(
+      'fake-project.1.0.0-dev-1234567890-abcd1234'
+    );
   });
 
-  it('should fall back to composer.json name when zip_name and package.json are not available', async () => {
-    const puprc = getPuprc();
-    delete puprc.zip_name;
+  it('should fail when version cannot be determined', async () => {
+    mockGetConfig.mockReturnValue({
+      getVersionFiles: () => [
+        { file: 'bootstrap.php', regex: '(?<version>WILL_NOT_MATCH)' },
+      ],
+      getWorkingDir: () => projectDir,
+      getZipName: () => 'fake-project',
+    } as unknown as Config);
 
-    // Remove the package.json version file entry since we're deleting it
-    const paths = puprc.paths as { versions: { file: string; regex: string }[] };
-    paths.versions = paths.versions.filter((v) => v.file !== 'package.json');
-
-    writePuprc(puprc, projectDir);
-
-    // Remove package.json and add composer.json
-    fs.removeSync(path.join(projectDir, 'package.json'));
-    fs.writeJsonSync(path.join(projectDir, 'composer.json'), {
-      name: 'stellarwp/my-plugin',
-    });
-
-    const result = await runPup('zip-name', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('my-plugin');
-  });
-
-  it('should use zip_name from .puprc when it is a string', async () => {
-    writePuprc(getPuprc({ zip_name: 'custom-zip-name' }), projectDir);
-
-    const result = await runPup('zip-name', { cwd: projectDir });
-    expect(result.exitCode).toBe(0);
-    expect(result.stdout).toContain('custom-zip-name.1.0.0');
+    await expect(runZipName()).rejects.toThrow(
+      'Could not find a version in any configured version file'
+    );
   });
 });
