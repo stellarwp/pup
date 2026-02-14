@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fs from 'fs-extra';
 import {
   runPup,
   writePuprc,
@@ -54,6 +56,30 @@ describe('tbd check', () => {
     expect(result.exitCode).toBe(0);
     expect(result.output).toContain('[tbd]');
     expect(result.output).toContain('TBDs have been found!');
+  });
+
+  it('should only scan files under --root subdirectory', async () => {
+    const projectDir = createTempProject('fake-project-with-tbds');
+
+    // Create a subdirectory with its own .puprc and a clean src/
+    const subdir = path.join(projectDir, 'subproject');
+    fs.mkdirSync(path.join(subdir, 'src'), { recursive: true });
+    fs.writeFileSync(
+      path.join(subdir, 'src', 'Clean.php'),
+      '<?php\nclass Clean {\n  const VERSION = "1.0.0";\n}\n'
+    );
+    writePuprc(getPuprc({ checks: { tbd: {} } }), subdir);
+
+    // Without --root, the top-level src/ has TBDs
+    writePuprc(getPuprc({ checks: { tbd: {} } }), projectDir);
+    const topResult = await runPup('check', { cwd: projectDir });
+    expect(topResult.exitCode).not.toBe(0);
+    expect(topResult.output).toContain('TBDs have been found!');
+
+    // With --root pointing to subproject/, only subproject/src/ is scanned
+    const rootResult = await runPup(`check --root ${subdir}`, { cwd: projectDir });
+    expect(rootResult.exitCode).toBe(0);
+    expect(rootResult.output).toContain('[tbd] No TBDs found!');
   });
 
   it('should warn on tbd when fail_method is warn', async () => {
