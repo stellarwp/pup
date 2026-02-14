@@ -43,25 +43,19 @@ describe('build command', () => {
     expect(result.output).toContain('Build complete');
   });
 
-  it('should pass env vars', async () => {
+  it('should pass env vars that are not defined in puprc.env', async () => {
     const puprc = getPuprc();
-    puprc.build = ['echo "TOKEN=$NODE_AUTH_TOKEN"'];
-    puprc.env = ['NODE_AUTH_TOKEN'];
+    puprc.build = ['echo "TOKEN=$PUP_TEST_UNIQUE_VAR"'];
     writePuprc(puprc, projectDir);
 
-    const originalToken = process.env.NODE_AUTH_TOKEN;
-    process.env.NODE_AUTH_TOKEN = 'test-token-12345';
+    process.env.PUP_TEST_UNIQUE_VAR = 'test-token-12345';
 
     try {
       const result = await runPup('build', { cwd: projectDir });
       expect(result.exitCode).toBe(0);
       expect(result.output).toContain('TOKEN=test-token-12345');
     } finally {
-      if (originalToken === undefined) {
-        delete process.env.NODE_AUTH_TOKEN;
-      } else {
-        process.env.NODE_AUTH_TOKEN = originalToken;
-      }
+      delete process.env.PUP_TEST_UNIQUE_VAR;
     }
   });
 
