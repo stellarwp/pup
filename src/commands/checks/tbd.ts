@@ -123,10 +123,14 @@ async function scanFile(filePath: string, matches: TbdMatch[]): Promise<void> {
   const contents = await fs.readFile(filePath, 'utf-8');
   const lines = contents.split('\n');
 
-  const tbdPattern = /\btbd\b/i;
+  const tbdPatterns = [
+    /\*\s*@(since|deprecated|version)\s.*tbd/i,
+    /_deprecated_\w\(.*['"]tbd['"]/i,
+    /['"]tbd['"]/i,
+  ];
 
   for (let i = 0; i < lines.length; i++) {
-    if (tbdPattern.test(lines[i])) {
+    if (tbdPatterns.some((pattern) => pattern.test(lines[i]))) {
       matches.push({
         file: filePath,
         line: i + 1,
