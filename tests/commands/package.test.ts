@@ -156,4 +156,84 @@ describe('package command', () => {
     expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(true);
     expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
   });
+
+  it('should update version strings in packaged files', async () => {
+    const result = await runPup('package 2.0.0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    const zipDir = path.join(projectDir, '.pup-zip');
+    const zippedBootstrap = fs.readFileSync(
+      path.join(zipDir, 'bootstrap.php'),
+      'utf-8'
+    );
+    expect(zippedBootstrap).toContain('2.0.0');
+    expect(zippedBootstrap).not.toContain('1.0.0');
+  });
+
+  it('should sync files from --root directory instead of project root', async () => {
+    // Create a build directory with a subset of files
+    const buildDir = path.join(projectDir, '.pup-build');
+    fs.mkdirpSync(path.join(buildDir, 'src'));
+    fs.copyFileSync(
+      path.join(projectDir, 'bootstrap.php'),
+      path.join(buildDir, 'bootstrap.php')
+    );
+    fs.copyFileSync(
+      path.join(projectDir, 'package.json'),
+      path.join(buildDir, 'package.json')
+    );
+    fs.copyFileSync(
+      path.join(projectDir, 'src', 'Plugin.php'),
+      path.join(buildDir, 'src', 'Plugin.php')
+    );
+
+    const result = await runPup(`package 1.0.0 --root ${buildDir}`, {
+      cwd: projectDir,
+    });
+    expect(result.exitCode).toBe(0);
+
+    const zipDir = path.join(projectDir, '.pup-zip');
+    // bootstrap.php was in the build dir and should be synced
+    expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
+    // other-file.php was NOT in the build dir and should not appear
+    expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(false);
+  });
+
+  it('should update version files in --root directory', async () => {
+    // Create a build directory with version files
+    const buildDir = path.join(projectDir, '.pup-build');
+    fs.mkdirpSync(path.join(buildDir, 'src'));
+    fs.copyFileSync(
+      path.join(projectDir, 'bootstrap.php'),
+      path.join(buildDir, 'bootstrap.php')
+    );
+    fs.copyFileSync(
+      path.join(projectDir, 'package.json'),
+      path.join(buildDir, 'package.json')
+    );
+    fs.copyFileSync(
+      path.join(projectDir, 'src', 'Plugin.php'),
+      path.join(buildDir, 'src', 'Plugin.php')
+    );
+
+    const result = await runPup(`package 2.0.0 --root ${buildDir}`, {
+      cwd: projectDir,
+    });
+    expect(result.exitCode).toBe(0);
+
+    // The original files should be untouched
+    const originalBootstrap = fs.readFileSync(
+      path.join(projectDir, 'bootstrap.php'),
+      'utf-8'
+    );
+    expect(originalBootstrap).toContain('1.0.0');
+
+    // The zip should contain the updated version
+    const zipDir = path.join(projectDir, '.pup-zip');
+    const zippedBootstrap = fs.readFileSync(
+      path.join(zipDir, 'bootstrap.php'),
+      'utf-8'
+    );
+    expect(zippedBootstrap).toContain('2.0.0');
+  });
 });
