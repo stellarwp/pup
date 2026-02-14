@@ -48,6 +48,29 @@ describe('version-conflict check', () => {
     expect(result.output).toContain('Found more than one version within the version files.');
   });
 
+  it('should pass version-conflict check with named capture groups', async () => {
+    const projectDir = createTempProject();
+    writePuprc(getPuprc({
+      checks: { 'version-conflict': {} },
+      paths: {
+        versions: [
+          {
+            file: 'bootstrap.php',
+            regex: "define\\( +['\"]FAKE_PROJECT_VERSION['\"], +'(?<version>[^']+)",
+          },
+          {
+            file: 'package.json',
+            regex: '"version": "(?<version>[^"]+)',
+          },
+        ],
+      },
+    }), projectDir);
+
+    const result = await runPup('check', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('[version-conflict] No version conflicts found.');
+  });
+
   it('should fail version-conflict check when there are mismatched versions', async () => {
     const projectDir = createTempProject();
     const puprc = getPuprc({ checks: { 'version-conflict': {} } });

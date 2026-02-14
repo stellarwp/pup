@@ -50,11 +50,12 @@ export async function executeVersionConflictCheck(
       const regex = new RegExp(vf.regex);
       const matches = contents.match(regex);
 
-      if (!matches || !matches[1] || !matches[2]) {
+      const matched = matches?.groups?.version ?? matches?.[2];
+      if (!matched) {
         foundProblem = true;
       } else {
-        version = matches[2].trim();
-        normalizedVersion = matches[2].trim();
+        version = matched.trim();
+        normalizedVersion = matched.trim();
 
         const parts = version.split('.');
         if (parts.length > 3) {
