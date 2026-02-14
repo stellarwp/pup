@@ -45,7 +45,7 @@ describe('get-version command', () => {
       getWorkingDir: () => projectDir,
     } as unknown as Config);
 
-    const result = await getVersion({ root: projectDir });
+    const result = await getVersion({});
 
     expect(result).toBe('1.0.0');
   });
@@ -58,7 +58,7 @@ describe('get-version command', () => {
       getWorkingDir: () => projectDir,
     } as unknown as Config);
 
-    const result = await getVersion({ root: projectDir });
+    const result = await getVersion({});
 
     expect(result).toBe('1.0.0');
   });
@@ -75,7 +75,7 @@ describe('get-version command', () => {
       .mockResolvedValueOnce({ stdout: '1234567890\n', stderr: '', exitCode: 0 })
       .mockResolvedValueOnce({ stdout: 'abcd1234\n', stderr: '', exitCode: 0 });
 
-    const result = await getVersion({ dev: true, root: projectDir });
+    const result = await getVersion({ dev: true });
 
     expect(result).toBe('1.0.0-dev-1234567890-abcd1234');
     expect(mockRunCommandSilent).toHaveBeenCalledWith(
@@ -107,7 +107,7 @@ describe('get-version command', () => {
       getWorkingDir: () => projectDir,
     } as unknown as Config);
 
-    await expect(getVersion({ root: projectDir })).rejects.toThrow(
+    await expect(getVersion({})).rejects.toThrow(
       'Could not find a version in any configured version file'
     );
   });

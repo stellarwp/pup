@@ -14,7 +14,6 @@ import * as output from '../utils/output.ts';
  *
  * @param {object} options - The options object.
  * @param {boolean} [options.dev] - Whether to append a dev suffix to the version.
- * @param {string} [options.root] - The root directory for resolving version files.
  *
  * @returns {Promise<string>} The resolved version string.
  *
@@ -22,11 +21,10 @@ import * as output from '../utils/output.ts';
  */
 export async function getVersion(options: {
   dev?: boolean;
-  root?: string;
 }): Promise<string> {
   const config = getConfig();
   const versionFiles = config.getVersionFiles();
-  const cwd = options.root ?? config.getWorkingDir();
+  const cwd = config.getWorkingDir();
 
   if (versionFiles.length === 0) {
     throw new Error(
@@ -90,8 +88,7 @@ export function registerGetVersionCommand(program: Command): void {
     .command('get-version')
     .description('Gets the version for the product.')
     .option('--dev', 'Get the dev version.')
-    .option('--root <dir>', 'Set the root directory for running commands.')
-    .action(async (options: { dev?: boolean; root?: string }) => {
+    .action(async (options: { dev?: boolean }) => {
       const version = await getVersion(options);
       output.writeln(version);
     });
