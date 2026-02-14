@@ -3,6 +3,7 @@ import chalk from 'chalk';
 import { getConfig } from '../config.ts';
 
 declare const BUILTIN_CHECK_SLUGS: string[];
+import { executeTbdCheck } from './checks/tbd.ts';
 import { runCommand } from '../utils/process.ts';
 import * as output from '../utils/output.ts';
 import type { CheckConfig, CheckResult } from '../types.ts';
@@ -97,19 +98,21 @@ export async function runChecks(options: {
  * @since TBD
  *
  * @param {string} slug - The identifier for the built-in check.
- * @param {CheckConfig} _checkConfig - The configuration for this check.
- * @param {string} _cwd - The current working directory.
+ * @param {CheckConfig} checkConfig - The configuration for this check.
+ * @param {string} cwd - The current working directory.
  * @param {ReturnType<typeof getConfig>} _config - The resolved pup configuration.
  *
  * @returns {Promise<CheckResult>} The result of the check.
  */
 async function runBuiltinCheck(
   slug: string,
-  _checkConfig: CheckConfig,
-  _cwd: string,
+  checkConfig: CheckConfig,
+  cwd: string,
   _config: ReturnType<typeof getConfig>
 ): Promise<CheckResult> {
   switch (slug) {
+    case 'tbd':
+      return executeTbdCheck(checkConfig, cwd);
     default:
       return { success: false, output: `Unknown built-in check: ${slug}` };
   }

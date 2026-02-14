@@ -32,4 +32,13 @@ class AnotherFile {
 		_deprecated_function( __METHOD__, 'TBD' );
 		$x = 1;
 	}
+
+	public static function get_version() {
+		$version = 'TBD';
+		return $version;
+	}
+
+	public static function get_other_version() {
+		return "TBD";
+	}
 }
