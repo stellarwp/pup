@@ -59,6 +59,18 @@ describe('build command', () => {
     }
   });
 
+  it('should run build in the specified --root directory', async () => {
+    const rootDir = createTempProject();
+
+    const puprc = getPuprc();
+    puprc.build = ['pwd'];
+    writePuprc(puprc, projectDir);
+
+    const result = await runPup(`build --root ${rootDir}`, { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain(rootDir);
+  });
+
   it('should run build with dev flag', async () => {
     const puprc = getPuprc();
     puprc.build = ['echo "production build"'];
