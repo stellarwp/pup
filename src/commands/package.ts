@@ -8,6 +8,7 @@ import {
   resolveFilePatterns,
   getSourceDir,
   syncFiles,
+  cleanSyncFiles,
 } from '../filesystem/sync-files.ts';
 import { runCommand } from '../utils/process.ts';
 import * as output from '../utils/output.ts';
@@ -77,6 +78,9 @@ export function registerPackageCommand(program: Command): void {
       output.log('- Zipping...');
       await createZip(zipDir, zipFilename, zipName);
       output.log('Zipping...Complete.');
+
+      // Clean up .pup-* sync files
+      cleanSyncFiles(sourceDir);
 
       // Undo version file changes
       undoChanges(config);
