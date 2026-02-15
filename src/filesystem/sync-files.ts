@@ -5,10 +5,6 @@ import type { Config } from '../config.ts';
 import { isGlobMatch } from '../utils/glob.ts';
 import { trailingSlashIt } from '../utils/directory.ts';
 
-export interface SyncFileResult {
-  patterns: string[];
-}
-
 /**
  * Reads patterns from a sync file.
  *
@@ -63,7 +59,7 @@ function readGitAttributesPatterns(filePath: string): string[] {
  *
  * @returns {string[]} A deduplicated array of ignore patterns.
  */
-export function getIgnorePatterns(
+function getIgnorePatterns(
   root: string,
   useDefaultIgnore: boolean
 ): string[] {
@@ -98,7 +94,7 @@ export function getIgnorePatterns(
  *
  * @returns {string[]} An array of include patterns.
  */
-export function getIncludePatterns(root: string): string[] {
+function getIncludePatterns(root: string): string[] {
   const distincludePath = path.join(root, '.distinclude');
   return readPatterns(distincludePath);
 }
@@ -113,7 +109,7 @@ export function getIncludePatterns(root: string): string[] {
  *
  * @returns {string[] | null} An array of allowlist patterns, or null if .distfiles does not exist.
  */
-export function getDistfilesPatterns(root: string): string[] | null {
+function getDistfilesPatterns(root: string): string[] | null {
   const distfilesPath = path.join(root, '.distfiles');
   if (!fs.existsSync(distfilesPath)) return null;
   return readPatterns(distfilesPath);
@@ -130,14 +126,14 @@ export function getDistfilesPatterns(root: string): string[] | null {
  * @since TBD
  *
  * @param {string} relativePath - The relative path of the file to check.
- * @param {string[] | null} distfiles - Whitelist patterns from .distfiles, or null if not present.
+ * @param {string[] | null} distfiles - Allowlist patterns from .distfiles, or null if not present.
  * @param {string[]} ignorePatterns - Ignore patterns from .distignore, .gitattributes, and defaults.
  * @param {string[]} includePatterns - Include patterns from .distinclude.
  * @param {(filePath: string, pattern: string) => boolean} matchFn - A function that tests whether a file path matches a pattern.
  *
  * @returns {boolean} True if the file should be included, false otherwise.
  */
-export function shouldIncludeFile(
+function shouldIncludeFile(
   relativePath: string,
   distfiles: string[] | null,
   ignorePatterns: string[],
@@ -233,7 +229,7 @@ export function resolveFilePatterns(
  *
  * @returns {string[]} An array of default ignore glob patterns.
  */
-export function getDefaultIgnoreLines(config: Config): string[] {
+function getDefaultIgnoreLines(config: Config): string[] {
   const zipDirRelative = config.getZipDir(false);
   return ['.puprc', '.pup-*', zipDirRelative];
 }
@@ -292,7 +288,7 @@ async function walkDirectory(dir: string): Promise<string[]> {
  *
  * @param {string} source - The source directory to copy files from.
  * @param {string} destination - The destination directory to copy files to.
- * @param {string[] | null} distfiles - Whitelist patterns from .distfiles, or null if not present.
+ * @param {string[] | null} distfiles - Allowlist patterns from .distfiles, or null if not present.
  * @param {string[]} ignorePatterns - Glob patterns for files to ignore.
  * @param {string[]} includePatterns - Glob patterns for files to include.
  *

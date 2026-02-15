@@ -7,30 +7,9 @@ jest.mock('../../src/config.ts', () => ({
 }));
 
 import {
-  getDefaultIgnoreLines,
   getSourceDir,
   syncFiles,
 } from '../../src/filesystem/sync-files.js';
-
-describe('getDefaultIgnoreLines', () => {
-  it('should return .puprc, .pup-*, and the zip dir from config', () => {
-    const config = {
-      getZipDir: (fullPath = true) => fullPath ? '/abs/.pup-zip' : '.pup-zip',
-    } as Parameters<typeof getDefaultIgnoreLines>[0];
-
-    const result = getDefaultIgnoreLines(config);
-    expect(result).toEqual(['.puprc', '.pup-*', '.pup-zip']);
-  });
-
-  it('should use a custom zip dir from config', () => {
-    const config = {
-      getZipDir: (fullPath = true) => fullPath ? '/abs/custom-zip' : 'custom-zip',
-    } as Parameters<typeof getDefaultIgnoreLines>[0];
-
-    const result = getDefaultIgnoreLines(config);
-    expect(result).toEqual(['.puprc', '.pup-*', 'custom-zip']);
-  });
-});
 
 describe('getSourceDir', () => {
   it('should return workingDir when root is undefined', () => {
