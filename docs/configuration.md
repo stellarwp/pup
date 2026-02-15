@@ -7,8 +7,8 @@ root of the project. This file is a JSON file that contains the configuration op
 
 | Property    | Type            | Description                                                                                                                                                                                   |
 |-------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `build`     | `array`         | An array of CLI commands to execute for the build process of your project.                                                                                                                    |
-| `build_dev` | `array`         | An array of CLI commands to execute for the `--dev` build process of your project. If empty, it defaults to the value of `build`                                                              |
+| `build`     | `array`         | An array of CLI commands to execute for the build process of your project. Supports sub-arrays for [parallel execution](/docs/commands.md#parallel-build-steps).                               |
+| `build_dev` | `array`         | An array of CLI commands to execute for the `--dev` build process of your project. If empty, it defaults to the value of `build`. Supports sub-arrays for [parallel execution](/docs/commands.md#parallel-build-steps). |
 | `checks`    | `object`        | An object of check configurations indexed by the check's slug. See the [docs for checks](/docs/checks.md) for more info.                                                                      |
 | `env`       | `array`         | An array of environment variable names that, if set, should be passed to the build and workflow commands. |
 | `paths`     | `object`        | An object containing paths used by `pup`. [See below](#paths).                                                                                                                                |

@@ -1,6 +1,16 @@
 import { z } from 'zod';
 
 /**
+ * A build step is either a single command string (run sequentially) or an
+ * array of command strings (run in parallel).
+ *
+ * @since TBD
+ */
+export const BuildStepSchema = z.union([z.string(), z.array(z.string())]);
+
+export type BuildStep = z.infer<typeof BuildStepSchema>;
+
+/**
  * Schema for a version file entry in .puprc paths.versions.
  *
  * @since TBD
@@ -151,8 +161,8 @@ export type PathsConfig = z.infer<typeof PathsConfigSchema>;
  * @since TBD
  */
 export const PupConfigSchema = z.object({
-  build: z.array(z.string()),
-  build_dev: z.array(z.string()),
+  build: z.array(BuildStepSchema),
+  build_dev: z.array(BuildStepSchema),
   workflows: z.record(z.string(), z.array(z.string())),
   checks: z.record(z.string(), CheckConfigInputSchema),
   clean: z.array(z.string()),
@@ -173,8 +183,8 @@ export type PupConfig = z.infer<typeof PupConfigSchema>;
  * @since TBD
  */
 export const PuprcInputSchema = z.object({
-  build: z.array(z.string()).optional(),
-  build_dev: z.array(z.string()).optional(),
+  build: z.array(BuildStepSchema).optional(),
+  build_dev: z.array(BuildStepSchema).optional(),
   workflows: z.record(z.string(), z.array(z.string())).optional(),
   checks: z.record(z.string(), CheckConfigInputSchema.or(z.object({}).passthrough())).optional(),
   clean: z.array(z.string()).optional(),
@@ -196,7 +206,7 @@ export type PuprcInput = z.infer<typeof PuprcInputSchema>;
  */
 export const WorkflowSchema = z.object({
   slug: z.string(),
-  commands: z.array(z.string()),
+  commands: z.array(BuildStepSchema),
 });
 
 export type Workflow = z.infer<typeof WorkflowSchema>;
