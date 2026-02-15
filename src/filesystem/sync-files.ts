@@ -85,7 +85,7 @@ export function extractExportIgnorePatterns(contents: string): string {
  *
  * @returns {void}
  */
-export function writePupFile(
+export function writeSyncFile(
   root: string,
   filePaths: string[],
   targetFile: string,
@@ -164,19 +164,19 @@ export function buildSyncFiles(root: string, config: Config): void {
 
   // Build .pup-distfiles
   const distfilesPaths = filterSyncFiles(allSyncFiles, '.distfiles');
-  writePupFile(root, distfilesPaths, '.pup-distfiles', '.distfiles');
+  writeSyncFile(root, distfilesPaths, '.pup-distfiles', '.distfiles');
 
   // Build .pup-distinclude
   const distincludePaths = filterSyncFiles(allSyncFiles, '.distinclude');
-  writePupFile(root, distincludePaths, '.pup-distinclude', '.distinclude');
+  writeSyncFile(root, distincludePaths, '.pup-distinclude', '.distinclude');
 
   // Build .pup-distignore from .distignore sources
   const distignorePaths = filterSyncFiles(allSyncFiles, '.distignore');
-  writePupFile(root, distignorePaths, '.pup-distignore', '.distignore');
+  writeSyncFile(root, distignorePaths, '.pup-distignore', '.distignore');
 
   // Merge .gitattributes export-ignore patterns into .pup-distignore
   const gitattributesPaths = filterSyncFiles(allSyncFiles, '.gitattributes');
-  writePupFile(
+  writeSyncFile(
     root,
     gitattributesPaths,
     '.pup-distignore',
@@ -187,7 +187,7 @@ export function buildSyncFiles(root: string, config: Config): void {
   // Append .distignore-defaults if configured
   if (config.getZipUseDefaultIgnore()) {
     const defaultIgnorePath = path.join(defaultsDir, '.distignore-defaults');
-    writePupFile(
+    writeSyncFile(
       root,
       [defaultIgnorePath],
       '.pup-distignore',

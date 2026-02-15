@@ -20,7 +20,7 @@ jest.mock('../../src/config', () => ({
 import {
   filterSyncFiles,
   extractExportIgnorePatterns,
-  writePupFile,
+  writeSyncFile,
   buildSyncFiles,
   cleanSyncFiles,
   getIgnorePatterns,
@@ -76,11 +76,11 @@ describe('extractExportIgnorePatterns', () => {
   });
 });
 
-describe('writePupFile', () => {
+describe('writeSyncFile', () => {
   it('should write root-level file contents to target', () => {
     fs.writeFileSync(path.join(tmpDir, '.distfiles'), 'bootstrap.php\npackage.json\n');
 
-    writePupFile(tmpDir, ['.distfiles'], '.pup-distfiles', '.distfiles');
+    writeSyncFile(tmpDir, ['.distfiles'], '.pup-distfiles', '.distfiles');
 
     const result = fs.readFileSync(path.join(tmpDir, '.pup-distfiles'), 'utf-8');
     expect(result).toContain('bootstrap.php');
@@ -93,7 +93,7 @@ describe('writePupFile', () => {
       '*.txt text\nother-file.php export-ignore\n'
     );
 
-    writePupFile(
+    writeSyncFile(
       tmpDir,
       ['.gitattributes'],
       '.pup-distignore',
@@ -110,7 +110,7 @@ describe('writePupFile', () => {
     fs.mkdirpSync(path.join(tmpDir, 'admin'));
     fs.writeFileSync(path.join(tmpDir, 'admin', '.distfiles'), 'plugin.php\nlib/\n');
 
-    writePupFile(tmpDir, ['admin/.distfiles'], '.pup-distfiles', '.distfiles');
+    writeSyncFile(tmpDir, ['admin/.distfiles'], '.pup-distfiles', '.distfiles');
 
     const result = fs.readFileSync(path.join(tmpDir, '.pup-distfiles'), 'utf-8');
     expect(result).toContain('admin/plugin.php');
@@ -121,7 +121,7 @@ describe('writePupFile', () => {
     fs.mkdirpSync(path.join(tmpDir, 'admin'));
     fs.writeFileSync(path.join(tmpDir, 'admin', '.distfiles'), '/root-file.php\n');
 
-    writePupFile(tmpDir, ['admin/.distfiles'], '.pup-distfiles', '.distfiles');
+    writeSyncFile(tmpDir, ['admin/.distfiles'], '.pup-distfiles', '.distfiles');
 
     const result = fs.readFileSync(path.join(tmpDir, '.pup-distfiles'), 'utf-8');
     expect(result).toContain('admin/root-file.php');
@@ -131,7 +131,7 @@ describe('writePupFile', () => {
     fs.mkdirpSync(path.join(tmpDir, 'admin'));
     fs.writeFileSync(path.join(tmpDir, 'admin', '.distfiles'), 'plugin.php\nplugin.php\n');
 
-    writePupFile(tmpDir, ['admin/.distfiles'], '.pup-distfiles', '.distfiles');
+    writeSyncFile(tmpDir, ['admin/.distfiles'], '.pup-distfiles', '.distfiles');
 
     const result = fs.readFileSync(path.join(tmpDir, '.pup-distfiles'), 'utf-8');
     const matches = result.match(/admin\/plugin\.php/g);
@@ -143,8 +143,8 @@ describe('writePupFile', () => {
     fs.mkdirpSync(path.join(tmpDir, 'admin'));
     fs.writeFileSync(path.join(tmpDir, 'admin', '.distignore'), 'vendor/\n');
 
-    writePupFile(tmpDir, ['.distignore'], '.pup-distignore', '.distignore');
-    writePupFile(tmpDir, ['admin/.distignore'], '.pup-distignore', '.distignore');
+    writeSyncFile(tmpDir, ['.distignore'], '.pup-distignore', '.distignore');
+    writeSyncFile(tmpDir, ['admin/.distignore'], '.pup-distignore', '.distignore');
 
     const result = fs.readFileSync(path.join(tmpDir, '.pup-distignore'), 'utf-8');
     expect(result).toContain('node_modules');
@@ -152,7 +152,7 @@ describe('writePupFile', () => {
   });
 
   it('should skip missing files', () => {
-    writePupFile(tmpDir, ['.distfiles'], '.pup-distfiles', '.distfiles');
+    writeSyncFile(tmpDir, ['.distfiles'], '.pup-distfiles', '.distfiles');
     expect(fs.existsSync(path.join(tmpDir, '.pup-distfiles'))).toBe(false);
   });
 
@@ -161,7 +161,7 @@ describe('writePupFile', () => {
     const defaultFile = path.join(defaultsDir, '.distignore-defaults');
     fs.writeFileSync(defaultFile, 'node_modules\n.git\n');
 
-    writePupFile(tmpDir, [defaultFile], '.pup-distignore', '.distignore-defaults');
+    writeSyncFile(tmpDir, [defaultFile], '.pup-distignore', '.distignore-defaults');
 
     const result = fs.readFileSync(path.join(tmpDir, '.pup-distignore'), 'utf-8');
     expect(result).toContain('node_modules');
