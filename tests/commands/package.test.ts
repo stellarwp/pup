@@ -170,7 +170,7 @@ describe('package command', () => {
     expect(result.exitCode).toBe(0);
 
     const zipDir = path.join(projectDir, '.pup-zip');
-    // .distfiles is a whitelist; .gitattributes export-ignore is not applied
+    // .distfiles is a allowlist; .gitattributes export-ignore is not applied
     expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(true);
     expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
   });

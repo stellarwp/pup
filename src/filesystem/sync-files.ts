@@ -1,6 +1,9 @@
 import fs from 'fs-extra';
 import path from 'node:path';
 import { getDefaultsDir } from '../config.ts';
+import type { Config } from '../config.ts';
+import { isGlobMatch } from '../utils/glob.ts';
+import { trailingSlashIt } from '../utils/directory.ts';
 
 export interface SyncFileResult {
   patterns: string[];
@@ -101,14 +104,14 @@ export function getIncludePatterns(root: string): string[] {
 }
 
 /**
- * Gets whitelist patterns from .distfiles.
+ * Gets allowlist patterns from .distfiles.
  * If .distfiles exists, only matched files are included.
  *
  * @since TBD
  *
  * @param {string} root - The project root directory path.
  *
- * @returns {string[] | null} An array of whitelist patterns, or null if .distfiles does not exist.
+ * @returns {string[] | null} An array of allowlist patterns, or null if .distfiles does not exist.
  */
 export function getDistfilesPatterns(root: string): string[] | null {
   const distfilesPath = path.join(root, '.distfiles');
@@ -119,13 +122,18 @@ export function getDistfilesPatterns(root: string): string[] | null {
 /**
  * Determines whether a file should be included in the package.
  *
+ * Distfiles and distinclude patterns are merged into a single allowlist.
+ * Negated patterns (`!pattern`) in the include list are moved to the ignore
+ * list, and vice versa. A file must pass both the include allowlist (if
+ * non-empty) and the ignore check to be included.
+ *
  * @since TBD
  *
  * @param {string} relativePath - The relative path of the file to check.
  * @param {string[] | null} distfiles - Whitelist patterns from .distfiles, or null if not present.
  * @param {string[]} ignorePatterns - Ignore patterns from .distignore, .gitattributes, and defaults.
  * @param {string[]} includePatterns - Include patterns from .distinclude.
- * @param {(pattern: string, filePath: string) => boolean} matchFn - A function that tests whether a pattern matches a file path.
+ * @param {(filePath: string, pattern: string) => boolean} matchFn - A function that tests whether a file path matches a pattern.
  *
  * @returns {boolean} True if the file should be included, false otherwise.
  */
@@ -134,43 +142,180 @@ export function shouldIncludeFile(
   distfiles: string[] | null,
   ignorePatterns: string[],
   includePatterns: string[],
-  matchFn: (pattern: string, filePath: string) => boolean
+  matchFn: (filePath: string, pattern: string) => boolean
 ): boolean {
-  // .distinclude overrides everything
-  for (const pattern of includePatterns) {
-    if (pattern.startsWith('!')) {
-      if (matchFn(pattern.slice(1), relativePath)) return false;
+  const allInclude = [...(distfiles ?? []), ...includePatterns];
+
+  // Migrate negated lines between include and ignore
+  const effectiveInclude: string[] = [];
+  const effectiveIgnore: string[] = [];
+
+  for (const line of allInclude) {
+    if (line.startsWith('!')) {
+      effectiveIgnore.push(line.slice(1));
     } else {
-      if (matchFn(pattern, relativePath)) return true;
+      effectiveInclude.push(line);
     }
   }
 
-  // If .distfiles exists, only include matching files
-  if (distfiles !== null) {
-    let included = false;
-    for (const pattern of distfiles) {
-      if (pattern.startsWith('!')) {
-        if (matchFn(pattern.slice(1), relativePath)) {
-          included = false;
-        }
-      } else {
-        if (matchFn(pattern, relativePath)) {
-          included = true;
+  for (const line of ignorePatterns) {
+    if (line.startsWith('!')) {
+      effectiveInclude.push(line.slice(1));
+    } else {
+      effectiveIgnore.push(line);
+    }
+  }
+
+  // Include allowlist: if non-empty, file must match at least one pattern
+  if (effectiveInclude.length > 0) {
+    let matched = false;
+    for (const pattern of effectiveInclude) {
+      if (pattern && !pattern.startsWith('#') && pattern.trim() !== '') {
+        if (matchFn(relativePath, pattern)) {
+          matched = true;
+          break;
         }
       }
     }
-    if (!included) return false;
+    if (!matched) return false;
   }
 
-  // Check ignore patterns
-  for (const pattern of ignorePatterns) {
-    if (pattern.startsWith('!')) {
-      // Negated: if matches, un-ignore
-      if (matchFn(pattern.slice(1), relativePath)) return true;
-    } else {
-      if (matchFn(pattern, relativePath)) return false;
+  // Ignore check: if file matches any ignore pattern, exclude it
+  for (const pattern of effectiveIgnore) {
+    if (pattern && !pattern.startsWith('#') && pattern.trim() !== '') {
+      if (matchFn(relativePath, pattern)) return false;
     }
   }
 
   return true;
+}
+
+/**
+ * Resolves all file patterns needed for syncing based on the source directory and config.
+ *
+ * When `.distfiles` is present, `.distignore` is not used — only default
+ * ignore patterns apply. Otherwise, `.distignore`, `.gitattributes`
+ * export-ignore, and default ignore patterns are all used.
+ *
+ * @since TBD
+ *
+ * @param {string} sourceDir - The source directory to resolve patterns from.
+ * @param {Config} config - The resolved pup configuration.
+ *
+ * @returns {{ distfiles: string[] | null; ignorePatterns: string[]; includePatterns: string[] }}
+ */
+export function resolveFilePatterns(
+  sourceDir: string,
+  config: Config
+): { distfiles: string[] | null; ignorePatterns: string[]; includePatterns: string[] } {
+  const distfiles = getDistfilesPatterns(sourceDir);
+  const includePatterns = getIncludePatterns(sourceDir);
+
+  let ignorePatterns: string[];
+  if (distfiles !== null) {
+    ignorePatterns = getDefaultIgnoreLines(config);
+  } else {
+    ignorePatterns = [
+      ...getDefaultIgnoreLines(config),
+      ...getIgnorePatterns(sourceDir, config.getZipUseDefaultIgnore()),
+    ];
+  }
+
+  return { distfiles, ignorePatterns, includePatterns };
+}
+
+/**
+ * Returns the default ignore patterns.
+ *
+ * @since TBD
+ *
+ * @param {Config} config - The resolved pup configuration.
+ *
+ * @returns {string[]} An array of default ignore glob patterns.
+ */
+export function getDefaultIgnoreLines(config: Config): string[] {
+  const zipDirRelative = config.getZipDir(false);
+  return ['.puprc', '.pup-*', zipDirRelative];
+}
+
+/**
+ * Determines the source directory for file syncing.
+ *
+ * @since TBD
+ *
+ * @param {string | undefined} root - The root directory override, if provided.
+ * @param {string} workingDir - The default working directory.
+ *
+ * @returns {string} The resolved source directory path.
+ */
+export function getSourceDir(root: string | undefined, workingDir: string): string {
+  if (!root || root === '.') {
+    return workingDir;
+  }
+
+  if (root.includes(workingDir)) {
+    return trailingSlashIt(root);
+  }
+
+  return trailingSlashIt(root);
+}
+
+/**
+ * Recursively lists all files in a directory.
+ *
+ * @since TBD
+ *
+ * @param {string} dir - The directory to walk.
+ *
+ * @returns {Promise<string[]>} An array of absolute file paths.
+ */
+async function walkDirectory(dir: string): Promise<string[]> {
+  const files: string[] = [];
+  const entries = await fs.readdir(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await walkDirectory(fullPath)));
+    } else if (entry.isFile()) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+/**
+ * Copies files from source to destination, applying include, ignore, and distfiles rules.
+ *
+ * @since TBD
+ *
+ * @param {string} source - The source directory to copy files from.
+ * @param {string} destination - The destination directory to copy files to.
+ * @param {string[] | null} distfiles - Whitelist patterns from .distfiles, or null if not present.
+ * @param {string[]} ignorePatterns - Glob patterns for files to ignore.
+ * @param {string[]} includePatterns - Glob patterns for files to include.
+ *
+ * @returns {Promise<void>}
+ */
+export async function syncFiles(
+  source: string,
+  destination: string,
+  distfiles: string[] | null,
+  ignorePatterns: string[],
+  includePatterns: string[]
+): Promise<void> {
+  const entries = await walkDirectory(source);
+
+  for (const entry of entries) {
+    const relativePath = path.relative(source, entry);
+
+    if (!shouldIncludeFile(relativePath, distfiles, ignorePatterns, includePatterns, isGlobMatch)) {
+      continue;
+    }
+
+    const destPath = path.join(destination, relativePath);
+    await fs.mkdirp(path.dirname(destPath));
+    await fs.copy(entry, destPath);
+  }
 }
