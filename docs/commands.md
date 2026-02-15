@@ -76,6 +76,22 @@ In the above example:
 The `@` soft-fail prefix works within parallel groups as well. If a non-soft-fail command in a parallel group fails, `pup`
 will wait for all commands in the group to finish before exiting with the failure code.
 
+### A note on parallel output
+
+Commands in a parallel group share the same terminal output. Their output will be interleaved line-by-line as each
+process writes to `stdout`, and section headers for all commands in the group are printed before any command begins
+producing output.
+
+Because of this, parallel execution may **appear** sequential in some cases even though the commands are genuinely
+running simultaneously. Common reasons include:
+
+- **Fast-finishing commands**: If one command completes quickly (e.g. `bun install` with a warm cache), all of its
+  output appears before the slower command has produced much. This can look like the commands ran one after another.
+- **I/O contention**: Multiple commands competing for CPU, disk, or network may cause one to stall while another
+  progresses, further contributing to output that appears sequential.
+
+If you need to verify that commands are truly running in parallel, compare the runtimes between both parallel and sequential configurations.
+
 ## `pup check`
 Runs all registered check commands.
 
