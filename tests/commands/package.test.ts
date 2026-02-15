@@ -188,6 +188,36 @@ describe('package command', () => {
     expect(fs.existsSync(path.join(projectDir, '.pup-distignore'))).toBe(false);
   });
 
+  it('should apply subdirectory .distignore from paths.sync_files', async () => {
+    // Create a .distignore inside the src/ subdirectory
+    const srcDistignore = path.join(projectDir, 'src', '.distignore');
+    fs.writeFileSync(srcDistignore, 'OtherFileWithBadVersion.php\n');
+
+    // Configure paths.sync_files to include the subdirectory .distignore
+    writePuprc(
+      getPuprc({
+        paths: {
+          ...getPuprc().paths as Record<string, unknown>,
+          sync_files: ['src/.distignore'],
+        },
+      }),
+      projectDir
+    );
+
+    const result = await runPup('package 1.0.0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    const zipDir = path.join(projectDir, '.pup-zip');
+    // src/OtherFileWithBadVersion.php should be excluded by the prefixed pattern
+    expect(
+      fs.existsSync(path.join(zipDir, 'src', 'OtherFileWithBadVersion.php'))
+    ).toBe(false);
+    // src/Plugin.php should still be included
+    expect(fs.existsSync(path.join(zipDir, 'src', 'Plugin.php'))).toBe(true);
+    // Root files should be unaffected
+    expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
+  });
+
   it('should update version strings in packaged files', async () => {
     const result = await runPup('package 2.0.0', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
