@@ -270,7 +270,7 @@ composer -- pup package <version>
 | Argument  | Description                                                                                                                                            |
 |-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `version` | **Required.** The version number to use when packaging. You can generate this using [`pup get-version`](/docs/commands.md#pup-get-version) if desired. |                                                |
-| `--root`  | **Optional.** Run the command from a different directory from the current.                                                                             |
+| `--root`  | **Optional.** Override the source directory used for syncing files and resolving version file paths.                                                   |
 
 
 ## `pup workflow`
