@@ -81,6 +81,24 @@ describe('package command', () => {
     expect(fs.existsSync(zipPath)).toBe(true);
   });
 
+  it('should ignore .distignore when .distfiles is present', async () => {
+    // .distignore excludes other-file.php
+    const distignorePath = path.join(projectDir, '.distignore');
+    fs.writeFileSync(distignorePath, 'other-file.php\n');
+
+    // .distfiles explicitly includes other-file.php
+    const distfilesPath = path.join(projectDir, '.distfiles');
+    fs.writeFileSync(distfilesPath, 'bootstrap.php\nother-file.php\npackage.json\n');
+
+    const result = await runPup('package 1.0.0', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+
+    const zipDir = path.join(projectDir, '.pup-zip');
+    // .distignore should be ignored; other-file.php is included via .distfiles
+    expect(fs.existsSync(path.join(zipDir, 'other-file.php'))).toBe(true);
+    expect(fs.existsSync(path.join(zipDir, 'bootstrap.php'))).toBe(true);
+  });
+
   it('should respect .gitattributes export-ignore for a single file', async () => {
     const gitattrsPath = path.join(projectDir, '.gitattributes');
     fs.writeFileSync(gitattrsPath, 'other-file.php export-ignore\n');

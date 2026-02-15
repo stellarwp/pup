@@ -66,7 +66,7 @@ export function registerPackageCommand(program: Command): void {
       const distfiles = getDistfilesPatterns(sourceDir);
       if (distfiles !== null) {
         output.log(
-          '>>> Your project has a .distfiles file, so .distignore and pup\'s default ignore rules will not be used.'
+          '>>> Your project has a .distfiles file, so .distignore will not be used.'
         );
       }
 
