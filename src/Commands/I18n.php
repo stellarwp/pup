@@ -273,7 +273,7 @@ class I18n extends Command {
 					sleep( $this->delay );
 					continue;
 				}
-				continue;
+				break;
 			}
 
 			// Success: save and return.
