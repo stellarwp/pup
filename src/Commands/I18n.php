@@ -248,7 +248,7 @@ class I18n extends Command {
 			// Handle HTTP 429 (Too Many Requests) with smarter delay.
 			if ( 429 === $status_code ) {
 				// Use the backoff multiplier for this occurrence (0-indexed).
-				$multiplier = $this->http_429_backoff_multipliers[ $http_429_count ] ?? 151;
+				$multiplier = $this->http_429_backoff_multipliers[ $http_429_count ] ?? end( $this->http_429_backoff_multipliers );
 				$backoff_wait = $this->delay * $multiplier;
 				$wait_time    = $this->get_wait_time_for_429( $response, $backoff_wait );
 
@@ -271,6 +271,7 @@ class I18n extends Command {
 						OutputInterface::VERBOSITY_VERBOSE
 					);
 					sleep( $this->delay );
+					continue;
 				}
 				continue;
 			}
