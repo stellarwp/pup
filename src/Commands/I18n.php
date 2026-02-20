@@ -13,14 +13,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class I18n extends Command {
 	/**
-	 * Number of retries per translation file (for non-429 failures).
+	 * Number of retries per translation file.
 	 *
 	 * @var int
 	 */
 	protected $retries = 3;
 
 	/**
-	 * Base delay in seconds for backoff and between retries.
+	 * Base delay in seconds between retries and for HTTP 429 backoff.
 	 *
 	 * @var int
 	 */
@@ -34,15 +34,8 @@ class I18n extends Command {
 	protected $batch_size = 3;
 
 	/**
-	 * Maximum number of HTTP 429 retries per translation file.
-	 *
-	 * @var int
-	 */
-	protected $max_http_429_retries = 4;
-
-	/**
 	 * Backoff multipliers for HTTP 429 rate limit errors.
-	 * Index corresponds to the 429 attempt count (0-indexed).
+	 * Index corresponds to the 429 occurrence count (0-indexed).
 	 * Applied as: delay * multiplier.
 	 *
 	 * @var int[]
@@ -71,7 +64,7 @@ class I18n extends Command {
 		$config         = App::getConfig();
 		$io             = $this->getIO();
 		$root           = $input->getOption( 'root' );
-		$this->retries  = max( 1, min( 10, (int) ( $input->getOption( 'retries' ) ?? 3 ) ) );
+		$this->retries  = max( 1, min( 5, (int) ( $input->getOption( 'retries' ) ?? 3 ) ) );
 		$this->delay    = max( 1, (int) ( $input->getOption( 'delay' ) ?? 2 ) );
 		$this->batch_size = max( 1, (int) ( $input->getOption( 'batch-size' ) ?? 3 ) );
 		$i18n           = $config->getI18n();
@@ -114,30 +107,30 @@ class I18n extends Command {
 	}
 
 	/**
-	 * Extracts wait time from Retry-After header if present.
-	 * Respects server hint but caps it to the fixed backoff schedule.
+	 * Extracts the wait time from the Retry-After header if present.
+	 * Respects the server hint but caps it to our backoff schedule for that attempt.
 	 *
 	 * @param \Psr\Http\Message\ResponseInterface $response
-	 * @param int $default_wait Default wait time in seconds.
+	 * @param int $backoff_wait The computed backoff wait time.
 	 *
-	 * @return int Recommended wait time in seconds.
+	 * @return int The wait time in seconds.
 	 */
-	protected function get_retry_after_delay( $response, $default_wait ) {
+	protected function get_wait_time_for_429( $response, $backoff_wait ) {
 		$retry_after = $response->getHeaderLine( 'Retry-After' );
 
 		if ( ! $retry_after ) {
-			return $default_wait;
+			return $backoff_wait;
 		}
 
-		// Retry-After can be seconds (numeric) or HTTP-date string.
+		// Retry-After can be numeric seconds or an HTTP-date; parse numeric only.
 		if ( is_numeric( $retry_after ) ) {
 			$server_wait = (int) $retry_after;
-			// Use the smaller of server hint or our backoff; defer to server if more conservative.
-			return max( 1, min( $server_wait, $default_wait ) );
+			// Use the server hint but cap at our backoff (don't wait longer than we're willing to).
+			return max( 1, min( $server_wait, $backoff_wait ) );
 		}
 
-		// If it's an HTTP-date, we'd need to parse it; for simplicity, use default.
-		return $default_wait;
+		// HTTP-date format is complex to parse; fall back to backoff schedule.
+		return $backoff_wait;
 	}
 
 	/**
@@ -228,8 +221,8 @@ class I18n extends Command {
 	}
 
 	/**
-	 * Synchronously downloads and saves a translation with deterministic retry logic.
-	 * Handles both regular retries and HTTP 429 backoff.
+	 * Synchronously downloads and saves a translation with retry logic.
+	 * Retries consume the standard retry budget; 429 responses use smarter delay logic.
 	 *
 	 * @param Client $client
 	 * @param \stdClass $options
@@ -244,57 +237,47 @@ class I18n extends Command {
 	protected function download_and_save_translation_sync( $client, $options, $translation, $format, $project_url ) {
 		$io               = $this->getIO();
 		$translation_url  = "{$project_url}/{$translation->locale}/{$translation->slug}/export-translations?format={$format}";
+		$http_429_count   = 0;
 
-		// Outer loop: regular retries for non-429 failures.
 		for ( $tried = 0; $tried < $this->retries; $tried++ ) {
-			$http_429_count = 0;
+			$response    = $client->request( 'GET', $translation_url );
+			$status_code = $response->getStatusCode();
+			$body        = (string) $response->getBody();
+			$body_size   = strlen( $body );
 
-			// Inner loop: 429 retries with exponential backoff.
-			while ( $http_429_count < $this->max_http_429_retries ) {
-				$response    = $client->request( 'GET', $translation_url );
-				$status_code = $response->getStatusCode();
-				$body        = (string) $response->getBody();
-				$body_size   = strlen( $body );
+			// Handle HTTP 429 (Too Many Requests) with smarter delay.
+			if ( 429 === $status_code ) {
+				// Use the backoff multiplier for this occurrence (0-indexed).
+				$multiplier = $this->http_429_backoff_multipliers[ $http_429_count ] ?? 151;
+				$backoff_wait = $this->delay * $multiplier;
+				$wait_time    = $this->get_wait_time_for_429( $response, $backoff_wait );
 
-				// Handle HTTP 429 (Too Many Requests).
-				if ( 429 === $status_code ) {
-					$multiplier = $this->http_429_backoff_multipliers[ $http_429_count ];
-					$base_wait  = $this->delay * $multiplier;
-					$wait_time  = $this->get_retry_after_delay( $response, $base_wait );
-
-					$io->writeln(
-						"<fg=yellow>Rate limited (HTTP 429) on {$translation->slug}. Waiting {$wait_time}s before retry (attempt " . ( $http_429_count + 1 ) . '/' . $this->max_http_429_retries . ")...</>",
-						OutputInterface::VERBOSITY_VERBOSE
-					);
-
-					sleep( $wait_time );
-					$http_429_count++;
-					continue;
-				}
-
-				// Check for valid response.
-				if ( 200 !== $status_code || $body_size < 200 ) {
-					$io->writeln(
-						"<fg=red>Invalid response from {$translation_url} (status: {$status_code}, size: {$body_size})</>" ,
-						OutputInterface::VERBOSITY_VERBOSE
-					);
-					break; // Exit 429 loop; will retry with regular retry logic.
-				}
-
-				// Save the translation file and return on success.
-				$this->save_translation_file( $body, $options, $translation, $format );
-				return;
-			}
-
-			// If we get here, we either got a non-429 error or exhausted 429 retries.
-			// Try again with regular retry delay (if retries remaining).
-			if ( $tried < $this->retries - 1 ) {
 				$io->writeln(
-					"<fg=yellow>Retrying {$translation->slug} after {$this->delay}s...</>",
+					"<fg=yellow>Rate limited (HTTP 429) on {$translation->slug}. Waiting {$wait_time}s before retry...</>",
 					OutputInterface::VERBOSITY_VERBOSE
 				);
-				sleep( $this->delay );
+
+				sleep( $wait_time );
+				$http_429_count++;
+				continue;
 			}
+
+			// Check for valid response (non-429 case).
+			if ( 200 !== $status_code || $body_size < 200 ) {
+				// Non-429 failure: use standard delay and retry.
+				if ( $tried < $this->retries - 1 ) {
+					$io->writeln(
+						"<fg=red>Invalid response from {$translation_url} (status: {$status_code}, size: {$body_size}). Retrying...</>",
+						OutputInterface::VERBOSITY_VERBOSE
+					);
+					sleep( $this->delay );
+				}
+				continue;
+			}
+
+			// Success: save and return.
+			$this->save_translation_file( $body, $options, $translation, $format );
+			return;
 		}
 
 		// All retries exhausted.
