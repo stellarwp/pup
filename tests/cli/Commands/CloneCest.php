@@ -33,7 +33,7 @@ class CloneCest extends AbstractBase {
 		$I->assertTrue( file_exists( '.pup-build/bootstrap.php' ) );
 
 		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
+		$this->assertMatchesStringSnapshot( str_replace( $this->plugin_root, '{PUP_ROOT}', $output ) );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
 
@@ -72,7 +72,7 @@ class CloneCest extends AbstractBase {
 		$I->assertTrue( file_exists( '.pup-build/new-file.txt' ) );
 
 		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
+		$this->assertMatchesStringSnapshot( str_replace( $this->plugin_root, '{PUP_ROOT}', $output ) );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
 
