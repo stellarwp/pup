@@ -9,88 +9,134 @@ import {
   cleanupTempProjects,
 } from '../helpers/setup.js';
 
-let server: http.Server;
-let serverUrl: string;
-
 // A response body >= 200 bytes so it passes the minimum size check.
 const fakeTranslationBody = Buffer.alloc(250, 0x78);
 
-// Routes for the mock GlotPress API
-const routes: Record<string, { status: number; body: string; contentType?: string }> = {
-  '/api/projects/wp-plugins/fake-project/stable': {
-    status: 200,
-    body: JSON.stringify({
-      translation_sets: [
-        { locale: 'de', wp_locale: 'de_DE', slug: 'default', current_count: 100, percent_translated: 80 },
-        { locale: 'fr', wp_locale: 'fr_FR', slug: 'default', current_count: 50, percent_translated: 50 },
-        { locale: 'ja', wp_locale: 'ja', slug: 'default', current_count: 5, percent_translated: 10 },
-      ],
-    }),
-    contentType: 'application/json',
-  },
-  '/api/projects/wp-plugins/fake-project/with-zero-count': {
-    status: 200,
-    body: JSON.stringify({
-      translation_sets: [
-        { locale: 'de', wp_locale: 'de_DE', slug: 'default', current_count: 100, percent_translated: 80 },
-        { locale: 'es', wp_locale: 'es_ES', slug: 'default', current_count: 0, percent_translated: 90 },
-      ],
-    }),
-    contentType: 'application/json',
-  },
-  '/not-found': {
-    status: 404,
-    body: 'Not Found',
-  },
-  '/bad-json': {
-    status: 200,
-    body: 'this is not json',
-    contentType: 'text/plain',
-  },
-  '/no-sets': {
-    status: 200,
-    body: JSON.stringify({ something_else: true }),
-    contentType: 'application/json',
-  },
-};
-
-beforeAll((done) => {
-  server = http.createServer((req, res) => {
-    // Check for translation file download requests (contain "export-translations")
-    if (req.url?.includes('export-translations')) {
-      res.writeHead(200, { 'Content-Type': 'application/octet-stream' });
-      res.end(fakeTranslationBody);
-      return;
-    }
-
-    const route = routes[req.url ?? ''];
-    if (route) {
-      res.writeHead(route.status, { 'Content-Type': route.contentType ?? 'text/plain' });
-      res.end(route.body);
-    } else {
-      res.writeHead(404);
-      res.end('Unknown route');
-    }
-  });
-
-  server.listen(0, '127.0.0.1', () => {
-    const addr = server.address();
-    if (addr && typeof addr === 'object') {
-      serverUrl = `http://127.0.0.1:${addr.port}`;
-    }
-    done();
-  });
-});
-
-afterAll((done) => {
-  server.close(done);
-});
-
 describe('i18n command', () => {
+  let server: http.Server;
+  let serverUrl: string;
   let projectDir: string;
+  const requestCounts: Record<string, number> = {};
+
+  // Routes for the mock GlotPress API
+  const routes: Record<string, { status: number; body: string; contentType?: string }> = {
+    '/api/projects/wp-plugins/fake-project/stable': {
+      status: 200,
+      body: JSON.stringify({
+        translation_sets: [
+          { locale: 'de', wp_locale: 'de_DE', slug: 'default', current_count: 100, percent_translated: 80 },
+          { locale: 'fr', wp_locale: 'fr_FR', slug: 'default', current_count: 50, percent_translated: 50 },
+          { locale: 'ja', wp_locale: 'ja', slug: 'default', current_count: 5, percent_translated: 10 },
+        ],
+      }),
+      contentType: 'application/json',
+    },
+    '/api/projects/wp-plugins/fake-project/with-zero-count': {
+      status: 200,
+      body: JSON.stringify({
+        translation_sets: [
+          { locale: 'de', wp_locale: 'de_DE', slug: 'default', current_count: 100, percent_translated: 80 },
+          { locale: 'es', wp_locale: 'es_ES', slug: 'default', current_count: 0, percent_translated: 90 },
+        ],
+      }),
+      contentType: 'application/json',
+    },
+    '/api/projects/wp-plugins/fake-project/rate-limited': {
+      status: 200,
+      body: JSON.stringify({
+        translation_sets: [
+          { locale: 'de', wp_locale: 'de_DE', slug: 'default', current_count: 100, percent_translated: 80 },
+        ],
+      }),
+      contentType: 'application/json',
+    },
+    '/api/projects/wp-plugins/fake-project/always-rate-limited': {
+      status: 200,
+      body: JSON.stringify({
+        translation_sets: [
+          { locale: 'de', wp_locale: 'de_DE', slug: 'default', current_count: 100, percent_translated: 80 },
+        ],
+      }),
+      contentType: 'application/json',
+    },
+    '/not-found': {
+      status: 404,
+      body: 'Not Found',
+    },
+    '/bad-json': {
+      status: 200,
+      body: 'this is not json',
+      contentType: 'text/plain',
+    },
+    '/no-sets': {
+      status: 200,
+      body: JSON.stringify({ something_else: true }),
+      contentType: 'application/json',
+    },
+  };
+
+  beforeAll((done) => {
+    server = http.createServer((req, res) => {
+      const url = req.url ?? '';
+
+      // Track request counts per URL.
+      requestCounts[url] = (requestCounts[url] ?? 0) + 1;
+
+      // Check for translation file download requests (contain "export-translations")
+      if (url.includes('export-translations')) {
+        // Always return 429 for the always-rate-limited project.
+        if (url.includes('always-rate-limited')) {
+          res.writeHead(429, {
+            'Content-Type': 'text/plain',
+            'Retry-After': '1',
+          });
+          res.end('Too Many Requests');
+          return;
+        }
+
+        // Return 429 on first request for the rate-limited project, then 200.
+        if (url.includes('rate-limited') && requestCounts[url] === 1) {
+          res.writeHead(429, {
+            'Content-Type': 'text/plain',
+            'Retry-After': '1',
+          });
+          res.end('Too Many Requests');
+          return;
+        }
+
+        res.writeHead(200, { 'Content-Type': 'application/octet-stream' });
+        res.end(fakeTranslationBody);
+        return;
+      }
+
+      const route = routes[url];
+      if (route) {
+        res.writeHead(route.status, { 'Content-Type': route.contentType ?? 'text/plain' });
+        res.end(route.body);
+      } else {
+        res.writeHead(404);
+        res.end('Unknown route');
+      }
+    });
+
+    server.listen(0, '127.0.0.1', () => {
+      const addr = server.address();
+      if (addr && typeof addr === 'object') {
+        serverUrl = `http://127.0.0.1:${addr.port}`;
+      }
+      done();
+    });
+  });
+
+  afterAll((done) => {
+    server.close(done);
+  });
 
   beforeEach(() => {
     projectDir = createTempProject();
+    for (const key of Object.keys(requestCounts)) {
+      delete requestCounts[key];
+    }
   });
 
   afterEach(() => {
@@ -263,7 +309,7 @@ describe('i18n command', () => {
     expect(files).not.toContain('fake-project-es_ES.mo');
   });
 
-  it('should respect --retries 0 and bail without downloading', async () => {
+  it('should clamp --retries to minimum of 1', async () => {
     const puprc = getPuprc({
       i18n: [{
         url: `${serverUrl}/api/projects/wp-plugins/%slug%/stable`,
@@ -274,16 +320,14 @@ describe('i18n command', () => {
     });
     writePuprc(puprc, projectDir);
 
+    // --retries 0 is clamped to 1, so downloads should succeed
     const result = await runPup('i18n --retries 0', { cwd: projectDir });
     expect(result.exitCode).toBe(0);
-    // de and fr pass filters but retries=0 means every download bails immediately
-    expect(result.output).toContain('too many times, bailing');
 
-    // No files should have been downloaded
     const langDir = path.join(projectDir, 'lang');
-    if (fs.existsSync(langDir)) {
-      expect(fs.readdirSync(langDir)).toHaveLength(0);
-    }
+    const files = fs.readdirSync(langDir);
+    expect(files).toContain('fake-project-de_DE.po');
+    expect(files).toContain('fake-project-de_DE.mo');
   });
 
   it('should use --root to download files to the specified directory', async () => {
@@ -331,4 +375,47 @@ describe('i18n command', () => {
     expect(result.output).toContain('Fetching language files for');
     expect(result.output).toContain('Failed to fetch translation data');
   });
+
+  it('should recover from HTTP 429 and download successfully', async () => {
+    const puprc = getPuprc({
+      i18n: [{
+        url: `${serverUrl}/api/projects/wp-plugins/%slug%/rate-limited`,
+        textdomain: 'fake-project',
+        slug: 'fake-project',
+        path: 'lang',
+      }],
+    });
+    writePuprc(puprc, projectDir);
+
+    // Server returns 429 on first translation request, then 200 on retry.
+    // Retry-After: 1 is capped to min(1, backoffWait), so effective wait = 1s.
+    const result = await runPup('i18n --retries 2 --delay 1', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Rate limited (HTTP 429)');
+
+    // Files should still be downloaded after recovery
+    const langDir = path.join(projectDir, 'lang');
+    const files = fs.readdirSync(langDir);
+    expect(files).toContain('fake-project-de_DE.po');
+    expect(files).toContain('fake-project-de_DE.mo');
+  }, 30000);
+
+  it('should fail after exhausting retries on persistent 429', async () => {
+    const puprc = getPuprc({
+      i18n: [{
+        url: `${serverUrl}/api/projects/wp-plugins/%slug%/always-rate-limited`,
+        textdomain: 'fake-project',
+        slug: 'fake-project',
+        path: 'lang',
+      }],
+    });
+    writePuprc(puprc, projectDir);
+
+    // With --retries 1 --delay 1, it tries once, gets 429, waits, then exhausts retries.
+    const result = await runPup('i18n --retries 1 --delay 1', { cwd: projectDir });
+    expect(result.exitCode).toBe(1);
+    expect(result.output).toContain('Rate limited (HTTP 429)');
+    expect(result.output).toContain('Download failed');
+    expect(result.output).toContain('Failed to download language files');
+  }, 30000);
 });

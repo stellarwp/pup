@@ -2,8 +2,18 @@ import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { getConfig } from '../config.ts';
+import { PUP_VERSION } from '../app.ts';
 import * as output from '../utils/output.ts';
 import type { I18nResolvedConfig } from '../types.ts';
+
+/**
+ * Backoff multipliers for HTTP 429 rate limit errors.
+ * Index corresponds to the 429 occurrence count (0-indexed).
+ * Applied as: delay * multiplier.
+ *
+ * @since TBD
+ */
+const HTTP_429_BACKOFF_MULTIPLIERS = [16, 31, 91, 151];
 
 /**
  * Registers the `i18n` command with the CLI program.
@@ -18,13 +28,17 @@ export function registerI18nCommand(program: Command): void {
   program
     .command('i18n')
     .description('Fetches language files for the project.')
-    .option('--retries <number>', 'How many retries we do for each file.', '3')
+    .option('--retries <number>', 'How many retries per translation file.', '3')
+    .option('--delay <number>', 'Delay (seconds) between retries and for 429 backoff.', '2')
+    .option('--batch-size <number>', 'Batch size for grouping downloads.', '3')
     .option('--root <dir>', 'Set the root directory for downloading language files.')
-    .action(async (options: { retries?: string; root?: string }) => {
+    .action(async (options: { retries?: string; delay?: string; batchSize?: string; root?: string }) => {
       const config = getConfig();
       const i18nConfigs = config.getI18n();
       const cwd = options.root ?? config.getWorkingDir();
-      const maxRetries = parseInt(options.retries ?? '3', 10);
+      const maxRetries = Math.max(1, Math.min(5, parseInt(options.retries ?? '3', 10)));
+      const delay = Math.max(1, parseInt(options.delay ?? '2', 10));
+      const batchSize = Math.max(1, parseInt(options.batchSize ?? '3', 10));
 
       if (i18nConfigs.length === 0) {
         output.log('No i18n configuration found. Skipping.');
@@ -32,9 +46,12 @@ export function registerI18nCommand(program: Command): void {
       }
 
       for (const i18nConfig of i18nConfigs) {
-        const result = await downloadLanguageFiles(i18nConfig, cwd, maxRetries);
+        const result = await downloadLanguageFiles(i18nConfig, cwd, maxRetries, delay, batchSize);
 
         if (result !== 0) {
+          output.error('Failed to download language files.');
+          output.warning('Config:');
+          output.log(JSON.stringify(i18nConfig, null, 2));
           process.exitCode = result;
           return;
         }
@@ -43,20 +60,54 @@ export function registerI18nCommand(program: Command): void {
 }
 
 /**
+ * Extracts the wait time from the Retry-After header if present.
+ * Respects the server hint but caps it to the backoff schedule for that attempt.
+ *
+ * @since TBD
+ *
+ * @param {Response} response - The HTTP response containing potential Retry-After header.
+ * @param {number} backoffWait - The computed backoff wait time in seconds.
+ *
+ * @returns {number} The wait time in seconds.
+ */
+function getWaitTimeFor429(response: Response, backoffWait: number): number {
+  const retryAfter = response.headers.get('Retry-After');
+
+  if (!retryAfter) {
+    return backoffWait;
+  }
+
+  // Retry-After can be numeric seconds or an HTTP-date; parse numeric only.
+  if (/^\d+$/.test(retryAfter)) {
+    const serverWait = parseInt(retryAfter, 10);
+    // Use the server hint but cap at our backoff (don't wait longer than we're willing to).
+    return Math.max(1, Math.min(serverWait, backoffWait));
+  }
+
+  // HTTP-date format is complex to parse; fall back to backoff schedule.
+  return backoffWait;
+}
+
+/**
  * Downloads language files for a single i18n configuration.
+ * Processes downloads sequentially with deterministic retry logic.
  *
  * @since TBD
  *
  * @param {I18nResolvedConfig} config - The resolved i18n configuration for this translation source.
  * @param {string} cwd - The current working directory.
  * @param {number} maxRetries - The maximum number of retry attempts for failed downloads.
+ * @param {number} delay - The base delay in seconds between retries and for 429 backoff.
+ * @param {number} batchSize - The batch size for grouping downloads.
  *
  * @returns {Promise<number>} 0 on success, 1 on failure.
  */
 async function downloadLanguageFiles(
   config: I18nResolvedConfig,
   cwd: string,
-  maxRetries: number
+  maxRetries: number,
+  delay: number,
+  batchSize: number
 ): Promise<number> {
   const projectUrl = config.url
     .replace('{slug}', config.slug)
@@ -67,7 +118,9 @@ async function downloadLanguageFiles(
   let data: TranslationApiResponse;
 
   try {
-    const response = await fetch(projectUrl);
+    const response = await fetch(projectUrl, {
+      headers: { 'User-Agent': `StellarWP PUP/${PUP_VERSION}` },
+    });
     if (!response.ok) {
       output.error(`Failed to fetch project data from ${projectUrl}`);
       return 1;
@@ -92,7 +145,8 @@ async function downloadLanguageFiles(
   const langDir = path.resolve(cwd, config.path);
   await fs.mkdirp(langDir);
 
-  const promises: Promise<void>[] = [];
+  // Build a list of (translation, format) pairs to download.
+  const downloadItems: [TranslationSet, string][] = [];
 
   for (const translation of data.translation_sets) {
     // Skip when translations are zero.
@@ -100,31 +154,45 @@ async function downloadLanguageFiles(
       continue;
     }
 
-    // Skip any translation set that doesn't match our min translated.
+    // Skip any translation set that doesn't match the minimum percentage.
     if (minimumPercentage > translation.percent_translated) {
       continue;
     }
 
     for (const format of config.formats) {
-      const promise = downloadAndSaveTranslation(
-        config,
-        translation,
-        format,
-        projectUrl,
-        langDir,
-        maxRetries
-      );
-      promises.push(promise);
+      downloadItems.push([translation, format]);
     }
   }
 
-  await Promise.all(promises);
+  if (downloadItems.length === 0) {
+    return 0;
+  }
 
-  return 0;
+  // Process downloads sequentially in batches (for grouping/visibility).
+  let failedCount = 0;
+
+  for (let offset = 0; offset < downloadItems.length; offset += batchSize) {
+    const batch = downloadItems.slice(offset, offset + batchSize);
+
+    // Process each item in the batch sequentially.
+    for (const [translation, format] of batch) {
+      try {
+        await downloadAndSaveTranslationSync(
+          config, translation, format, projectUrl, langDir, maxRetries, delay
+        );
+      } catch (err) {
+        output.error(`Download failed: ${err instanceof Error ? err.message : String(err)}`);
+        failedCount++;
+      }
+    }
+  }
+
+  return failedCount > 0 ? 1 : 0;
 }
 
 /**
- * Downloads and saves a single translation file with retry support.
+ * Synchronously downloads and saves a translation with retry logic.
+ * Retries consume the standard retry budget; 429 responses use smarter delay logic.
  *
  * @since TBD
  *
@@ -134,86 +202,106 @@ async function downloadLanguageFiles(
  * @param {string} projectUrl - The base project API URL.
  * @param {string} langDir - The absolute path to the language files directory.
  * @param {number} maxRetries - The maximum number of retry attempts.
- * @param {number} tried - The current attempt count.
+ * @param {number} delay - The base delay in seconds between retries and for 429 backoff.
  *
  * @returns {Promise<void>}
  */
-async function downloadAndSaveTranslation(
+async function downloadAndSaveTranslationSync(
   config: I18nResolvedConfig,
   translation: TranslationSet,
   format: string,
   projectUrl: string,
   langDir: string,
   maxRetries: number,
-  tried = 0
+  delay: number
 ): Promise<void> {
   const translationUrl = `${projectUrl}/${translation.locale}/${translation.slug}/export-translations?format=${format}`;
+  let http429Count = 0;
 
-  if (tried >= maxRetries) {
-    output.error(
-      `Failed to fetch translation from ${translationUrl} too many times, bailing on ${translation.slug}`
-    );
+  for (let tried = 0; tried < maxRetries; tried++) {
+    const response = await fetch(translationUrl, {
+      headers: { 'User-Agent': `StellarWP PUP/${PUP_VERSION}` },
+    });
+    const statusCode = response.status;
+    const buffer = Buffer.from(await response.arrayBuffer());
+    const bodySize = buffer.byteLength;
+
+    // Handle HTTP 429 (Too Many Requests) with smarter delay.
+    if (statusCode === 429) {
+      const multiplier = HTTP_429_BACKOFF_MULTIPLIERS[http429Count] ??
+        HTTP_429_BACKOFF_MULTIPLIERS[HTTP_429_BACKOFF_MULTIPLIERS.length - 1];
+      const backoffWait = delay * multiplier;
+      const waitTime = getWaitTimeFor429(response, backoffWait);
+
+      output.warning(
+        `Rate limited (HTTP 429) on ${translation.slug}. Waiting ${waitTime}s before retry...`
+      );
+
+      await new Promise(resolve => setTimeout(resolve, waitTime * 1000));
+      http429Count++;
+      continue;
+    }
+
+    // Check for valid response (non-429 case).
+    if (statusCode !== 200 || bodySize < 200) {
+      // Non-429 failure: use standard delay and retry.
+      if (tried < maxRetries - 1) {
+        output.error(
+          `Invalid response from ${translationUrl} (status: ${statusCode}, size: ${bodySize}). Retrying...`
+        );
+        await new Promise(resolve => setTimeout(resolve, delay * 1000));
+        continue;
+      }
+      break;
+    }
+
+    // Success: save and return.
+    saveTranslationFile(buffer, config, translation, format, langDir);
     return;
   }
 
-  tried++;
+  // All retries exhausted.
+  throw new Error(`Failed to download ${translation.slug} after ${maxRetries} retries`);
+}
 
-  try {
-    const response = await fetch(translationUrl);
+/**
+ * Saves a translation file to disk.
+ *
+ * @since TBD
+ *
+ * @param {Buffer} content - The translation file content.
+ * @param {I18nResolvedConfig} config - The resolved i18n configuration.
+ * @param {TranslationSet} translation - The translation set metadata.
+ * @param {string} format - The file format (e.g. "po", "mo").
+ * @param {string} langDir - The absolute path to the language files directory.
+ *
+ * @returns {void}
+ */
+function saveTranslationFile(
+  content: Buffer,
+  config: I18nResolvedConfig,
+  translation: TranslationSet,
+  format: string,
+  langDir: string
+): void {
+  const filename = config.file_format
+    .replace('%domainPath%', config.path)
+    .replace('%textdomain%', config.textdomain)
+    .replace('%locale%', translation.locale ?? '')
+    .replace('%wp_locale%', translation.wp_locale ?? '')
+    .replace('%format%', format);
 
-    const filename = config.file_format
-      .replace('%domainPath%', config.path)
-      .replace('%textdomain%', config.textdomain)
-      .replace('%locale%', translation.locale ?? '')
-      .replace('%wp_locale%', translation.wp_locale ?? '')
-      .replace('%format%', format);
+  const filePath = path.join(langDir, filename);
+  fs.writeFileSync(filePath, content);
 
-    const buffer = Buffer.from(await response.arrayBuffer());
-
-    if (buffer.byteLength < 200) {
-      output.error(`Failed to fetch translation from ${translationUrl}`);
-
-      // Not sure if 2 seconds is needed, but it prevents the firewall from catching us.
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Retries to download this file.
-      return downloadAndSaveTranslation(
-        config, translation, format, projectUrl, langDir, maxRetries, tried
-      );
-    }
-
-    const filePath = path.join(langDir, filename);
-    await fs.writeFile(filePath, buffer);
-
-    // Verify the written file size matches the response size.
-    const stat = await fs.stat(filePath);
-    if (stat.size !== buffer.byteLength) {
-      output.error(
-        `Failed to save the translation from ${translationUrl} to ${filePath}`
-      );
-
-      // Delete the file in that case.
-      await fs.unlink(filePath).catch(() => {});
-
-      // Not sure if 2 seconds is needed, but it prevents the firewall from catching us.
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      // Retries to download this file.
-      return downloadAndSaveTranslation(
-        config, translation, format, projectUrl, langDir, maxRetries, tried
-      );
-    }
-
-    output.log(`* Translation created for ${filePath}`);
-  } catch {
-    output.error(`Failed to fetch translation from ${translationUrl}`);
-
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    return downloadAndSaveTranslation(
-      config, translation, format, projectUrl, langDir, maxRetries, tried
-    );
+  // Verify the written file size matches the response size.
+  const stat = fs.statSync(filePath);
+  if (stat.size !== content.byteLength) {
+    fs.unlinkSync(filePath);
+    throw new Error(`Failed to write translation to ${filePath}`);
   }
+
+  output.log(`* Translation created for ${filePath}`);
 }
 
 interface TranslationApiResponse {
