@@ -5,11 +5,14 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
 use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\Commands\Traits\DevSuffix;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class GetVersion extends Command {
+	use DevSuffix;
+
 	/**
 	 * @inheritDoc
 	 *
@@ -68,15 +71,5 @@ class GetVersion extends Command {
 
 		$output->writeln( $version );
 		return 0;
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function getDevSuffix(): string {
-		$timestamp = exec( 'git show -s --format=%ct HEAD' );
-		$hash      = exec( 'git rev-parse --short=8 HEAD' );
-
-		return "-dev-{$timestamp}-{$hash}";
 	}
 }
