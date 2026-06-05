@@ -19,17 +19,6 @@ class TbdScanner {
 	const DEFAULT_SKIP_DIRECTORIES = 'bin|build|vendor|node_modules|.git|.github|tests';
 
 	/**
-	 * Patterns that identify a TBD version placeholder on a line.
-	 *
-	 * @var string[]
-	 */
-	const PATTERNS = [
-		'/\*\s*\@(since|deprecated|version)\s.*tbd/i',
-		'/_deprecated_\w\(.*[\'"]tbd[\'"]/i',
-		'/[\'"]tbd[\'"]/i',
-	];
-
-	/**
 	 * Regex-ready list of file patterns to skip.
 	 * @var string
 	 */
@@ -112,12 +101,16 @@ class TbdScanner {
 	/**
 	 * Whether a line contains a TBD version placeholder.
 	 *
+	 * Detection is derived from {@see self::REPLACEMENTS} so that `check:tbd`
+	 * flags exactly the placeholders `replace-tbd` is able to resolve — the two
+	 * cannot drift apart.
+	 *
 	 * @param string $line
 	 *
 	 * @return bool
 	 */
 	public function lineMatches( string $line ): bool {
-		foreach ( self::PATTERNS as $pattern ) {
+		foreach ( array_keys( self::REPLACEMENTS ) as $pattern ) {
 			if ( preg_match( $pattern, $line ) ) {
 				return true;
 			}
