@@ -11,6 +11,7 @@
 * [`pup i18n`](/docs/commands.md#pup-i18n)
 * [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
+* [`pup replace-tbd`](/docs/commands.md#pup-replace-tbd)
 * [`pup workflow`](/docs/commands.md#pup-workflow)
 * [`pup zip`](/docs/commands.md#pup-zip)
 * [`pup zip-name`](/docs/commands.md#pup-zip-name)
@@ -271,6 +272,30 @@ composer -- pup package <version>
 |-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `version` | **Required.** The version number to use when packaging. You can generate this using [`pup get-version`](/docs/commands.md#pup-get-version) if desired. |                                                |
 | `--root`  | **Optional.** Run the command from a different directory from the current.                                                                             |
+
+
+## `pup replace-tbd`
+Replaces `TBD` version placeholders in your codebase with the version you provide.
+
+This is the companion to the [`tbd` check](/docs/commands.md#pup-checktbd): it scans the same directories (using the `tbd` check's `dirs`, `skip_files`, and `skip_directories` configuration) and replaces every `TBD` placeholder it would have flagged — docblock tags such as `@since TBD`, `@deprecated TBD`, and `@version TBD`, `_deprecated_*()` calls, and bare `'tbd'`/`"tbd"` strings. After running it, `pup check:tbd` will report no findings.
+
+It's typically run during release prep, once you know the version the pending changes will ship in.
+
+Unlike `pup package`, this command writes the changes directly to your working files and does **not** restore them afterward. Use `--dry-run` to preview the changes first, or your version control system (e.g. `git checkout`) to undo them.
+
+### Usage
+```bash
+pup replace-tbd <version> [--dry-run]
+# or
+composer -- pup replace-tbd <version> [--dry-run]
+```
+
+### Arguments
+| Argument    | Description                                                                                              |
+|-------------|----------------------------------------------------------------------------------------------------------|
+| `version`   | **Required.** The version to replace `TBD` placeholders with.                                            |
+| `--dry-run` | **Optional.** Print the files and number of replacements that would be made, without modifying anything. |
+| `--root`    | **Optional.** Run the command from a different directory from the current.                               |
 
 
 ## `pup workflow`
