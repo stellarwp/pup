@@ -495,7 +495,7 @@ class Package extends Command {
 
 	/**
 	 * Update the version in the configured version files by delegating to the
-	 * `replace-version` command.
+	 * ReplaceVersion command.
 	 *
 	 * The provided version is written as-is (the dev suffix, if any, is already
 	 * baked in by the caller via `get-version`), so `--dev` is intentionally
@@ -508,11 +508,6 @@ class Package extends Command {
 	 * @return int
 	 */
 	protected function updateVersionsInFiles( string $version ): int {
-		$application = $this->getApplication();
-		if ( ! $application ) {
-			return 1;
-		}
-
 		$arguments = [
 			'version' => $version,
 		];
@@ -523,7 +518,7 @@ class Package extends Command {
 		}
 
 		$buffer  = new BufferedOutput();
-		$command = $application->find( 'replace-version' );
+		$command = new ReplaceVersion();
 		$results = $command->run( new ArrayInput( $arguments ), $buffer );
 
 		if ( $results !== 0 ) {
