@@ -22,7 +22,12 @@ class Env {
 		}
 
 		foreach ( (array) $config_items->env as $env_item ) {
-			$env[ $env_item ] = "{$env_item}=" . getenv( $env_item );
+			if ( ! is_string( $env_item ) ) {
+				continue;
+			}
+
+			$env_value        = getenv( $env_item );
+			$env[ $env_item ] = "{$env_item}=" . ( false === $env_value ? '' : $env_value );
 		}
 
 		return implode( ' ', $env ) . ' ' . $command;

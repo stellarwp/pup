@@ -78,8 +78,12 @@ class Package extends Command {
 		$zip_filename = "{$full_zip_name}.zip";
 
 		$output->writeln( '<fg=gray>- Updating version files...</>' );
-		if ( $version !== 'unknown' ) {
-			$this->updateVersionsInFiles( $version );
+		if ( $version !== 'unknown' && ! empty( $config->getVersionFiles() ) ) {
+			$results = $this->updateVersionsInFiles( $version );
+			if ( $results !== 0 ) {
+				$this->undoChanges();
+				return $results;
+			}
 		}
 		$output->writeln( '<fg=green>✓</> Updating version files...Complete.' );
 
@@ -490,31 +494,37 @@ class Package extends Command {
 	}
 
 	/**
-	 * @param string $version
+	 * Update the version in the configured version files by delegating to the
+	 * ReplaceVersion command.
 	 *
-	 * @return bool
+	 * The provided version is written as-is (the dev suffix, if any, is already
+	 * baked in by the caller via `get-version`), so `--dev` is intentionally
+	 * not passed through.
+	 *
+	 * @param string $version The version to write into the version files.
+	 *
+	 * @throws \Symfony\Component\Console\Exception\ExceptionInterface
+	 *
+	 * @return int
 	 */
-	protected function updateVersionsInFiles( string $version ): bool {
-		$root          = $this->input->getOption( 'root' );
-		$root          = $root ? DirectoryUtils::trailingSlashIt( $root ) : '';
-		$config        = App::getConfig();
-		$version_files = $config->getVersionFiles();
+	protected function updateVersionsInFiles( string $version ): int {
+		$arguments = [
+			'version' => $version,
+		];
 
-		foreach ( $version_files as $file ) {
-			$contents = file_get_contents( $root . $file->getPath() );
-
-			if ( ! $contents ) {
-				throw new Exceptions\BaseException( 'Could not read file: ' . $file->getPath() );
-			}
-
-			$contents = preg_replace( '/' . $file->getRegex() . '/', '${1}' . $version, $contents, 1 );
-			$results  = file_put_contents( $root . $file->getPath(), $contents );
-
-			if ( false === $results ) {
-				return false;
-			}
+		$root = $this->input->getOption( 'root' );
+		if ( $root ) {
+			$arguments['--root'] = $root;
 		}
 
-		return true;
+		$buffer  = new BufferedOutput();
+		$command = new ReplaceVersion();
+		$results = $command->run( new ArrayInput( $arguments ), $buffer );
+
+		if ( $results !== 0 ) {
+			$this->output->write( $buffer->fetch() );
+		}
+
+		return $results;
 	}
 }
