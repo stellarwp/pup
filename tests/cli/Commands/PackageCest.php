@@ -162,21 +162,27 @@ class PackageCest extends AbstractBase {
 	/**
 	 * @test
 	 */
-	public function it_should_package_the_zip_and_include_files_in_distinclude( CliTester $I ) {
+	public function it_should_use_distinclude_as_a_filter_for_candidate_files( CliTester $I ) {
 		$this->reset_data_and_location();
 		$this->write_default_puprc();
 
 		chdir( $this->tests_root . '/_data/fake-project' );
 
-		file_put_contents( '.distinclude', ".puprc\n" );
+		// .distinclude with bootstrap.php means only bootstrap.php is a candidate.
+		file_put_contents( '.distinclude', "bootstrap.php\n" );
 
 		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
 
 		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
 
-		$I->runShellCommand( "ls -a .pup-zip" );
-
+		$I->runShellCommand( "find .pup-zip/fake-project -type f | sort" );
 		$output = $I->grabShellOutput();
+
+		// bootstrap.php passes the include filter
+		$I->assertStringContainsString( 'bootstrap.php', $output );
+		// other-file.php is excluded because it doesn't match .distinclude
+		$I->assertStringNotContainsString( 'other-file.php', $output );
+
 		$this->assertMatchesStringSnapshot( $output );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
@@ -186,23 +192,27 @@ class PackageCest extends AbstractBase {
 	/**
 	 * @test
 	 */
-	public function it_should_package_the_zip_and_include_files_in_distinclude_even_if_in_distignore_and_gitattributes( CliTester $I ) {
+	public function it_should_not_let_distinclude_override_distignore_and_gitattributes( CliTester $I ) {
 		$this->reset_data_and_location();
 		$this->write_default_puprc();
 
 		chdir( $this->tests_root . '/_data/fake-project' );
 
-		file_put_contents( '.distinclude', ".puprc\n" );
-		file_put_contents( '.distignore', ".puprc\n" );
-		file_put_contents( '.gitattributes', ".puprc export-ignore\n" );
+		// .distinclude allows bootstrap.php, but .distignore and .gitattributes exclude it.
+		file_put_contents( '.distinclude', "bootstrap.php\n" );
+		file_put_contents( '.distignore', "bootstrap.php\n" );
+		file_put_contents( '.gitattributes', "bootstrap.php export-ignore\n" );
 
 		$I->runShellCommand( "php {$this->pup} package 1.0.0" );
 
 		system( 'unzip -d .pup-zip/ fake-project.1.0.0.zip' );
 
-		$I->runShellCommand( "ls -a .pup-zip" );
-
+		$I->runShellCommand( "find .pup-zip/fake-project | sort" );
 		$output = $I->grabShellOutput();
+
+		// bootstrap.php should NOT be present — ignore rules still apply despite .distinclude
+		$I->assertStringNotContainsString( 'bootstrap.php', $output );
+
 		$this->assertMatchesStringSnapshot( $output );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
