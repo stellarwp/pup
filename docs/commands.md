@@ -11,6 +11,7 @@
 * [`pup i18n`](/docs/commands.md#pup-i18n)
 * [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
+* [`pup replace-tbd`](/docs/commands.md#pup-replace-tbd)
 * [`pup workflow`](/docs/commands.md#pup-workflow)
 * [`pup zip`](/docs/commands.md#pup-zip)
 * [`pup zip-name`](/docs/commands.md#pup-zip-name)
@@ -75,8 +76,9 @@ composer -- pup check
 ### `pup check:tbd`
 Scans your files for `tbd` (case-insensitive) and tells you where to find them.
 
-The `tbd` check will scan your files in relevant locations (`@since`, `@todo`, `@version`, etc) and display the files
-and line numbers where they appear.
+The `tbd` check will scan your files in relevant locations (`@since`, `@todo`, `@version`, etc, as well as quoted
+`'tbd'`/`"tbd"` strings such as `_deprecated_function( __METHOD__, 'TBD' )`) and display the files and line numbers
+where they appear.
 
 #### Usage
 ```bash
@@ -271,6 +273,30 @@ composer -- pup package <version>
 |-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `version` | **Required.** The version number to use when packaging. You can generate this using [`pup get-version`](/docs/commands.md#pup-get-version) if desired. |                                                |
 | `--root`  | **Optional.** Run the command from a different directory from the current.                                                                             |
+
+
+## `pup replace-tbd`
+Replaces `TBD` version placeholders in your codebase with the version you provide.
+
+This is the companion to the [`tbd` check](/docs/commands.md#pup-checktbd): it scans the same directories (using the `tbd` check's `dirs`, `skip_files`, and `skip_directories` configuration) and resolves the `TBD` version placeholders it flags — docblock tag values such as `@since TBD`, `@deprecated TBD`, and `@version TBD`, and quoted `'tbd'`/`"tbd"` strings (including those passed to `_deprecated_*()` calls, e.g. `_deprecated_function( __METHOD__, 'TBD' )`). Only the placeholder itself is replaced; an unrelated `tbd` elsewhere on a line (e.g. a word in prose) is left untouched.
+
+It's typically run during release prep, once you know the version the pending changes will ship in.
+
+Unlike `pup package`, this command writes the changes directly to your working files and does **not** restore them afterward. Use `--dry-run` to preview the changes first, or your version control system (e.g. `git checkout`) to undo them.
+
+### Usage
+```bash
+pup replace-tbd <version> [--dry-run]
+# or
+composer -- pup replace-tbd <version> [--dry-run]
+```
+
+### Arguments
+| Argument    | Description                                                                                              |
+|-------------|----------------------------------------------------------------------------------------------------------|
+| `version`   | **Required.** The version to replace `TBD` placeholders with.                                            |
+| `--dry-run` | **Optional.** Print the files and number of replacements that would be made, without modifying anything. |
+| `--root`    | **Optional.** Run the command from a different directory from the current.                               |
 
 
 ## `pup workflow`
