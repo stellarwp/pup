@@ -5,7 +5,7 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
 use StellarWP\Pup\Command\Command;
-use StellarWP\Pup\Command\Traits\DevSuffix;
+use StellarWP\Pup\Commands\Traits\DevSuffix;
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;

@@ -1,6 +1,6 @@
 <?php
 
-namespace StellarWP\Pup\Command\Traits;
+namespace StellarWP\Pup\Commands\Traits;
 
 /**
  * Provides the dev version suffix used by version-related commands.
