@@ -7,17 +7,19 @@
             "email": "dev@stellarwp.com"
         }
     ],
-    "platform": {
-        "php": "7.2.34"
-    },
     "bin": [
         "pup"
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
     "license": "MIT",
+    "config": {
+        "platform": {
+            "php": "7.4.33"
+        }
+    },
     "require": {
-        "php": ">=7.2",
+        "php": ">=7.4",
         "symfony/process": "^5.4",
         "symfony/console": "^5.4",
         "symfony/filesystem": "^5.4",
