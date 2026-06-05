@@ -16,6 +16,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: '7.4'
+          github-token: ''
 
       - name: Install dependencies
         run: composer install --no-dev --optimize-autoloader --ignore-platform-reqs
@@ -25,8 +26,6 @@ jobs:
 
       - name: Upload Phar
         uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ${{ github.workspace }}/pup.phar
