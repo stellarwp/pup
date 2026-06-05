@@ -11,12 +11,12 @@ jobs:
       - name: Configure PHP environment
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.0'
+          php-version: '7.4'
           extensions: mbstring, intl
           coverage: none
       - uses: ramsey/composer-install@v4
         with:
-          composer-options: "--ignore-platform-reqs --optimize-autoloader"
+          composer-options: "--optimize-autoloader"
       - name: Setup git
         run: |
           git config --global user.name "GitHub Actions"
