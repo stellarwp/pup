@@ -1,6 +1,7 @@
 .idea/
 vendor/
 *.phar
+.vscode/
 
 tests/_output
 tests/_support/_generated

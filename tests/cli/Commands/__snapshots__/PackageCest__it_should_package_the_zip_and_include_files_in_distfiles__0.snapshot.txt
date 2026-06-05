@@ -1,0 +1,6 @@
+.
+..
+fake-project
+node_modules.
+..
+a-script-i-need.js

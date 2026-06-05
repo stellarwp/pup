@@ -1,0 +1,8 @@
+.
+..
+bootstrap.php
+fake-project
+src.
+..
+OtherFileWithBadVersion.php
+Plugin.php

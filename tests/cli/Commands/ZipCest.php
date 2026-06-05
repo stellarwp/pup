@@ -33,8 +33,7 @@ class ZipCest extends AbstractBase {
 
 		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
-		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
+		$this->assertMatchesStringSnapshot( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
 
@@ -68,8 +67,7 @@ class ZipCest extends AbstractBase {
 
 		$I->assertTrue( file_exists( 'fake-project.1.0.0.1.zip' ) );
 
-		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
+		$this->assertMatchesStringSnapshot( str_replace( $this->plugin_root, '{PUP_ROOT}', $I->grabShellOutput() ) );
 
 		$I->runShellCommand( "php {$this->pup} clean" );
 
