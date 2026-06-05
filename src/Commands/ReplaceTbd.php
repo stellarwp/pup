@@ -22,7 +22,7 @@ class ReplaceTbd extends Command {
 			->addArgument( 'version', InputArgument::REQUIRED, 'The version to replace TBD placeholders with.' )
 			->addOption( 'dry-run', null, InputOption::VALUE_NONE, 'Preview the changes without writing to files.' )
 			->addOption( 'root', null, InputOption::VALUE_REQUIRED, 'Set the root directory for running commands.' )
-			->setDescription( 'Replaces "TBD" version placeholders (e.g. @since TBD) with the provided version.' )
+			->setDescription('Replaces "TBD" version placeholders (e.g. @since TBD, _deprecated_function( __METHOD__, "TBD" ), "tbd") with the provided version.' )
 			->setHelp( 'Scans the directories configured for the tbd check and replaces TBD version placeholders with the provided version. This resolves exactly what `pup check:tbd` reports.' );
 	}
 
