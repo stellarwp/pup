@@ -13,7 +13,6 @@ parameters:
 	level: 8
 	inferPrivatePropertyTypeFromConstructor: true
 	reportUnmatchedIgnoredErrors: false
-	checkGenericClassInNonGenericObjectType: false
 	treatPhpDocTypesAsCertain: false
 
 	# Paths to be analyzed.
@@ -22,5 +21,7 @@ parameters:
 		- %currentWorkingDirectory%/src
 
 	ignoreErrors:
+		-
+			identifier: missingType.generics
 		- '#^Constant __PUP_DIR__ not found\.$#'
 		- '#^Constant (.*)PUP_VERSION not found\.$#'
