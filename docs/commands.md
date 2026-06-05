@@ -12,6 +12,7 @@
 * [`pup info`](/docs/commands.md#pup-info)
 * [`pup package`](/docs/commands.md#pup-package)
 * [`pup replace-tbd`](/docs/commands.md#pup-replace-tbd)
+* [`pup replace-version`](/docs/commands.md#pup-replace-version)
 * [`pup workflow`](/docs/commands.md#pup-workflow)
 * [`pup zip`](/docs/commands.md#pup-zip)
 * [`pup zip-name`](/docs/commands.md#pup-zip-name)
@@ -297,6 +298,28 @@ composer -- pup replace-tbd <version> [--dry-run]
 | `version`   | **Required.** The version to replace `TBD` placeholders with.                                            |
 | `--dry-run` | **Optional.** Print the files and number of replacements that would be made, without modifying anything. |
 | `--root`    | **Optional.** Run the command from a different directory from the current.                               |
+
+
+## `pup replace-version`
+Replaces the version number in all of your project's [version files](https://github.com/stellarwp/pup/blob/main/docs/configuration.md#paths-versions) with the version you provide.
+
+This command iterates over every entry in your `.puprc` file's [`paths.versions`](/docs/configuration.md#pathsversions) array and rewrites the matched version number using the supplied `version` argument. It is handy when preparing a release or staging a zip, where you want to bump the version in place without running a full `pup package`.
+
+Unlike `pup package`, this command writes the changes directly to your working files and does **not** restore them afterward. If you want to undo the changes, use your version control system (e.g. `git checkout`).
+
+### Usage
+```bash
+pup replace-version <version> [--dev]
+# or
+composer -- pup replace-version <version> [--dev]
+```
+
+### Arguments
+| Argument  | Description                                                                                              |
+|-----------|----------------------------------------------------------------------------------------------------------|
+| `version` | **Required.** The version number to write into the version files.                                        |
+| `--dev`   | **Optional.** Append the dev suffix (e.g. `-dev-<timestamp>-<hash>`) to the provided version.            |
+| `--root`  | **Optional.** Run the command from a different directory from the current.                               |
 
 
 ## `pup workflow`
