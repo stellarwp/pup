@@ -277,7 +277,7 @@ composer -- pup package <version>
 ## `pup replace-tbd`
 Replaces `TBD` version placeholders in your codebase with the version you provide.
 
-This is the companion to the [`tbd` check](/docs/commands.md#pup-checktbd): it scans the same directories (using the `tbd` check's `dirs`, `skip_files`, and `skip_directories` configuration) and replaces every `TBD` placeholder it would have flagged — docblock tags such as `@since TBD`, `@deprecated TBD`, and `@version TBD`, `_deprecated_*()` calls, and bare `'tbd'`/`"tbd"` strings. After running it, `pup check:tbd` will report no findings.
+This is the companion to the [`tbd` check](/docs/commands.md#pup-checktbd): it scans the same directories (using the `tbd` check's `dirs`, `skip_files`, and `skip_directories` configuration) and resolves the `TBD` version placeholders it flags — docblock tag values such as `@since TBD`, `@deprecated TBD`, and `@version TBD`, and quoted `'tbd'`/`"tbd"` strings (including those passed to `_deprecated_*()` calls). Only the placeholder itself is replaced; an unrelated `tbd` elsewhere on a line (e.g. a word in prose) is left untouched.
 
 It's typically run during release prep, once you know the version the pending changes will ship in.
 

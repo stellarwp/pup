@@ -40,7 +40,11 @@ class ReplaceTbd extends Command {
 		$checks     = $config->getChecks();
 		$tbd_config = isset( $checks['tbd'] ) ? $checks['tbd']->getConfig() : [];
 		$scanner    = TbdScanner::fromConfig( $tbd_config );
-		$dirs       = isset( $tbd_config['dirs'] ) ? (array) $tbd_config['dirs'] : [ 'src' ];
+
+		// Mirror the tbd check's directory resolution exactly: when the tbd check is
+		// absent/unconfigured it scans nothing, so replace-tbd must not edit files
+		// the check would never examine.
+		$dirs = isset( $tbd_config['dirs'] ) ? (array) $tbd_config['dirs'] : [];
 
 		if ( $root ) {
 			chdir( $root );

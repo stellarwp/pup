@@ -127,10 +127,26 @@ class TbdScanner {
 	}
 
 	/**
-	 * Replaces the TBD token(s) on a line with the given version.
+	 * Replacement patterns that target the TBD *placeholder* specifically, rather
+	 * than any `tbd` token on a flagged line. The captured context is preserved and
+	 * `%version%` marks where the version is written.
 	 *
-	 * Only lines that match a TBD pattern are touched; on those, every standalone
-	 * `tbd` token (case-insensitive) is replaced.
+	 * @var array<string, string> Map of pattern => replacement template.
+	 */
+	const REPLACEMENTS = [
+		// Docblock tag value: @since / @deprecated / @version <space> TBD
+		'/(@(?:since|deprecated|version)\s+)tbd\b/i' => '${1}%version%',
+		// Quoted placeholder: 'tbd' or "tbd" (e.g. _deprecated_function( ..., 'TBD' ))
+		'/([\'"])tbd\1/i'                            => '${1}%version%${1}',
+	];
+
+	/**
+	 * Replaces TBD version placeholders on a line with the given version.
+	 *
+	 * Only genuine placeholders are touched — docblock tag values (`@since TBD`)
+	 * and quoted strings (`'tbd'`). A non-placeholder `tbd` elsewhere on the line
+	 * (e.g. prose in a comment) is left intact, so this never corrupts unrelated
+	 * text.
 	 *
 	 * @param string $line    The line to process.
 	 * @param string $version The version to replace TBD with.
@@ -141,11 +157,19 @@ class TbdScanner {
 	public function replaceInLine( string $line, string $version, int &$count = 0 ): string {
 		$count = 0;
 
-		if ( ! $this->lineMatches( $line ) ) {
-			return $line;
-		}
+		// Escape characters that are significant in a preg replacement string so a
+		// version like "1.0-$1" is written literally rather than as a backreference.
+		$safe_version = str_replace( [ '\\', '$' ], [ '\\\\', '\\$' ], $version );
 
-		$replaced = preg_replace( '/\btbd\b/i', $version, $line, -1, $count );
+		$patterns     = array_keys( self::REPLACEMENTS );
+		$replacements = array_map(
+			static function ( string $template ) use ( $safe_version ): string {
+				return str_replace( '%version%', $safe_version, $template );
+			},
+			array_values( self::REPLACEMENTS )
+		);
+
+		$replaced = preg_replace( $patterns, $replacements, $line, -1, $count );
 
 		return $replaced === null ? $line : $replaced;
 	}

@@ -65,6 +65,43 @@ class ReplaceTbdCest extends AbstractBase {
 	/**
 	 * @test
 	 */
+	public function it_should_only_replace_placeholders_not_surrounding_prose( CliTester $I ) {
+		$this->write_default_puprc( 'fake-project-with-tbds' );
+
+		$project = $this->tests_root . '/_data/fake-project-with-tbds';
+		$tmp     = $project . '/src/ProseTbd.php';
+
+		// A docblock line with a real version plus the word "tbd" in prose, and a
+		// quoted placeholder followed by an unrelated "tbd" in a trailing comment.
+		$contents = "<?php\n"
+			. "/**\n"
+			. " * @since 5.0.0 reworked the tbd handler\n"
+			. " */\n"
+			. "\$status = 'tbd'; // resolve tbd later\n";
+		file_put_contents( $tmp, $contents );
+
+		chdir( $project );
+
+		try {
+			$I->runShellCommand( "php {$this->pup} replace-tbd 1.4.0" );
+			$I->seeResultCodeIs( 0 );
+
+			$result = (string) file_get_contents( $tmp );
+
+			// The docblock prose (and its real version) is untouched.
+			$I->assertStringContainsString( '@since 5.0.0 reworked the tbd handler', $result );
+			// The quoted placeholder is resolved...
+			$I->assertStringContainsString( "\$status = '1.4.0';", $result );
+			// ...but the unrelated "tbd" in the trailing comment is preserved.
+			$I->assertStringContainsString( '// resolve tbd later', $result );
+		} finally {
+			@unlink( $tmp );
+		}
+	}
+
+	/**
+	 * @test
+	 */
 	public function it_should_not_modify_files_on_dry_run( CliTester $I ) {
 		$this->write_default_puprc( 'fake-project-with-tbds' );
 
