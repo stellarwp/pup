@@ -5,6 +5,7 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
 use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\Command\DevSuffix;
 use StellarWP\Pup\Utils\Directory as DirectoryUtils;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -12,6 +13,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ReplaceVersion extends Command {
+	use DevSuffix;
+
 	/**
 	 * @inheritDoc
 	 *
@@ -55,8 +58,19 @@ class ReplaceVersion extends Command {
 				throw new BaseException( 'Could not read file: ' . $file->getPath() );
 			}
 
-			$contents = preg_replace( '/' . $file->getRegex() . '/', '${1}' . $version, $contents, 1 );
-			$results  = file_put_contents( $root . $file->getPath(), $contents );
+			$count    = 0;
+			$replaced = preg_replace( '/' . $file->getRegex() . '/', '${1}' . $version, $contents, 1, $count );
+
+			if ( null === $replaced ) {
+				throw new BaseException( 'Could not replace version in file (check the regex): ' . $file->getPath() );
+			}
+
+			if ( $count === 0 ) {
+				$output->writeln( "<fg=yellow>!</> No version found in <fg=cyan>{$file->getPath()}</> matching its regex. Skipping." );
+				continue;
+			}
+
+			$results = file_put_contents( $root . $file->getPath(), $replaced );
 
 			if ( false === $results ) {
 				throw new BaseException( 'Could not write to file: ' . $file->getPath() );
@@ -66,15 +80,5 @@ class ReplaceVersion extends Command {
 		}
 
 		return 0;
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function getDevSuffix(): string {
-		$timestamp = exec( 'git show -s --format=%ct HEAD' );
-		$hash      = exec( 'git rev-parse --short=8 HEAD' );
-
-		return "-dev-{$timestamp}-{$hash}";
 	}
 }

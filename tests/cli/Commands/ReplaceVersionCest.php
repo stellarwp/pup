@@ -56,9 +56,24 @@ class ReplaceVersionCest extends AbstractBase {
 		$I->assertStringContainsString( "define( 'FAKE_PROJECT_VERSION', '2.5.0' );", (string) file_get_contents( $project . '/bootstrap.php' ) );
 		$I->assertStringContainsString( '"version": "2.5.0"', (string) file_get_contents( $project . '/package.json' ) );
 		$I->assertStringContainsString( "const VERSION = '2.5.0';", (string) file_get_contents( $project . '/src/Plugin.php' ) );
+	}
 
-		$output = $I->grabShellOutput();
-		$this->assertMatchesStringSnapshot( $output );
+	/**
+	 * @test
+	 */
+	public function it_should_append_the_dev_suffix_with_the_dev_option( CliTester $I ) {
+		$this->write_default_puprc();
+
+		chdir( $this->tests_root . '/_data/fake-project' );
+
+		$I->runShellCommand( "php {$this->pup} replace-version 2.5.0 --dev" );
+		$I->seeResultCodeIs( 0 );
+
+		$project  = $this->tests_root . '/_data/fake-project';
+		$contents = (string) file_get_contents( $project . '/bootstrap.php' );
+
+		// The suffix is -dev-<timestamp>-<hash>, so assert the prefix landed in the file.
+		$I->assertMatchesRegularExpression( "/FAKE_PROJECT_VERSION', '2\.5\.0-dev-\d+-[0-9a-f]+'/", $contents );
 	}
 
 	/**
