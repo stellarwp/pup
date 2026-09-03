@@ -1,9 +1,8 @@
 import type { Command } from 'commander';
 import fs from 'fs-extra';
-import path from 'node:path';
 import archiver from 'archiver';
 import { getConfig } from '../config.ts';
-import { rmdir, trailingSlashIt } from '../utils/directory.ts';
+import { rmdir } from '../utils/directory.ts';
 import {
   resolveFilePatterns,
   getSourceDir,
@@ -11,6 +10,7 @@ import {
   cleanSyncFiles,
 } from '../filesystem/sync-files.ts';
 import { runCommand } from '../utils/process.ts';
+import { replaceVersion } from './replace-version.ts';
 import * as output from '../utils/output.ts';
 
 /**
@@ -45,8 +45,28 @@ export function registerPackageCommand(program: Command): void {
 
       // Update version files
       output.log('- Updating version files...');
-      if (version !== 'unknown') {
-        updateVersionsInFiles(version, config, options.root);
+      if (version !== 'unknown' && config.getVersionFiles().length > 0) {
+        let result: number;
+
+        try {
+          // The version already carries its dev suffix if the caller wanted
+          // one, so --dev is deliberately not passed through.
+          result = await replaceVersion({
+            version,
+            root: options.root,
+            config,
+            quiet: true,
+          });
+        } catch (err) {
+          await undoChanges(config);
+          throw err;
+        }
+
+        if (result !== 0) {
+          await undoChanges(config);
+          process.exitCode = result;
+          return;
+        }
       }
       output.log('Updating version files...Complete.');
 
@@ -119,34 +139,6 @@ async function createZip(
 
     archive.finalize();
   });
-}
-
-/**
- * Replaces version strings in configured version files.
- *
- * @since TBD
- *
- * @param {string} version - The version string to write into the files.
- * @param {ReturnType<typeof getConfig>} config - The resolved pup configuration.
- * @param {string} [root] - Optional root directory override for resolving file paths.
- *
- * @returns {void}
- */
-function updateVersionsInFiles(
-  version: string,
-  config: ReturnType<typeof getConfig>,
-  root?: string
-): void {
-  const versionFiles = config.getVersionFiles();
-  const prefix = root ? trailingSlashIt(root) : '';
-
-  for (const vf of versionFiles) {
-    const filePath = prefix ? path.join(prefix, vf.file) : vf.file;
-    let contents = fs.readFileSync(filePath, 'utf-8');
-    const regex = new RegExp(vf.regex);
-    contents = contents.replace(regex, `$1${version}`);
-    fs.writeFileSync(filePath, contents);
-  }
 }
 
 /**
