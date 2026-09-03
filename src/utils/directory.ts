@@ -19,9 +19,8 @@ export function isInside(parentDir: string, childDir: string): boolean {
 /**
  * Ensures a directory path ends with a trailing separator.
  *
- * A directory name is allowed to contain a dot, so no attempt is made to reject
- * paths that look like files. Treating "acme.com" or "v1.2" as a file name made
- * pup unusable in any project whose directory contained a dot.
+ * Directory names may contain dots ("acme.com", "v1.2"), so the path is not
+ * inspected for anything resembling a file extension.
  *
  * @since TBD
  *
