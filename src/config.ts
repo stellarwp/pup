@@ -306,8 +306,9 @@ export class Config {
       const contents = fs.readFileSync(filePath, 'utf-8');
       const regex = new RegExp(vf.regex);
       const matches = contents.match(regex);
+      const matched = matches?.groups?.version ?? matches?.[2];
 
-      if (!matches || !matches[1] || !matches[2]) {
+      if (!matched) {
         throw new Error(
           `Could not find version in file ${vf.file} using regex "/${vf.regex}/"`
         );
