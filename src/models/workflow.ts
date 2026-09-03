@@ -1,4 +1,4 @@
-import type { Workflow } from '../types.ts';
+import type { BuildStep, Workflow } from '../types.ts';
 
 /**
  * Creates a Workflow object from a slug and list of commands.
@@ -6,11 +6,11 @@ import type { Workflow } from '../types.ts';
  * @since TBD
  *
  * @param {string} slug - The unique identifier for the workflow.
- * @param {string[]} commands - The list of commands to execute in the workflow.
+ * @param {BuildStep[]} commands - The list of build steps to execute in the workflow.
  *
  * @returns {Workflow} A Workflow object with the provided slug and commands.
  */
-export function createWorkflow(slug: string, commands: string[]): Workflow {
+export function createWorkflow(slug: string, commands: BuildStep[]): Workflow {
   return { slug, commands };
 }
 

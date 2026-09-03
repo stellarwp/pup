@@ -5,6 +5,7 @@
  * @since TBD
  */
 export type {
+  BuildStep,
   PupConfig,
   PuprcInput,
   PathsConfig,
@@ -21,6 +22,7 @@ export type {
 } from './schemas.ts';
 
 export {
+  BuildStepSchema,
   PupConfigSchema,
   PuprcInputSchema,
   PathsConfigSchema,
