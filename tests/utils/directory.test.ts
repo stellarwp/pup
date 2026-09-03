@@ -41,10 +41,14 @@ describe('trailingSlashIt', () => {
     expect(result).toBe(`/home/user/project${path.sep}`);
   });
 
-  it('should throw for a file path with an extension', () => {
-    expect(() => trailingSlashIt('/home/user/project/file.txt')).toThrow(
-      'Could not add trailing slash to file path.'
-    );
+  it('should collapse repeated trailing separators', () => {
+    const result = trailingSlashIt(`/home/user/project${path.sep}${path.sep}`);
+    expect(result).toBe(`/home/user/project${path.sep}`);
+  });
+
+  it('should handle a directory name containing a dot', () => {
+    const result = trailingSlashIt('/home/user/acme.com');
+    expect(result).toBe(`/home/user/acme.com${path.sep}`);
   });
 
   it('should handle a relative directory path', () => {
