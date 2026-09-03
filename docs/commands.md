@@ -28,7 +28,7 @@ _Note: If you need to pass environment variables to your build steps, you can ad
 ```bash
 pup build [--dev]
 # or
-composer -- pup build [--dev]
+npx @stellarwp/pup build [--dev]
 ```
 
 ### Arguments
@@ -65,7 +65,7 @@ declared any checks) by running the following command:
 ```bash
 pup check
 # or
-composer -- pup check
+npx @stellarwp/pup check
 ```
 
 ### Arguments
@@ -77,15 +77,17 @@ composer -- pup check
 ### `pup check:tbd`
 Scans your files for `tbd` (case-insensitive) and tells you where to find them.
 
-The `tbd` check will scan your files in relevant locations (`@since`, `@todo`, `@version`, etc, as well as quoted
+The `tbd` check will scan your files in relevant locations (`@since`, `@deprecated`, `@version`, as well as quoted
 `'tbd'`/`"tbd"` strings such as `_deprecated_function( __METHOD__, 'TBD' )`) and display the files and line numbers
 where they appear.
+
+Use [`pup replace-tbd`](/docs/commands.md#pup-replace-tbd) to resolve everything this check reports.
 
 #### Usage
 ```bash
 pup check:tbd
 # or
-composer -- pup check:tbd
+npx @stellarwp/pup check:tbd
 ```
 
 #### `.puprc` options
@@ -112,7 +114,7 @@ the purposes of validation, `pup` will consider `major.minor.patch` versions wit
 ```bash
 pup check:version-conflict
 # or
-composer -- pup check:version-conflict
+npx @stellarwp/pup check:version-conflict
 ```
 
 #### `.puprc` options
@@ -128,7 +130,7 @@ This command cleans up any directories that `pup` creates.
 ```bash
 pup clean
 # or
-composer -- pup clean
+npx @stellarwp/pup clean
 ```
 
 ### Arguments
@@ -144,7 +146,7 @@ Alias for `pup workflow`. See `pup help workflow` for more information.
 ```bash
 pup do <workflow>
 # or
-composer -- pup do <workflow>
+npx @stellarwp/pup do <workflow>
 ```
 
 ### Arguments
@@ -164,7 +166,7 @@ If you haven't provided a version file, the version will be `unknown`.
 ```bash
 pup get-version [--dev]
 # or
-composer -- pup get-version [--dev]
+npx @stellarwp/pup get-version [--dev]
 ```
 
 ### Arguments
@@ -180,7 +182,7 @@ Shows the help menu.
 ```bash
 pup help [command]
 # or
-composer -- pup help [command]
+npx @stellarwp/pup help [command]
 ```
 
 ### Arguments
@@ -195,7 +197,7 @@ Pulls in translations from a GlotPress instance.
 ```bash
 pup i18n
 # or
-composer -- pup i18n
+npx @stellarwp/pup i18n
 ```
 
 ### Arguments
@@ -228,7 +230,7 @@ Gets `pup` details for the current project.
 ```bash
 pup info
 # or
-composer -- pup info
+npx @stellarwp/pup info
 ```
 
 ## `pup package`
@@ -266,7 +268,7 @@ The zip that is generated will be placed in your project's root directory.
 ```bash
 pup package <version>
 # or
-composer -- pup package <version>
+npx @stellarwp/pup package <version>
 ```
 
 ### Arguments
@@ -279,9 +281,9 @@ composer -- pup package <version>
 ## `pup replace-tbd`
 Replaces `TBD` version placeholders in your codebase with the version you provide.
 
-This is the companion to the [`tbd` check](/docs/commands.md#pup-checktbd): it scans the same directories (using the `tbd` check's `dirs`, `skip_files`, and `skip_directories` configuration) and resolves the `TBD` version placeholders it flags — docblock tag values such as `@since TBD`, `@deprecated TBD`, and `@version TBD`, and quoted `'tbd'`/`"tbd"` strings (including those passed to `_deprecated_*()` calls, e.g. `_deprecated_function( __METHOD__, 'TBD' )`). Only the placeholder itself is replaced; an unrelated `tbd` elsewhere on a line (e.g. a word in prose) is left untouched.
+This is the companion to the [`tbd` check](/docs/commands.md#pup-checktbd): it scans the same directories (using the `tbd` check's `dirs`, `skip_files`, and `skip_directories` configuration) and resolves the `TBD` version placeholders it flags — docblock tag values such as `@since TBD`, `@deprecated TBD`, and `@version TBD`, and quoted `'tbd'`/`"tbd"` strings, including those passed to `_deprecated_*()` calls such as `_deprecated_function( __METHOD__, 'TBD' )`. Only the placeholder itself is replaced; an unrelated `tbd` elsewhere on a line, such as a word in prose, is left untouched.
 
-It's typically run during release prep, once you know the version the pending changes will ship in.
+It is typically run during release prep, once you know the version the pending changes will ship in.
 
 Unlike `pup package`, this command writes the changes directly to your working files and does **not** restore them afterward. Use `--dry-run` to preview the changes first, or your version control system (e.g. `git checkout`) to undo them.
 
@@ -289,7 +291,7 @@ Unlike `pup package`, this command writes the changes directly to your working f
 ```bash
 pup replace-tbd <version> [--dry-run]
 # or
-composer -- pup replace-tbd <version> [--dry-run]
+npx @stellarwp/pup replace-tbd <version> [--dry-run]
 ```
 
 ### Arguments
@@ -301,7 +303,7 @@ composer -- pup replace-tbd <version> [--dry-run]
 
 
 ## `pup replace-version`
-Replaces the version number in all of your project's [version files](https://github.com/stellarwp/pup/blob/main/docs/configuration.md#paths-versions) with the version you provide.
+Replaces the version number in all of your project's version files with the version you provide.
 
 This command iterates over every entry in your `.puprc` file's [`paths.versions`](/docs/configuration.md#pathsversions) array and rewrites the matched version number using the supplied `version` argument. It is handy when preparing a release or staging a zip, where you want to bump the version in place without running a full `pup package`.
 
@@ -311,7 +313,7 @@ Unlike `pup package`, this command writes the changes directly to your working f
 ```bash
 pup replace-version <version> [--dev]
 # or
-composer -- pup replace-version <version> [--dev]
+npx @stellarwp/pup replace-version <version> [--dev]
 ```
 
 ### Arguments
@@ -348,9 +350,9 @@ pup workflow my-workflow
 # OR
 pup do my-workflow
 # OR
-composer -- pup workflow my-workflow
+npx @stellarwp/pup workflow my-workflow
 # OR
-composer -- pup do my-workflow
+npx @stellarwp/pup do my-workflow
 ```
 
 ### Usage
@@ -359,9 +361,9 @@ pup workflow <workflow>
 # or
 pup do <workflow>
 # or
-composer -- pup workflow <workflow>
+npx @stellarwp/pup workflow <workflow>
 # or
-composer -- pup do <workflow>
+npx @stellarwp/pup do <workflow>
 ```
 
 ### Arguments
@@ -381,7 +383,7 @@ more information on which commands it runs and when.
 ```bash
 pup zip <branch> [--dev] [--no-clone]
 # or
-composer -- pup zip <branch> [--dev] [--no-clone]
+npx @stellarwp/pup zip <branch> [--dev] [--no-clone]
 ```
 
 ### Arguments
@@ -405,7 +407,7 @@ This command will build a zip name based on data provided by `.puprc` and option
 ```bash
 pup zip-name <version> [--dev]
 # or
-composer -- pup zip-name <version> [--dev]
+npx @stellarwp/pup zip-name <version> [--dev]
 ```
 
 ### Arguments

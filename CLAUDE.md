@@ -4,98 +4,113 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PUP (Project Utilities & Packager) is a PHP CLI utility built by StellarWP for automating WordPress plugin/theme builds, packaging, and deployment processes. It's distributed as a PHP archive (phar) and uses Symfony Console components.
+PUP (Project Utilities & Packager) is a TypeScript CLI tool built by StellarWP for automating WordPress plugin/theme builds, packaging, and deployment processes. It is distributed via npm (`@stellarwp/pup`) and can also be used as a reusable GitHub Action.
 
 ## Key Technologies
 
-- **PHP 7.2+ / 8.0+**: Primary language
-- **Symfony Components**: Console, Process, Filesystem (v5.4)
-- **Testing**: Codeception 4.2 with CLI module
-- **Static Analysis**: PHPStan level 8 (highest strictness)
-- **Build Tool**: Box for creating phar archives
+- **TypeScript** (ES2022, NodeNext modules): Primary language
+- **Node.js 18+**: Runtime
+- **Commander**: CLI framework
+- **execa**: Process execution
+- **archiver**: Zip creation
+- **simple-git**: Git operations
+- **picomatch**: Glob matching
+- **chalk**: Styled console output
+- **Testing**: Jest with ts-jest
+- **Build**: tsup (bundler)
 
 ## Essential Commands
 
 ### Development Commands
 ```bash
+# Build the project
+npm run build
+
+# Watch mode
+npm run dev
+
 # Run all tests
-composer run cr
+npm test
 
-# Run static analysis
-composer run test:analysis
+# Run linting
+npm run lint
 
-# Build the phar file
-composer run build-phar
-
-# Run a specific test
-vendor/bin/codecept run cli <TestName>
+# Run type checking
+npm run typecheck
 ```
 
 ### PUP Commands (when testing locally)
 ```bash
 # Build the project
-./pup build [--dev]
+node dist/cli.js build [--dev]
 
 # Run all checks
-./pup check
+node dist/cli.js check
 
 # Create a zip package
-./pup zip
+node dist/cli.js zip
 
 # Run a workflow
-./pup workflow <workflow-name>
+node dist/cli.js workflow <workflow-name>
 # or
-./pup do <workflow-name>
+node dist/cli.js do <workflow-name>
 ```
 
 ## Architecture & Structure
 
 ### Core Application Flow
-1. **Entry Point**: `pup` script instantiates `App` (extends Symfony Application)
-2. **Configuration**: Loaded from `.puprc` file via `Config` class
-3. **Commands**: Located in `src/Commands/`, each extending `Command` base class
-4. **Workflows**: Custom command sequences defined in `.puprc` under `workflows` key
-5. **Checks**: Validation system in `src/Check/` with built-in and custom checks
+1. **Entry Point**: `src/cli.ts` — `#!/usr/bin/env node`, sets up Commander program
+2. **App Setup**: `src/app.ts` — registers all commands with Commander
+3. **Configuration**: Loaded from `.puprc` file via `src/config.ts`
+4. **Commands**: Located in `src/commands/`, each exports a `register*Command()` function
+5. **Workflows**: Custom command sequences defined in `.puprc` under `workflows` key
+6. **Checks**: Validation system in `src/commands/checks/` with built-in and custom checks
 
 ### Key Directories
-- `src/Commands/`: All CLI commands (Build, Check, Clean, Package, Zip, etc.)
-- `src/Check/`: Check system for validation (TBD finder, version conflicts)
-- `src/Filesystem/`: File sync operations and utilities
-- `src/Workflow/`: Workflow management system
-- `tests/cli/`: Codeception CLI tests
-- `tests/_data/`: Test fixtures and fake projects for testing
+- `src/commands/`: All CLI commands (build, check, clean, package, zip, etc.)
+- `src/commands/checks/`: Built-in checks (tbd, version-conflict)
+- `src/filesystem/`: File sync operations (.distfiles, .distinclude, .distignore parsing)
+- `src/utils/`: Utility modules (process, output, glob, directory, env)
+- `tests/commands/`: Jest command tests
+- `tests/utils/`: Jest utility tests
+- `tests/fixtures/`: Test fixtures and fake projects
+- `tests/helpers/`: Test setup helpers
+- `defaults/`: Default config files (.puprc-defaults, .distignore-defaults)
 
 ### Important Design Patterns
-1. **Command Pattern**: Each command is a separate class implementing execute()
-2. **Collection Pattern**: Used for managing checks (`Check\Collection`)
-3. **Process Execution**: Uses Symfony Process for running external commands
-4. **Configuration Merging**: `.puprc` files merge with defaults from `.puprc-defaults`
+1. **Command Registration**: Each command exports a function that registers with Commander
+2. **Process Execution**: Uses `execa` for running external commands via `src/utils/process.ts`
+3. **Configuration Merging**: `.puprc` files merge with defaults from `defaults/.puprc-defaults`
+4. **Glob Matching**: Custom glob-to-regex converter in `src/utils/glob.ts` with extglob support
 
 ### Testing Approach
-- **CLI Tests**: Test commands against fake projects in `tests/_data/`
-- **Snapshot Testing**: Uses codeception-snapshot-assertions for output validation
-- **Test Isolation**: Each test uses temporary directories to avoid conflicts
+- **CLI Tests**: Test commands by running built CLI as subprocess via `tests/helpers/setup.ts`
+- **Test Isolation**: Each test resets fixtures between runs
+- **Sequential Execution**: Tests run with `--runInBand` to avoid fixture conflicts
+- **Jest Config**: Uses `tsconfig.test.json` (CJS mode) for test environment
 
 ### Build and Packaging Flow
 1. **Build Phase**: Runs commands from `.puprc` `build` array
 2. **Check Phase**: Validates code (TBD comments, version conflicts)
-3. **Package Phase**: Copies files based on `.distfiles` patterns
-4. **Zip Phase**: Creates final archive excluding `.distignore` patterns
+3. **Package Phase**: Copies files based on `.distfiles`/`.distinclude`/`.distignore` patterns
+4. **Zip Phase**: Creates final archive using `archiver`
 
 ## Critical Implementation Notes
 
-1. **Phar Context**: Code must work both as phar and regular files. Check `App::$is_phar` when needed.
+1. **ESM Source, CJS Tests**: Source code uses ESM (`"type": "module"`), but tests run under CJS via `tsconfig.test.json` with `module: "commonjs"`.
 
-2. **Process Execution**: Always use Symfony Process component for external commands, never shell_exec().
+2. **Process Execution**: Always use the `runCommand()` wrapper from `src/utils/process.ts`, which wraps `execa`.
 
-3. **Configuration Priority**: CLI arguments > `.puprc` > `.puprc-defaults`
+3. **Configuration Priority**: CLI arguments > `.puprc` > `defaults/.puprc-defaults`
 
-4. **Error Handling**: Commands should throw exceptions for errors, not exit directly.
+4. **Error Handling**: Commands call `process.exit()` on fatal errors.
 
-5. **Output Formatting**: Use Symfony Console helpers (Table, ProgressBar) for consistent UI.
+5. **Output System**: Use `src/utils/output.ts` helpers (`success()`, `error()`, `warning()`, `section()`, `log()`) for consistent console output with chalk styling.
 
-6. **Path Resolution**: Always resolve paths relative to the project root, not the phar location.
+6. **Path Resolution**: Paths resolve relative to the project root (working directory).
 
-7. **Check System**: Checks can be simple (command-based) or complex (PHP classes implementing CheckInterface).
+7. **Check System**: Checks can be shell commands (run via execa) or JS/TS modules (dynamically imported). Built-in checks (tbd, version-conflict) are in `src/commands/checks/`.
 
 8. **Workflow System**: Workflows support argument passthrough using `--` separator.
+
+9. **GitHub Action**: `action.yml` provides a composite action that runs `npx @stellarwp/pup@latest`.
