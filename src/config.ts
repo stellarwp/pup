@@ -298,21 +298,6 @@ export class Config {
         );
       }
 
-      const filePath = path.join(this.#workingDir, vf.file);
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Version file does not exist: ${vf.file}`);
-      }
-
-      const contents = fs.readFileSync(filePath, 'utf-8');
-      const regex = new RegExp(vf.regex);
-      const matches = contents.match(regex);
-
-      if (!matches || !matches[1] || !matches[2]) {
-        throw new Error(
-          `Could not find version in file ${vf.file} using regex "/${vf.regex}/"`
-        );
-      }
-
       result.push({ file: vf.file, regex: vf.regex });
     }
 

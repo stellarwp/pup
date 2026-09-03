@@ -20,19 +20,19 @@ export function getDefaultPuprc(): Record<string, unknown> {
       versions: [
         {
           file: 'bootstrap.php',
-          regex: "(define\\( +['\"]FAKE_PROJECT_VERSION['\"], +['\"])([^'\"]+)",
+          regex: "(define\\( +['\"]FAKE_PROJECT_VERSION['\"], +['\"])(?<version>[^'\"]+)",
         },
         {
           file: 'bootstrap.php',
-          regex: '(Version: )(.+)',
+          regex: '(Version: )(?<version>.+)',
         },
         {
           file: 'src/Plugin.php',
-          regex: "(const VERSION = ['\"])([^'\"]+)",
+          regex: "(const VERSION = ['\"])(?<version>[^'\"]+)",
         },
         {
           file: 'package.json',
-          regex: '("version": ")([^"]+)',
+          regex: '("version": ")(?<version>[^"]+)',
         },
       ],
     },
