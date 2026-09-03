@@ -37,7 +37,7 @@ export function getPrefix(): string {
  */
 function formatMessage(message: string): string {
   if (prefix) {
-    return `[${prefix}] ${message}`;
+    return `${chalk.blue(`[${prefix}]`)} ${message}`;
   }
   return message;
 }
