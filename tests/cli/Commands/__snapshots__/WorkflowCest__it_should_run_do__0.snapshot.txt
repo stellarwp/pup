@@ -1,8 +1,0 @@
-Running bork workflow steps...
-
-> echo "fake project, yo"
--------------------------
-
-fake project, yo
-
-Workflow complete.

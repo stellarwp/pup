@@ -1,4 +1,0 @@
-{
-    "directories": ["src", "vendor", "docs"],
-    "files": [".puprc-defaults", ".distignore-defaults", "pup"]
-}

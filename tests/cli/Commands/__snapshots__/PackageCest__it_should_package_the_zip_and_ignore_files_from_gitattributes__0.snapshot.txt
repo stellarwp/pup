@@ -1,5 +1,0 @@
-.
-..
-fake-project
-other-file.php
-src
