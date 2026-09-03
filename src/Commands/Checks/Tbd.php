@@ -3,6 +3,7 @@
 namespace StellarWP\Pup\Commands\Checks;
 
 use StellarWP\Pup\App;
+use StellarWP\Pup\Check\TbdScanner;
 use StellarWP\Pup\Command\Io;
 use Symfony\Component\Console\Input\InputInterface;
 
@@ -38,34 +39,20 @@ class Tbd extends AbstractCheck {
 
 		$found_tbds = false;
 
-		$files_to_skip = '.min.css|.min.js|.map.js|.css|.png|.jpg|.jpeg|.svg|.gif|.ico';
-		$directories_to_skip = 'bin|build|vendor|node_modules|.git|.github|tests';
-
-		$check_config = $this->check_config->getConfig();
-
-		if ( ! empty( $this->check_config->getConfig()['skip_files'] ) ) {
-			$files_to_skip = $this->check_config->getConfig()['skip_files'];
-		}
-
-		if ( ! empty( $this->check_config->getConfig()['skip_directories'] ) ) {
-			$directories_to_skip = $this->check_config->getConfig()['skip_directories'];
-		}
-
-		$files_to_skip       = str_replace( '.', '\.', $files_to_skip );
-		$directories_to_skip = str_replace( '.', '\.', $directories_to_skip );
+		$config  = $this->check_config->getConfig();
+		$scanner = TbdScanner::fromConfig( $config );
 
 		$matched_lines = [];
 		$current_dir = getcwd();
 
-		$dirs = isset( $this->check_config->getConfig()['dirs'] ) ? $this->check_config->getConfig()['dirs'] : [];
+		$dirs = isset( $config['dirs'] ) ? $config['dirs'] : [];
 
 		foreach ( $dirs as $dir ) {
 			$results = $this->scanDir(
+				$scanner,
 				$root ?: '.',
 				$current_dir ?: '.',
-				$dir,
-				$files_to_skip,
-				$directories_to_skip,
+				$dir
 			);
 
 			$matched_lines = array_merge( $matched_lines, $results );
@@ -96,45 +83,18 @@ class Tbd extends AbstractCheck {
 	}
 
 	/**
-	 * @param string $root
-	 * @param string $current_dir
-	 * @param string $scan_dir
-	 * @param string $files_to_skip
-	 * @param string $directories_to_skip
+	 * @param TbdScanner $scanner
+	 * @param string     $root
+	 * @param string     $current_dir
+	 * @param string     $scan_dir
 	 *
 	 * @return array<string, array<string, array<int, string>>>
 	 */
-	protected function scanDir( string $root, string $current_dir, string $scan_dir, string $files_to_skip, string $directories_to_skip ): array {
+	protected function scanDir( TbdScanner $scanner, string $root, string $current_dir, string $scan_dir ): array {
 		$matched_lines = [];
 
-		$dir = new \RecursiveIteratorIterator( new \RecursiveDirectoryIterator( $root . '/' . $scan_dir ) );
-		foreach ( $dir as $file ) {
-			// Skip directories like "." and ".." to avoid file_get_contents errors.
-			if ( $file->isDir() ) {
-				continue;
-			}
-
-			$file_path  = $file->getPathname();
-			$short_path = (string) str_replace( $current_dir . '/', '', $file_path );
-
-			if ( preg_match( '!(' . $files_to_skip . ')$!', $short_path ) ) {
-				continue;
-			}
-
-			if ( preg_match( '!(\.pup-)|(\.puprc)!', $short_path ) ) {
-				continue;
-			}
-
-			$directory_separator = DIRECTORY_SEPARATOR;
-			if ( $directory_separator === '\\' ) {
-				$directory_separator = '\\\\';
-			}
-
-			if ( preg_match( '!(' . $directories_to_skip . ')' . $directory_separator . '!', $short_path ) ) {
-				continue;
-			}
-
-			$content   = file_get_contents( $short_path );
+		foreach ( $scanner->getFiles( $root, $current_dir, $scan_dir ) as $short_path ) {
+			$content = file_get_contents( $short_path );
 
 			if ( ! $content ) {
 				continue;
@@ -148,12 +108,7 @@ class Tbd extends AbstractCheck {
 				$lines[ $line ] = trim( $lines[ $line ] );
 
 				// does the line match?
-				if (
-					preg_match( '/\*\s*\@(since|deprecated|version)\s.*tbd/i', $lines[ $line ] )
-					|| preg_match( '/_deprecated_\w\(.*[\'"]tbd[\'"]/i', $lines[ $line ] )
-					|| preg_match( '/[\'"]tbd[\'"]/i', $lines[ $line ] )
-				) {
-
+				if ( $scanner->lineMatches( $lines[ $line ] ) ) {
 					// if the file isn't being tracked already, add it to the array
 					if ( ! isset( $matched_lines[ $short_path ] ) ) {
 						$matched_lines[ $short_path ] = [
