@@ -638,6 +638,11 @@ let globalConfig: Config | null = null;
 /**
  * Returns the singleton Config instance, creating it if needed.
  *
+ * `createApp()` primes the singleton with `process.cwd()` before any command
+ * runs, so an explicit working directory passed later (for example from a
+ * command's `--root` option) rebuilds the instance rather than being discarded.
+ * Without that, `--root` would never load the `.puprc` in the target directory.
+ *
  * @since TBD
  *
  * @param {string} workingDir - Optional working directory to pass to the Config constructor.
@@ -645,9 +650,19 @@ let globalConfig: Config | null = null;
  * @returns {Config} The singleton Config instance.
  */
 export function getConfig(workingDir?: string): Config {
+  if (globalConfig && workingDir !== undefined) {
+    const requested = path.resolve(workingDir);
+    const current = path.resolve(globalConfig.getWorkingDir());
+
+    if (requested !== current) {
+      globalConfig = null;
+    }
+  }
+
   if (!globalConfig) {
     globalConfig = new Config(workingDir);
   }
+
   return globalConfig;
 }
 

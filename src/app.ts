@@ -1,37 +1,8 @@
 import { Command } from 'commander';
 import { Config, getConfig, resetConfig } from './config.ts';
-import { fileURLToPath } from 'node:url';
-import path from 'node:path';
-import fs from 'fs-extra';
+import { version } from '../package.json';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-/**
- * Reads the pup version from the nearest package.json.
- *
- * @since TBD
- *
- * @returns {string} The version string from package.json, or '2.0.0' as a fallback.
- */
-function getVersion(): string {
-  // Try to read from package.json
-  const candidates = [
-    path.resolve(__dirname, '..', 'package.json'),
-    path.resolve(__dirname, '..', '..', 'package.json'),
-  ];
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(candidate)) {
-      const pkg = JSON.parse(fs.readFileSync(candidate, 'utf-8')) as { version: string };
-      return pkg.version;
-    }
-  }
-
-  return '2.0.0';
-}
-
-export const PUP_VERSION = getVersion();
+export const PUP_VERSION = version;
 
 /**
  * Creates and configures the Commander program instance.
