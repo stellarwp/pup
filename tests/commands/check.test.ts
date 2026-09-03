@@ -31,6 +31,32 @@ describe('check command', () => {
   });
 });
 
+describe('check subcommands', () => {
+  afterEach(() => {
+    cleanupTempProjects();
+  });
+
+  it('should register built-in check:tbd even when not in .puprc', async () => {
+    const projectDir = createTempProject();
+    // Only version-conflict configured, no tbd
+    writePuprc(getPuprc({ checks: { 'version-conflict': {} } }), projectDir);
+
+    const result = await runPup('check:tbd', { cwd: projectDir });
+    expect(result.output).toContain('Checking for TBDs...');
+    expect(result.output).not.toContain("unknown command 'check:tbd'");
+  });
+
+  it('should run check:tbd without prefix', async () => {
+    const projectDir = createTempProject();
+    writePuprc(getPuprc(), projectDir);
+
+    const result = await runPup('check:tbd', { cwd: projectDir });
+    expect(result.exitCode).toBe(0);
+    expect(result.output).toContain('Checking for TBDs...');
+    expect(result.output).not.toContain('[tbd]');
+  });
+});
+
 describe('custom checks', () => {
   afterEach(() => {
     cleanupTempProjects();
