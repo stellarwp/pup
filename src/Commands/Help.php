@@ -104,10 +104,6 @@ class Help extends Command {
 			}
 
 			foreach ( $command_parts as $command_part ) {
-				if ( ! isset( $command_part ) ) {
-					continue;
-				}
-
 				$command_part = trim( $command_part );
 
 				if ( in_array( $command_part, [ 'tbd', 'version-conflict' ], true ) ) {
