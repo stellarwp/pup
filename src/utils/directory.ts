@@ -19,22 +19,24 @@ export function isInside(parentDir: string, childDir: string): boolean {
 /**
  * Ensures a directory path ends with a trailing separator.
  *
+ * A directory name is allowed to contain a dot, so no attempt is made to reject
+ * paths that look like files. Treating "acme.com" or "v1.2" as a file name made
+ * pup unusable in any project whose directory contained a dot.
+ *
  * @since TBD
  *
  * @param {string} p - The path to ensure has a trailing separator.
  *
  * @returns {string} The path with a trailing separator.
- *
- * @throws {Error} If the path appears to be a file (has an extension).
  */
 export function trailingSlashIt(p: string): string {
-  const { dir, base, ext } = path.parse(p);
+  let result = p;
 
-  if (ext.length > 0) {
-    throw new Error('Could not add trailing slash to file path.');
+  while (result.endsWith(path.sep)) {
+    result = result.slice(0, -path.sep.length);
   }
 
-  return path.join(dir, base, path.sep);
+  return result + path.sep;
 }
 
 /**
