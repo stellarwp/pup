@@ -303,7 +303,7 @@ npx @stellarwp/pup replace-tbd <version> [--dry-run]
 
 
 ## `pup replace-version`
-Replaces the version number in all of your project's [version files](/docs/configuration.md#pathsversions) with the version you provide.
+Replaces the version number in all of your project's version files with the version you provide.
 
 This command iterates over every entry in your `.puprc` file's [`paths.versions`](/docs/configuration.md#pathsversions) array and rewrites the matched version number using the supplied `version` argument. It is handy when preparing a release or staging a zip, where you want to bump the version in place without running a full `pup package`.
 
