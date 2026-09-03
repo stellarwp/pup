@@ -19,22 +19,23 @@ export function isInside(parentDir: string, childDir: string): boolean {
 /**
  * Ensures a directory path ends with a trailing separator.
  *
+ * Directory names may contain dots ("acme.com", "v1.2"), so the path is not
+ * inspected for anything resembling a file extension.
+ *
  * @since TBD
  *
  * @param {string} p - The path to ensure has a trailing separator.
  *
  * @returns {string} The path with a trailing separator.
- *
- * @throws {Error} If the path appears to be a file (has an extension).
  */
 export function trailingSlashIt(p: string): string {
-  const { dir, base, ext } = path.parse(p);
+  let result = p;
 
-  if (ext.length > 0) {
-    throw new Error('Could not add trailing slash to file path.');
+  while (result.endsWith(path.sep)) {
+    result = result.slice(0, -path.sep.length);
   }
 
-  return path.join(dir, base, path.sep);
+  return result + path.sep;
 }
 
 /**
