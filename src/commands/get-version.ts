@@ -2,7 +2,7 @@ import type { Command } from 'commander';
 import fs from 'fs-extra';
 import path from 'node:path';
 import { getConfig } from '../config.ts';
-import { runCommandSilent } from '../utils/process.ts';
+import { getDevSuffix } from '../utils/version.ts';
 import * as output from '../utils/output.ts';
 
 /**
@@ -58,17 +58,7 @@ export async function getVersion(options: {
   }
 
   if (options.dev) {
-    const timestampResult = await runCommandSilent(
-      'git show -s --format=%ct HEAD',
-      { cwd }
-    );
-    const hashResult = await runCommandSilent(
-      'git rev-parse --short=8 HEAD',
-      { cwd }
-    );
-    const timestamp = timestampResult.stdout.trim();
-    const hash = hashResult.stdout.trim();
-    version += `-dev-${timestamp}-${hash}`;
+    version += await getDevSuffix(cwd);
   }
 
   return version;
