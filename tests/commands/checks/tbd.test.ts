@@ -175,6 +175,34 @@ describe('tbd check', () => {
         expect(result.exitCode).toBe(0);
         expect(result.output).toContain('No TBDs found!');
       });
+
+      it('should not match a resolved tag followed by the word tbd in prose', async () => {
+        const dir = createTempProject();
+        writePuprc(getPuprc({ checks: { tbd: {} } }), dir);
+        fs.writeFileSync(path.join(dir, 'src', 'Test.php'), [
+          '<?php',
+          '/**',
+          ' * @since 5.0.0 reworked the tbd handler',
+          ' */',
+        ].join('\n'));
+
+        const result = await runPup('check', { cwd: dir });
+        expect(result.exitCode).toBe(0);
+        expect(result.output).toContain('No TBDs found!');
+      });
+
+      it('should match a tag outside a docblock', async () => {
+        const dir = createTempProject();
+        writePuprc(getPuprc({ checks: { tbd: {} } }), dir);
+        fs.writeFileSync(path.join(dir, 'src', 'Test.php'), [
+          '<?php',
+          '// @since TBD',
+        ].join('\n'));
+
+        const result = await runPup('check', { cwd: dir });
+        expect(result.exitCode).not.toBe(0);
+        expect(result.output).toContain('TBDs have been found!');
+      });
     });
 
     describe('WordPress deprecation functions', () => {
