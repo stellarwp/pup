@@ -5,6 +5,7 @@ namespace StellarWP\Pup\Commands;
 use StellarWP\Pup\App;
 use StellarWP\Pup\Exceptions\BaseException;
 use StellarWP\Pup\Command\Command;
+use StellarWP\Pup\Commands\Traits\DevSuffix;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -12,6 +13,8 @@ use Symfony\Component\Console\Output\BufferedOutput;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ZipName extends Command {
+	use DevSuffix;
+
 	/**
 	 * @inheritDoc
 	 *
@@ -64,15 +67,5 @@ class ZipName extends Command {
 		$output->writeln( $zip_name );
 
 		return 0;
-	}
-
-	/**
-	 * @return string
-	 */
-	protected function getDevSuffix(): string {
-		$timestamp = exec( 'git show -s --format=%ct HEAD' );
-		$hash      = exec( 'git rev-parse --short=8 HEAD' );
-
-		return "-dev-{$timestamp}-{$hash}";
 	}
 }
