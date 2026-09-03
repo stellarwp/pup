@@ -6,6 +6,13 @@ import { isGlobMatch } from '../utils/glob.ts';
 import { trailingSlashIt } from '../utils/directory.ts';
 
 /**
+ * The generated .pup-* filenames.
+ *
+ * @since TBD
+ */
+const PUP_FILES = ['.pup-distfiles', '.pup-distinclude', '.pup-distignore'];
+
+/**
  * Reads patterns from a sync file.
  *
  * @since TBD
@@ -27,66 +34,206 @@ function readPatterns(filePath: string): string[] {
 }
 
 /**
- * Reads .gitattributes and extracts export-ignore patterns.
+ * Filters the config sync files list to entries containing the given filename.
  *
  * @since TBD
  *
- * @param {string} filePath - The path to the .gitattributes file.
+ * @param {string[]} syncFiles - The full list of sync file paths from config.
+ * @param {string} filename - The filename to filter for (e.g., '.distfiles').
  *
- * @returns {string[]} An array of export-ignore patterns.
+ * @returns {string[]} Filtered list of sync file paths containing the filename.
  */
-function readGitAttributesPatterns(filePath: string): string[] {
-  if (!fs.existsSync(filePath)) return [];
+export function filterSyncFiles(
+  syncFiles: string[],
+  filename: string
+): string[] {
+  return syncFiles.filter((f) => f.includes(filename));
+}
 
-  const contents = fs.readFileSync(filePath, 'utf-8');
-  if (!contents || !contents.includes('export-ignore')) return [];
+/**
+ * Transforms .gitattributes content to extract only export-ignore patterns.
+ *
+ * @since TBD
+ *
+ * @param {string} contents - The raw .gitattributes file content.
+ *
+ * @returns {string} Newline-separated export-ignore patterns, or empty string if none found.
+ */
+export function extractExportIgnorePatterns(contents: string): string {
+  if (!contents || !contents.includes('export-ignore')) return '';
 
-  return contents
+  const lines = contents
     .split('\n')
     .map((line) => line.trim())
     .filter((line) => line.includes('export-ignore'))
     .map((line) => line.replace(/\s+export-ignore.*$/, '').trim())
     .filter((line) => line.length > 0);
+
+  return lines.join('\n');
 }
 
 /**
- * Gets all ignore patterns from .distignore, .gitattributes, and defaults.
+ * Resolves, reads, and optionally transforms a sync file's content, appending
+ * it to the target .pup-* file. Handles subdirectory path prefixing for files
+ * specified via paths.sync_files config.
+ *
+ * @since TBD
+ *
+ * @param {string} root - The project root directory.
+ * @param {string[]} filePaths - The list of sync file paths to process.
+ * @param {string} targetFile - The target .pup-* filename (e.g., '.pup-distfiles').
+ * @param {string} sourceFilename - The base source filename (e.g., '.distfiles').
+ * @param {((content: string) => string) | null} transformFn - Optional content transformer.
+ *
+ * @returns {void}
+ */
+export function writeSyncFile(
+  root: string,
+  filePaths: string[],
+  targetFile: string,
+  sourceFilename: string,
+  transformFn: ((content: string) => string) | null = null
+): void {
+  const targetPath = path.join(root, targetFile);
+
+  for (const file of filePaths) {
+    let contents: string;
+    let isDefault = false;
+
+    // Try root + file first
+    const rootPath = path.join(root, file);
+    if (fs.existsSync(rootPath)) {
+      contents = fs.readFileSync(rootPath, 'utf-8');
+    } else if (fs.existsSync(file)) {
+      // Absolute path (e.g., PUP defaults directory)
+      contents = fs.readFileSync(file, 'utf-8');
+      isDefault = true;
+    } else {
+      continue;
+    }
+
+    // Apply transform (e.g., gitattributes export-ignore extraction)
+    if (transformFn) {
+      contents = transformFn(contents);
+    }
+    if (!contents) continue;
+
+    // Root-level files or defaults: raw append
+    if (!file.includes('/') || isDefault) {
+      fs.appendFileSync(targetPath, contents + '\n');
+      continue;
+    }
+
+    // Subdirectory files: prefix each line with the directory path
+    const lines = contents
+      .split('\n')
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+    const uniqueLines = [...new Set(lines)];
+    const relativePath = file.replace('/' + sourceFilename, '');
+
+    for (const line of uniqueLines) {
+      const prefixed = line.startsWith('/')
+        ? relativePath + line
+        : relativePath + '/' + line;
+      fs.appendFileSync(targetPath, prefixed + '\n');
+    }
+  }
+}
+
+/**
+ * Generates .pup-distfiles, .pup-distinclude, and .pup-distignore in the
+ * project root by aggregating content from all configured sync file sources.
+ *
+ * @since TBD
+ *
+ * @param {string} root - The project root directory.
+ * @param {Config} config - The resolved pup configuration instance.
+ *
+ * @returns {void}
+ */
+export function buildSyncFiles(root: string, config: Config): void {
+  const allSyncFiles = config.getSyncFiles();
+  const defaultsDir = getDefaultsDir();
+
+  // Clean existing .pup-* files
+  for (const pupFile of PUP_FILES) {
+    const pupPath = path.join(root, pupFile);
+    if (fs.existsSync(pupPath)) {
+      fs.removeSync(pupPath);
+    }
+  }
+
+  // Build .pup-distfiles
+  const distfilesPaths = filterSyncFiles(allSyncFiles, '.distfiles');
+  writeSyncFile(root, distfilesPaths, '.pup-distfiles', '.distfiles');
+
+  // Build .pup-distinclude
+  const distincludePaths = filterSyncFiles(allSyncFiles, '.distinclude');
+  writeSyncFile(root, distincludePaths, '.pup-distinclude', '.distinclude');
+
+  // Build .pup-distignore from .distignore sources
+  const distignorePaths = filterSyncFiles(allSyncFiles, '.distignore');
+  writeSyncFile(root, distignorePaths, '.pup-distignore', '.distignore');
+
+  // Merge .gitattributes export-ignore patterns into .pup-distignore
+  const gitattributesPaths = filterSyncFiles(allSyncFiles, '.gitattributes');
+  writeSyncFile(
+    root,
+    gitattributesPaths,
+    '.pup-distignore',
+    '.gitattributes',
+    extractExportIgnorePatterns
+  );
+
+  // Append .distignore-defaults if configured
+  if (config.getZipUseDefaultIgnore()) {
+    const defaultIgnorePath = path.join(defaultsDir, '.distignore-defaults');
+    writeSyncFile(
+      root,
+      [defaultIgnorePath],
+      '.pup-distignore',
+      '.distignore-defaults'
+    );
+  }
+}
+
+/**
+ * Removes generated .pup-* sync files from the project root.
+ *
+ * @since TBD
+ *
+ * @param {string} root - The project root directory.
+ *
+ * @returns {void}
+ */
+export function cleanSyncFiles(root: string): void {
+  for (const pupFile of PUP_FILES) {
+    const pupPath = path.join(root, pupFile);
+    if (fs.existsSync(pupPath)) {
+      fs.removeSync(pupPath);
+    }
+  }
+}
+
+/**
+ * Gets all ignore patterns from the generated .pup-distignore file.
+ * Must be called after buildSyncFiles().
  *
  * @since TBD
  *
  * @param {string} root - The project root directory path.
- * @param {boolean} useDefaultIgnore - Whether to include default ignore patterns.
  *
  * @returns {string[]} A deduplicated array of ignore patterns.
  */
-function getIgnorePatterns(
-  root: string,
-  useDefaultIgnore: boolean
-): string[] {
-  const patterns: string[] = [];
-
-  // .distignore
-  const distignorePath = path.join(root, '.distignore');
-  patterns.push(...readPatterns(distignorePath));
-
-  // .gitattributes export-ignore
-  const gitattrsPath = path.join(root, '.gitattributes');
-  patterns.push(...readGitAttributesPatterns(gitattrsPath));
-
-  // Default ignores
-  if (useDefaultIgnore) {
-    const defaultIgnorePath = path.join(
-      getDefaultsDir(),
-      '.distignore-defaults'
-    );
-    patterns.push(...readPatterns(defaultIgnorePath));
-  }
-
-  return [...new Set(patterns)];
+export function getIgnorePatterns(root: string): string[] {
+  const pupPath = path.join(root, '.pup-distignore');
+  return [...new Set(readPatterns(pupPath))];
 }
 
 /**
- * Gets include patterns from .distinclude.
+ * Gets include patterns from the generated .pup-distinclude file.
+ * Must be called after buildSyncFiles().
  *
  * @since TBD
  *
@@ -94,25 +241,77 @@ function getIgnorePatterns(
  *
  * @returns {string[]} An array of include patterns.
  */
-function getIncludePatterns(root: string): string[] {
-  const distincludePath = path.join(root, '.distinclude');
-  return readPatterns(distincludePath);
+export function getIncludePatterns(root: string): string[] {
+  const pupPath = path.join(root, '.pup-distinclude');
+  return readPatterns(pupPath);
 }
 
 /**
- * Gets allowlist patterns from .distfiles.
- * If .distfiles exists, only matched files are included.
+ * Gets allowlist patterns from the generated .pup-distfiles file.
+ * If .pup-distfiles exists, only matched files are included.
+ * Must be called after buildSyncFiles().
  *
  * @since TBD
  *
  * @param {string} root - The project root directory path.
  *
- * @returns {string[] | null} An array of allowlist patterns, or null if .distfiles does not exist.
+ * @returns {string[] | null} An array of allowlist patterns, or null if .pup-distfiles does not exist.
  */
-function getDistfilesPatterns(root: string): string[] | null {
-  const distfilesPath = path.join(root, '.distfiles');
-  if (!fs.existsSync(distfilesPath)) return null;
-  return readPatterns(distfilesPath);
+export function getDistfilesPatterns(root: string): string[] | null {
+  const pupPath = path.join(root, '.pup-distfiles');
+  if (!fs.existsSync(pupPath)) return null;
+  return readPatterns(pupPath);
+}
+
+/**
+ * Returns the default ignore patterns.
+ *
+ * @since TBD
+ *
+ * @param {Config} config - The resolved pup configuration.
+ *
+ * @returns {string[]} An array of default ignore glob patterns.
+ */
+function getDefaultIgnoreLines(config: Config): string[] {
+  const zipDirRelative = config.getZipDir(false);
+  return ['.puprc', '.pup-*', zipDirRelative];
+}
+
+/**
+ * Resolves all file patterns needed for syncing based on the source directory and config.
+ *
+ * Generates .pup-* intermediate files via buildSyncFiles(), then reads the
+ * resolved patterns. When `.distfiles` is present, `.distignore` is not
+ * used — only default ignore patterns apply. Otherwise, `.distignore`,
+ * `.gitattributes` export-ignore, and default ignore patterns are all used.
+ *
+ * @since TBD
+ *
+ * @param {string} sourceDir - The source directory to resolve patterns from.
+ * @param {Config} config - The resolved pup configuration.
+ *
+ * @returns {{ distfiles: string[] | null; ignorePatterns: string[]; includePatterns: string[] }}
+ */
+export function resolveFilePatterns(
+  sourceDir: string,
+  config: Config
+): { distfiles: string[] | null; ignorePatterns: string[]; includePatterns: string[] } {
+  buildSyncFiles(sourceDir, config);
+
+  const distfiles = getDistfilesPatterns(sourceDir);
+  const includePatterns = getIncludePatterns(sourceDir);
+
+  let ignorePatterns: string[];
+  if (distfiles !== null) {
+    ignorePatterns = getDefaultIgnoreLines(config);
+  } else {
+    ignorePatterns = [
+      ...getDefaultIgnoreLines(config),
+      ...getIgnorePatterns(sourceDir),
+    ];
+  }
+
+  return { distfiles, ignorePatterns, includePatterns };
 }
 
 /**
@@ -184,54 +383,6 @@ function shouldIncludeFile(
   }
 
   return true;
-}
-
-/**
- * Resolves all file patterns needed for syncing based on the source directory and config.
- *
- * When `.distfiles` is present, `.distignore` is not used — only default
- * ignore patterns apply. Otherwise, `.distignore`, `.gitattributes`
- * export-ignore, and default ignore patterns are all used.
- *
- * @since TBD
- *
- * @param {string} sourceDir - The source directory to resolve patterns from.
- * @param {Config} config - The resolved pup configuration.
- *
- * @returns {{ distfiles: string[] | null; ignorePatterns: string[]; includePatterns: string[] }}
- */
-export function resolveFilePatterns(
-  sourceDir: string,
-  config: Config
-): { distfiles: string[] | null; ignorePatterns: string[]; includePatterns: string[] } {
-  const distfiles = getDistfilesPatterns(sourceDir);
-  const includePatterns = getIncludePatterns(sourceDir);
-
-  let ignorePatterns: string[];
-  if (distfiles !== null) {
-    ignorePatterns = getDefaultIgnoreLines(config);
-  } else {
-    ignorePatterns = [
-      ...getDefaultIgnoreLines(config),
-      ...getIgnorePatterns(sourceDir, config.getZipUseDefaultIgnore()),
-    ];
-  }
-
-  return { distfiles, ignorePatterns, includePatterns };
-}
-
-/**
- * Returns the default ignore patterns.
- *
- * @since TBD
- *
- * @param {Config} config - The resolved pup configuration.
- *
- * @returns {string[]} An array of default ignore glob patterns.
- */
-function getDefaultIgnoreLines(config: Config): string[] {
-  const zipDirRelative = config.getZipDir(false);
-  return ['.puprc', '.pup-*', zipDirRelative];
 }
 
 /**
