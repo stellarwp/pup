@@ -79,7 +79,7 @@ export function registerPackageCommand(program: Command): void {
       output.log('Zipping...Complete.');
 
       // Undo version file changes
-      undoChanges(config);
+      await undoChanges(config);
 
       output.success(`\nZip ${zipFilename} created!\n`);
     });
@@ -152,13 +152,13 @@ function updateVersionsInFiles(
  *
  * @param {ReturnType<typeof getConfig>} config - The resolved pup configuration.
  *
- * @returns {void}
+ * @returns {Promise<void>}
  */
-function undoChanges(config: ReturnType<typeof getConfig>): void {
+async function undoChanges(config: ReturnType<typeof getConfig>): Promise<void> {
   const versionFiles = config.getVersionFiles();
   for (const vf of versionFiles) {
     try {
-      runCommand(`git checkout -- ${vf.file}`, {
+      await runCommand(`git checkout -- ${vf.file}`, {
         cwd: config.getWorkingDir(),
         silent: true,
       });
